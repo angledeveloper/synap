@@ -86,3 +86,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* remove scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* remove scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* remove scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}

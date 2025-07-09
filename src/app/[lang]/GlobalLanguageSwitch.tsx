@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useLanguageStore } from "@/store";
 import { supportedLanguages } from "../../lib/utils";
+import { Icon } from "@iconify/react";
 
 export default function GlobalLanguageSwitch() {
   const router = useRouter();
@@ -20,9 +21,10 @@ export default function GlobalLanguageSwitch() {
   }, [lang, setLanguage]);
 
   return (
-    <div>
+    <div className="flex h-[36px] w-full cursor-pointer items-center gap-0 rounded-[7px] border border-neutral-100 bg-black px-2 py-1 lg:w-fit">
+      <Icon icon="mdi:language" className="text-white" />
       <select
-        className="rounded border px-2 py-1 text-sm"
+        className="cursor-pointer rounded px-2 py-1 text-sm outline-none"
         value={lang}
         onChange={(e) => {
           // Replace the first segment (lang) with the new language
@@ -33,7 +35,11 @@ export default function GlobalLanguageSwitch() {
         }}
       >
         {supportedLanguages.map((l) => (
-          <option key={l.code} value={l.code}>
+          <option
+            className="text-black hover:bg-neutral-200"
+            key={l.code}
+            value={l.code}
+          >
             {l.label}
           </option>
         ))}

@@ -55,7 +55,7 @@ export default async function RootLayout({
       >
         <QueryProvider>
           <GlobalNavbar />
-          {children}
+          <main>{children}</main>
         </QueryProvider>
       </body>
     </html>
