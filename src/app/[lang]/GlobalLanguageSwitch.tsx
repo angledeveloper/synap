@@ -12,7 +12,7 @@ export default function GlobalLanguageSwitch() {
   const pathname = usePathname();
   const lang = params.lang as string;
 
-  const { language, setLanguage } = useLanguageStore();
+  const { setLanguage } = useLanguageStore();
 
   useEffect(() => {
     if (lang) {

@@ -8,16 +8,6 @@ import GlobalLanguageSwitch from "./GlobalLanguageSwitch";
 import FullLogo from "./FullLogo";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
-} from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 
 export default function GlobalNavbar() {
@@ -52,7 +42,7 @@ export default function GlobalNavbar() {
       }
     }
     fetchData();
-  }, [data]);
+  }, [data, setHomePage]);
 
   if (isLoading === true || showLoading) {
     return (
