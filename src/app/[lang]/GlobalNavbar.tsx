@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { codeToId } from "@/lib/utils";
 import Image from "next/image";
 import GlobalLanguageSwitch from "./GlobalLanguageSwitch";
+import FullLogo from "./FullLogo";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import {
@@ -77,13 +78,9 @@ export default function GlobalNavbar() {
     <nav className="fixed top-4 left-0 z-50 flex w-full justify-center px-3">
       <div className="relative flex h-20 w-full max-w-[1700px] items-center justify-between rounded-3xl bg-black/80 px-8 backdrop-blur-xs lg:px-4">
         <Link href="/">
-          <Image
-            src={HomePage.navbar.logo}
-            alt="SynapSea"
-            width={215}
-            height={34.22}
-            className="h-[60px] w-auto"
-          />
+          <div className="h-[30px] w-auto">
+            <FullLogo />
+          </div>
         </Link>
         <div className="hidden items-center gap-4 text-sm text-white lg:flex">
           <Link href="/about">About us</Link>
@@ -93,7 +90,7 @@ export default function GlobalNavbar() {
           >
             Reports Store <Icon icon="mdi:chevron-down" />
             {showDropdown && (
-              <div className="absolute top-[90px] left-0 m-auto w-full rounded-[20px] bg-white/80 p-4 text-black backdrop-blur-2xl">
+              <div className="absolute top-[90px] left-0 m-auto w-full rounded-[20px] bg-neutral-200 p-4 text-black backdrop-blur-2xl">
                 <span className="text-[20px]">Reports based on industry</span>
                 <div className="md:grid-col-2 mt-10 grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-4">
                   {HomePage.report_store_dropdown.map(

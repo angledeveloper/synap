@@ -5,6 +5,7 @@ import "./globals.css";
 import QueryProvider from "@/components/Querryprovider";
 
 import GlobalNavbar from "./GlobalNavbar";
+import GlobalFooter from "./GlobalFooter";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -51,11 +52,12 @@ export default async function RootLayout({
   return (
     <html lang={lang}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-black text-white antialiased`}
       >
         <QueryProvider>
           <GlobalNavbar />
           <main>{children}</main>
+          <GlobalFooter />
         </QueryProvider>
       </body>
     </html>

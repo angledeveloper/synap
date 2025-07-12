@@ -13,16 +13,24 @@ interface HomePageState {
   setHomePage: (HomePage: any) => void;
 }
 
-export const useLanguageStore = create<LanguageState>()(
-  devtools((set) => ({
-    language: "en",
-    setLanguage: (lang) => set({ language: lang }),
-  })),
-);
+interface AboutPageState {
+  AboutPage: any;
+  setAboutPage: (AboutPage: any) => void;
+}
 
-export const useHomePageStore = create<HomePageState>()(
+export const useLanguageStore = create<LanguageState>()((set) => ({
+  language: "en",
+  setLanguage: (lang) => set({ language: lang }),
+}));
+
+export const useHomePageStore = create<HomePageState>()((set) => ({
+  HomePage: null,
+  setHomePage: (HomePage) => set({ HomePage }),
+}));
+
+export const useAboutPageStore = create<AboutPageState>()(
   devtools((set) => ({
-    HomePage: null,
-    setHomePage: (HomePage) => set({ HomePage }),
+    AboutPage: null,
+    setAboutPage: (AboutPage) => set({ AboutPage }),
   })),
 );
