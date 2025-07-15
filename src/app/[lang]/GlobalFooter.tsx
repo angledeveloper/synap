@@ -41,12 +41,10 @@ export default function GlobalFooter() {
               <span>{HomePage.footer.section.button}</span>
             </button>
           </div>
-          <div className="flex w-full flex-col gap-6 md:w-fit">
-            <div className="flex w-full flex-wrap gap-4 md:justify-end">
+          <div className="flex w-full flex-col gap-8 md:w-fit">
+            <div className="flex w-full flex-wrap gap-6 md:justify-end">
               <div className="min-w-[120px]">
-                <span className="text-[20px] font-bold underline">
-                  Solution
-                </span>
+                <span className="text-[20px] underline">Solution</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
                   {HomePage.footer.menu.Solution.map(
@@ -59,9 +57,7 @@ export default function GlobalFooter() {
                 </ul>
               </div>
               <div className="min-w-[120px]">
-                <span className="text-[20px] font-bold underline">
-                  Resources
-                </span>
+                <span className="text-[20px] underline">Resources</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
                   {HomePage.footer.menu.Resources.map(
@@ -74,7 +70,7 @@ export default function GlobalFooter() {
                 </ul>
               </div>
               <div className="min-w-[120px]">
-                <span className="text-[20px] font-bold underline">Company</span>
+                <span className="text-[20px] underline">Company</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
                   {HomePage.footer.menu.Company.map(
@@ -87,7 +83,7 @@ export default function GlobalFooter() {
                 </ul>
               </div>
               <div className="min-w-[120px]">
-                <span className="text-[20px] font-bold underline">Legal</span>
+                <span className="text-[20px] underline">Legal</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
                   {HomePage.footer.menu.Legal.map(

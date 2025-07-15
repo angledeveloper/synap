@@ -35,11 +35,11 @@ export default function Home() {
           className="bg-no-repeat object-cover"
         />
         <div className="relative flex h-screen min-h-[500px] w-full flex-col items-center justify-end p-4">
-          <h1 className="mb-20 max-w-[900px] text-center text-[32px] capitalize uppercase md:text-[64px]">
+          <h1 className="mb-20 max-w-[900px] text-center text-[32px] uppercase md:text-[64px]">
             {HomePage.home_section1.title}
           </h1>
-          <div className="flex w-full max-w-[1440px] justify-between gap-10 p-3">
-            <div className="flex w-full flex-wrap gap-4">
+          <div className="flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
+            <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
               <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] hover:opacity-85 max-md:w-full">
                 <span className="flex w-full justify-end">
                   <Icon icon="iconoir:fast-arrow-right" />
@@ -53,7 +53,9 @@ export default function Home() {
                 <span>{HomePage.home_section1.second_button}</span>
               </button>
             </div>
-            <p className="w-full">{HomePage.home_section1.description}</p>
+            <p className="w-full text-[20px]">
+              {HomePage.home_section1.description}
+            </p>
           </div>
         </div>
       </section>
@@ -93,10 +95,10 @@ export default function Home() {
           backgroundSize: "fit",
           backgroundRepeat: "no-repeat",
         }}
-        className="w-full bg-gradient-to-b from-[#000910] to-[#000] bg-cover bg-center pt-40 pb-40 md:min-h-[650px]"
+        className="w-full bg-gradient-to-b from-[#000910] to-[#000] bg-cover bg-center py-20 md:min-h-[650px] md:pt-40 md:pb-40"
       >
         <div className="m-auto flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
-          <div className="text-[32px] font-bold md:text-[40px]">
+          <div className="text-[32px] font-bold max-md:text-center md:text-[40px]">
             {HomePage.home_section3.tagline}
           </div>
           <Link href="/">
@@ -148,7 +150,7 @@ export default function Home() {
             <h4 className="bloc mb-20 text-[32px] font-bold md:text-[64px]">
               {HomePage.home_section5.title}
             </h4>
-            <div className="relative flex min-h-[250px] w-full max-w-2xl flex-col">
+            <div className="relative flex min-h-[350px] w-full max-w-2xl flex-col">
               {HomePage.testimonials.map((testimonial: any, index: number) => (
                 <div
                   key={index}
@@ -158,13 +160,13 @@ export default function Home() {
                       testimonialsIndex === index ? "auto" : "none",
                   }}
                 >
-                  <span className="mb-6 block bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text font-mono text-[22px] leading-snug text-transparent md:text-[32px]">
+                  <span className="mb-6 block bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text font-mono text-[22px] leading-snug text-transparent md:text-[36px]">
                     “{testimonial.feedback}”
                   </span>
-                  <span className="block text-[20px] font-semibold text-black">
+                  <span className="block text-[28px] font-semibold text-black">
                     {testimonial.name}
                   </span>
-                  <span className="block text-[16px] text-[#888]">
+                  <span className="block text-[20px] text-[#888]">
                     {testimonial.title}
                   </span>
                 </div>
@@ -212,7 +214,7 @@ export default function Home() {
             </div>
           </div>
           <div className="relative z-10 flex w-full flex-col bg-black text-white">
-            <div className="md; flex flex-col gap-4 bg-[#06A591] pt-10 md:p-16 md:pt-16 md:before:absolute md:before:top-0 md:before:left-[90%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-[#06A591] md:before:content-['']">
+            <div className="md; flex flex-col gap-4 bg-[#06A591] pt-10 max-md:px-3 max-md:py-12 md:p-16 md:pt-16 md:before:absolute md:before:top-0 md:before:left-[90%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-[#06A591] md:before:content-['']">
               <span className="text-[32px]">
                 {HomePage.home_section5.first_box_title}
               </span>
@@ -226,7 +228,7 @@ export default function Home() {
                 {HomePage.home_section5.first_box_link}
               </Link>
             </div>
-            <div className="relative flex flex-col gap-4 md:p-16 md:pt-16 md:before:absolute md:before:top-[0%] md:before:left-[90%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-[#000] md:before:content-['']">
+            <div className="relative flex flex-col gap-4 max-md:px-3 max-md:py-12 md:p-16 md:pt-16 md:before:absolute md:before:top-[0%] md:before:left-[90%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-[#000] md:before:content-['']">
               <span className="text-[32px]">
                 {HomePage.home_section5.second_box_title}
               </span>
