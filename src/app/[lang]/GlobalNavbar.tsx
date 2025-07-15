@@ -46,7 +46,7 @@ export default function GlobalNavbar() {
 
   if (isLoading === true || showLoading) {
     return (
-      <div className="fixed top-0 left-0 z-50 flex h-full w-full flex-col items-center justify-center bg-white">
+      <div className="fixed top-0 left-0 z-50 flex h-full w-full flex-col items-center justify-center bg-white text-black">
         <Image
           src="/loginbackground.jpg"
           className="z-0 object-cover"
@@ -66,16 +66,16 @@ export default function GlobalNavbar() {
 
   return (
     <nav className="fixed top-4 left-0 z-50 flex w-full justify-center px-3">
-      <div className="relative flex h-20 w-full max-w-[1700px] items-center justify-between rounded-3xl bg-black/80 px-8 backdrop-blur-xs lg:px-4">
+      <div className="relative flex h-20 w-full max-w-[1440px] items-center justify-between rounded-3xl bg-black/80 px-8 backdrop-blur-xs lg:px-8">
         <Link href="/">
           <div className="h-[30px] w-auto">
             <FullLogo />
           </div>
         </Link>
-        <div className="hidden items-center gap-4 text-sm text-white lg:flex">
+        <div className="hover:bold hidden items-center gap-4 text-sm text-white lg:flex">
           <Link href="/about">About us</Link>
           <div
-            className="flex cursor-pointer items-center gap-1 font-bold"
+            className="flex cursor-pointer items-center gap-1 hover:font-bold"
             onClick={() => setShowDropdown(!showDropdown)}
           >
             Reports Store <Icon icon="mdi:chevron-down" />
@@ -118,7 +118,7 @@ export default function GlobalNavbar() {
           <GlobalLanguageSwitch />
           <Link href="/login">
             <Button className="cursor-pointer border border-white bg-transparent">
-              Login
+              <Icon icon="mdi:user" />
             </Button>
           </Link>
           <Link href="/contact">
@@ -127,7 +127,7 @@ export default function GlobalNavbar() {
             </Button>
           </Link>
         </div>
-        <div className="flex h-[36px] items-center gap-4 text-2xl text-white lg:hidden">
+        <div className="flex h-[36px] items-center gap-6 text-2xl text-white lg:hidden">
           <Icon
             icon={showMenu ? "mdi:close" : "mdi:menu"}
             onClick={() => setShowMenu(!showMenu)}

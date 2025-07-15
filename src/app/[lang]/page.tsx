@@ -35,11 +35,11 @@ export default function Home() {
           className="bg-no-repeat object-cover"
         />
         <div className="relative flex h-screen min-h-[500px] w-full flex-col items-center justify-end p-4">
-          <h1 className="mb-10 text-[32px] md:text-[64px]">
+          <h1 className="mb-20 max-w-[900px] text-center text-[32px] capitalize uppercase md:text-[64px]">
             {HomePage.home_section1.title}
           </h1>
-          <div className="flex w-full max-w-[1700px] flex-wrap justify-between gap-10 p-3">
-            <div className="flex flex-wrap gap-4">
+          <div className="flex w-full max-w-[1440px] justify-between gap-10 p-3">
+            <div className="flex w-full flex-wrap gap-4">
               <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] hover:opacity-85 max-md:w-full">
                 <span className="flex w-full justify-end">
                   <Icon icon="iconoir:fast-arrow-right" />
@@ -53,12 +53,12 @@ export default function Home() {
                 <span>{HomePage.home_section1.second_button}</span>
               </button>
             </div>
-            <p>{HomePage.home_section1.description}</p>
+            <p className="w-full">{HomePage.home_section1.description}</p>
           </div>
         </div>
       </section>
       <section className="flex w-full justify-center bg-[#000] p-3 py-20">
-        <div className="flex w-full max-w-[1700px] flex-col items-center justify-center gap-10 md:flex-row">
+        <div className="flex w-full max-w-[1440px] flex-col items-center justify-center gap-10 md:flex-row">
           {HomePage.home_section2.map((section: any, index: number) => (
             <div
               key={index}
@@ -69,8 +69,8 @@ export default function Home() {
               className={`flex w-full max-w-md flex-col items-center justify-center ${index === 1 ? "md:mt-0" : index === 3 ? "md:mt-0" : "md:mt-[200px]"}`}
             >
               <div className="mb-2 w-full p-4">
-                <h2 className="text-[20px] font-bold">{section.title}</h2>
-                <p className="text-[16px]">{section.description}</p>
+                <span className="text-[20px] font-bold">{section.title}</span>
+                <p className="mt-2 text-[16px]">{section.description}</p>
               </div>
 
               <div className="aspect-square w-full">
@@ -93,14 +93,14 @@ export default function Home() {
           backgroundSize: "fit",
           backgroundRepeat: "no-repeat",
         }}
-        className="w-full bg-gradient-to-b from-[#000910] to-[#000] bg-cover bg-center pt-40 pb-40"
+        className="w-full bg-gradient-to-b from-[#000910] to-[#000] bg-cover bg-center pt-40 pb-40 md:min-h-[650px]"
       >
-        <div className="m-auto flex w-full max-w-[1700px] flex-col justify-between gap-10 p-3 md:flex-row">
-          <h2 className="text-[32px] font-bold md:text-[40px]">
+        <div className="m-auto flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
+          <div className="text-[32px] font-bold md:text-[40px]">
             {HomePage.home_section3.tagline}
-          </h2>
+          </div>
           <Link href="/">
-            <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] hover:opacity-85 max-md:w-full">
+            <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-black/5 p-4 text-[20px] backdrop-blur-[5px] transition-all duration-300 hover:border-white/40 hover:text-neutral-400 max-md:w-full">
               <span className="flex w-full justify-end">
                 <Icon icon="iconoir:fast-arrow-right" />
               </span>
@@ -111,12 +111,12 @@ export default function Home() {
       </section>
       <GlobalAboveFooter />
       <section className="w-full bg-white text-black">
-        <div className="m-auto grid w-full max-w-[1700px] grid-cols-1 gap-4 p-3 py-10 md:grid-cols-3 md:gap-10 md:py-20 lg:grid-cols-4">
+        <div className="m-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 p-3 py-10 md:grid-cols-3 md:gap-10 md:py-20 lg:grid-cols-4">
           {HomePage.report_store_dropdown.map((item: any, index: number) => (
             <Link key={index} href={`/`}>
               <div
                 key={index}
-                className="group relative h-full w-full bg-[#F2F1EF]"
+                className="group relative h-full w-full bg-[#F2F1EF] hover:bg-[#2F2F2F]"
               >
                 <Icon
                   className="absolute top-4 right-4 text-2xl"
@@ -130,9 +130,9 @@ export default function Home() {
                   className="aspect-video w-full bg-neutral-200 object-cover"
                 />
                 <div className="flex flex-col gap-2 p-4 group-hover:bg-[#2F2F2F]">
-                  <h3 className="block from-[#1160C9] to-[#08D2B8] font-mono text-[20px] leading-snug font-bold transition-all duration-200 group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:text-transparent">
+                  <div className="block from-[#1160C9] to-[#08D2B8] font-mono text-[20px] leading-snug font-bold transition-all duration-200 group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:text-transparent">
                     {item.category_name}
-                  </h3>
+                  </div>
                   <p className="text-[16px] group-hover:text-[#F2F1EF]">
                     {item.category_tagline}
                   </p>
@@ -143,11 +143,11 @@ export default function Home() {
         </div>
       </section>
       <section className="w-full overflow-hidden bg-[#F5F5F5]">
-        <div className="relative m-auto grid w-full max-w-[1700px] grid-cols-1 justify-center justify-items-end bg-white text-black md:grid-cols-2">
-          <div className="flex w-full flex-col justify-center bg-[#F5F5F5] p-3 pt-10 md:p-16 md:pt-16">
-            <span className="bloc mb-20 text-[32px] font-bold md:text-[64px]">
+        <div className="relative m-auto grid w-full max-w-[1440px] grid-cols-1 justify-center justify-items-end bg-white text-black md:grid-cols-2">
+          <div className="flex w-full flex-col bg-[#F5F5F5] p-3 pt-10 md:p-16 md:pt-16">
+            <h4 className="bloc mb-20 text-[32px] font-bold md:text-[64px]">
               {HomePage.home_section5.title}
-            </span>
+            </h4>
             <div className="relative flex min-h-[250px] w-full max-w-2xl flex-col">
               {HomePage.testimonials.map((testimonial: any, index: number) => (
                 <div

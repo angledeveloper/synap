@@ -128,3 +128,24 @@
 .div7 {
   grid-area: 3 / 2 / 4 / 4;
 }
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-orbitron);
+  font-weight: 400;
+  line-height: 1em;
+}
+
+p {
+  font-family: var(--font-space-grotesk);
+}
+
+.special_font {
+  font-family: var(--font-space-grotesk);
+  text-transform: none;
+  line-height: 1.2em !important;
+}

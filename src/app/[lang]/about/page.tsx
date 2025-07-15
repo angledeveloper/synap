@@ -41,7 +41,7 @@ export default function About() {
           fill
           className="bg-no-repeat object-cover"
         />
-        <div className="relative m-auto flex h-[80vh] min-h-[500px] w-full max-w-[1700px] flex-col justify-end p-4 pb-10">
+        <div className="relative m-auto flex h-[80vh] min-h-[500px] w-full max-w-[1440px] flex-col justify-end p-4 pb-10">
           <h1 className="mb-10 text-[32px] md:text-[64px]">
             {AboutPage.title}
           </h1>
@@ -72,7 +72,7 @@ export default function About() {
         <p className="w-full max-w-[900px] text-center text-[20px] text-[#0B0B0B]">
           {AboutPage.section_description}
         </p>
-        <div className="custom_grid m-auto mt-10 flex w-full max-w-[1700px] flex-col gap-6 md:grid md:gap-4">
+        <div className="custom_grid m-auto mt-10 flex w-full max-w-[1440px] flex-col gap-6 md:grid md:gap-4">
           {AboutPage.our_experties.map((card: any, idx: number) => (
             <div
               className={`div${idx + 1} min-h-[300px] bg-[#C8C8C8] p-4`}
