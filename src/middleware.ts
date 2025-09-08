@@ -5,7 +5,7 @@ import { locale } from "./lib/utils";
 
 // List your supported locales (should match your [lang] folders)
 const locales = locale;
-const defaultLocale = "jp";
+const defaultLocale = "ja";
 
 function getLocale(request: NextRequest) {
   // Convert NextRequest headers to plain object for Negotiator

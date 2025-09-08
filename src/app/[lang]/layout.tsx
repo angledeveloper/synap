@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { supportedLanguages } from "@/lib/utils";
 import { Geist, Geist_Mono, Orbitron, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import QueryProvider from "@/components/Querryprovider";
+import QueryProvider from "@/components/Queryprovider";
 
 import GlobalNavbar from "./GlobalNavbar";
 import GlobalFooter from "./GlobalFooter";
@@ -30,22 +30,23 @@ const geistMono = Geist_Mono({
 export async function generateMetadata({
   params,
 }: {
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
-  const { lang } = (await params) || "en";
+  const { lang } = (await params) || ({} as any);
+  const langCode = lang || "en";
   const langObj =
-    supportedLanguages.find((l) => l.code === lang) || supportedLanguages[0];
+    supportedLanguages.find((l) => l.code === langCode) || supportedLanguages[0];
   return {
     title: `Home | ${langObj.label}`,
     description: `Welcome to the ${langObj.label} version of our site.`,
     alternates: {
-      canonical: `/${lang}`,
+      canonical: `/${langCode}`,
       languages: Object.fromEntries(
         supportedLanguages.map((l) => [l.code, `/${l.code}`]),
       ),
     },
     openGraph: {
-      locale: lang,
+      locale: langCode,
       title: `Home | ${langObj.label}`,
       description: `Welcome to the ${langObj.label} version of our site.`,
     },
@@ -57,11 +58,12 @@ export default async function RootLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }) {
-  const { lang } = (await params) || "en";
+  const { lang } = (await params) || ({} as any);
+  const langCode = lang || "en";
   return (
-    <html lang={lang}>
+    <html lang={langCode}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable} bg-black text-white antialiased`}
       >

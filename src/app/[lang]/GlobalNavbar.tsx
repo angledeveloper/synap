@@ -17,6 +17,7 @@ export default function GlobalNavbar() {
   const id = codeToId[language];
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["navbarData", language],
@@ -72,18 +73,25 @@ export default function GlobalNavbar() {
             <FullLogo />
           </div>
         </Link>
-        <div className="hover:bold hidden items-center gap-4 text-sm text-white lg:flex">
-          <Link href="/about">About us</Link>
+        {/* Center Navigation */}
+        <div className="hidden items-center gap-8 text-sm text-white lg:flex">
+          <Link href="/about" className="hover:font-bold transition-all">
+            About Us
+          </Link>
           <div
-            className="flex cursor-pointer items-center gap-1 hover:font-bold"
+            className="flex cursor-pointer items-center gap-1 hover:font-bold transition-all"
             onClick={() => setShowDropdown(!showDropdown)}
           >
-            Reports Store <Icon icon="mdi:chevron-down" />
+            {/* todo: make dropdown compact */}
+            <span className="bg-gradient-to-r from-[#08D2B8] to-[#1160C9] bg-clip-text text-transparent font-bold">
+              Reports Store
+            </span>
+            <Icon icon="mdi:chevron-down" />
             {showDropdown && (
               <div className="absolute top-[90px] left-0 m-auto w-full rounded-[20px] bg-neutral-200 p-4 text-black backdrop-blur-2xl">
                 <span className="text-[20px]">Reports based on industry</span>
                 <div className="md:grid-col-2 mt-10 grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-4">
-                  {HomePage.report_store_dropdown.map(
+                  {HomePage.report_store_dropdown.map(  
                     (item: any, idx: number) => (
                       <Link href="/" key={idx}>
                         <div className="flex items-start gap-2">
@@ -110,20 +118,49 @@ export default function GlobalNavbar() {
               </div>
             )}
           </div>
-          <input
-            type="search"
-            placeholder="Search..."
-            className="h-[36px] max-w-[200px] rounded-[7px] border border-white bg-black px-4 py-2 text-right text-white placeholder:text-white"
-          />
-          <GlobalLanguageSwitch />
-          <Link href="/login">
-            <Button className="cursor-pointer border border-white bg-transparent">
-              <Icon icon="mdi:user" />
-            </Button>
+          <Link href="/contact" className="hover:font-bold transition-all">
+            Contact Us
           </Link>
-          <Link href="/contact">
-            <Button className="cursor-pointer bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100%">
-              Contact Us
+        </div>
+
+        {/* Right Side Items, todo: cart button */}
+        <div className="hidden items-center gap-4 text-sm text-white lg:flex">
+          {/* Expandable Search */}
+          <div 
+            className="relative flex items-center"
+            onMouseEnter={() => setShowSearch(true)}
+            onMouseLeave={() => setShowSearch(false)}
+          >
+            
+            <div className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-all cursor-pointer">
+              <Icon icon="mdi:magnify" className="text-xl text-white" />
+            </div>
+            
+          
+            <div 
+              className={`absolute right-0 top-0 overflow-hidden transition-all duration-300 ease-in-out ${
+                showSearch ? 'w-64 opacity-100' : 'w-0 opacity-0'
+              }`}
+            >
+              <div className="flex items-center bg-white/10 border border-white/20 rounded-lg px-3 py-2">
+                <input
+                  type="search"
+                  placeholder="Let's find what you need!"
+                  className="w-full bg-transparent text-white placeholder:text-white/70 focus:outline-none text-sm"
+                  autoFocus={showSearch}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Language Switch */}
+          <GlobalLanguageSwitch />
+          
+          {/* Login Button */}
+          <Link href="/login">
+            <Button className="cursor-pointer border border-white bg-transparent hover:bg-white/10 transition-all">
+              <Icon icon="mdi:user" className="mr-2" />
+              Login
             </Button>
           </Link>
         </div>
@@ -137,30 +174,32 @@ export default function GlobalNavbar() {
             <div className="absolute top-[90px] left-0 m-auto max-h-[70vh] w-full overflow-scroll rounded-[20px] bg-black p-4 text-black">
               <div className="flex flex-col gap-4 text-2xl text-white">
                 <div className="flex w-full flex-wrap gap-4">
-                  <input
-                    type="search"
-                    placeholder="Search..."
-                    className="h-[36px] w-full rounded-[7px] border border-white bg-black px-4 py-2 text-white placeholder:text-white"
-                  />
+                  <div className="relative w-full">
+                    <Icon icon="mdi:magnify" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                    <input
+                      type="search"
+                      placeholder="Let's find what you need!"
+                      className="h-[36px] w-full rounded-[7px] border border-white/20 bg-white/10 px-10 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/30"
+                    />
+                  </div>
                   <GlobalLanguageSwitch />
                   <Link className="w-full" href="/login">
                     <Button className="w-full cursor-pointer border border-white bg-transparent">
+                      <Icon icon="mdi:user" className="mr-2" />
                       Login
                     </Button>
                   </Link>
-                  <Link className="w-full" href="/contact">
-                    <Button className="w-full cursor-pointer bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100%">
-                      Contact Us
-                    </Button>
-                  </Link>
                 </div>
-                <Link href="/about">About us</Link>
+                <Link href="/about" className="hover:font-bold transition-all">About Us</Link>
                 <div
                   className="flex cursor-pointer flex-col gap-1"
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
                   <div className="flex cursor-pointer items-center gap-1">
-                    Reports Store <Icon icon="mdi:chevron-down" />
+                    <span className="bg-gradient-to-r from-[#08D2B8] to-[#1160C9] bg-clip-text text-transparent font-bold">
+                      Reports Store
+                    </span>
+                    <Icon icon="mdi:chevron-down" />
                   </div>
 
                   {showDropdown && (
@@ -196,6 +235,7 @@ export default function GlobalNavbar() {
                     </div>
                   )}
                 </div>
+                <Link href="/contact" className="hover:font-bold transition-all">Contact Us</Link>
               </div>
             </div>
           )}

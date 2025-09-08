@@ -9,6 +9,11 @@ import Link from "next/link";
 export default function Home() {
   const { HomePage } = useHomePageStore();
   const [testimonialsIndex, setTestimonialsIndex] = useState<number>(0);
+  const getReportsHref = (label: string | undefined) => {
+    if (!label) return "/";
+    const l = label.trim().toLowerCase();
+    return l.includes("explore") && l.includes("report") ? "/reports" : "/";
+  };
 
   useEffect(() => {
     if (!HomePage?.testimonials?.length) return;
@@ -40,18 +45,22 @@ export default function Home() {
           </h1>
           <div className="flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
             <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
-              <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] hover:opacity-85 max-md:w-full">
-                <span className="flex w-full justify-end">
-                  <Icon icon="iconoir:fast-arrow-right" />
-                </span>
-                <span>{HomePage.home_section1.first_button}</span>
-              </button>
-              <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] hover:opacity-85 max-md:w-full">
-                <span className="flex w-full justify-end">
-                  <Icon icon="iconoir:fast-arrow-right" />
-                </span>
-                <span>{HomePage.home_section1.second_button}</span>
-              </button>
+              <Link href={getReportsHref(HomePage.home_section1.first_button) || "/reports"}>
+                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] hover:opacity-85 max-md:w-full">
+                  <span className="flex w-full justify-end">
+                    <Icon icon="iconoir:fast-arrow-right" />
+                  </span>
+                  <span>{HomePage.home_section1.first_button}</span>
+                </button>
+              </Link>
+              <Link href={getReportsHref(HomePage.home_section1.second_button) || "/reports"}>
+                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] hover:opacity-85 max-md:w-full">
+                  <span className="flex w-full justify-end">
+                    <Icon icon="iconoir:fast-arrow-right" />
+                  </span>
+                  <span>{HomePage.home_section1.second_button}</span>
+                </button>
+              </Link>
             </div>
             <p className="w-full text-[20px]">
               {HomePage.home_section1.description}
@@ -101,7 +110,7 @@ export default function Home() {
           <div className="text-[32px] font-bold max-md:text-center md:text-[40px]">
             {HomePage.home_section3.tagline}
           </div>
-          <Link href="/">
+          <Link href={getReportsHref(HomePage.home_section3.button) || "/reports"}>
             <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-black/5 p-4 text-[20px] backdrop-blur-[5px] transition-all duration-300 hover:border-white/40 hover:text-neutral-400 max-md:w-full">
               <span className="flex w-full justify-end">
                 <Icon icon="iconoir:fast-arrow-right" />

@@ -34,12 +34,14 @@ export default function GlobalFooter() {
             <p className="max-w-[400px] text-sm">
               {HomePage.footer.section.tagline}
             </p>
-            <button className="mt-10 flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] outline-white hover:opacity-85 hover:outline-2 max-md:w-full">
-              <span className="flex w-full justify-end">
-                <Icon icon="iconoir:fast-arrow-right" />
-              </span>
-              <span>{HomePage.footer.section.button}</span>
-            </button>
+            <Link href="/reports">
+              <button className="mt-10 flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] outline-white hover:opacity-85 hover:outline-2 max-md:w-full">
+                <span className="flex w-full justify-end">
+                  <Icon icon="iconoir:fast-arrow-right" />
+                </span>
+                <span>{HomePage.footer.section.button}</span>
+              </button>
+            </Link>
           </div>
           <div className="flex w-full flex-col gap-8 md:w-fit">
             <div className="flex w-full flex-wrap gap-6 md:justify-end">
@@ -73,26 +75,28 @@ export default function GlobalFooter() {
                 <span className="text-[20px] underline">Company</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
-                  {HomePage.footer.menu.Company.map(
-                    (link: any, index: number) => (
+                  {HomePage.footer.menu.Company.map((link: any, index: number) => {
+                    const isPrivacy = (link.menu_name || "").toLowerCase().includes('privacy');
+                    return (
                       <li key={index}>
-                        <Link href="/">{link.menu_name}</Link>
+                        <Link href={isPrivacy ? '/privacy' : '/'}>{link.menu_name}</Link>
                       </li>
-                    ),
-                  )}
+                    );
+                  })}
                 </ul>
               </div>
               <div className="min-w-[120px]">
                 <span className="text-[20px] underline">Legal</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
-                  {HomePage.footer.menu.Legal.map(
-                    (link: any, index: number) => (
+                  {HomePage.footer.menu.Legal.map((link: any, index: number) => {
+                    const isPrivacy = (link.menu_name || "").toLowerCase().includes('privacy');
+                    return (
                       <li key={index}>
-                        <Link href="/">{link.menu_name}</Link>
+                        <Link href={isPrivacy ? '/privacy' : '/'}>{link.menu_name}</Link>
                       </li>
-                    ),
-                  )}
+                    );
+                  })}
                 </ul>
               </div>
             </div>
