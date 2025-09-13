@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Icon } from "@iconify/react";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useFilterOptions } from "@/hooks/useFilterOptions";
+import { useLanguageStore } from "@/store";
 import { Filters } from "@/types/reports";
 
 interface ReportsFilterBarProps {
@@ -14,45 +16,11 @@ interface ReportsFilterBarProps {
   translations?: any;
 }
 
-// Mock data for filter options - replace with actual API data
-const INDUSTRY_OPTIONS = [
-  { value: "all", label: "All Industries" },
-  { value: "1", label: "Technology & Software" },
-  { value: "2", label: "Energy & Utilities" },
-  { value: "3", label: "Food & Beverages" },
-  { value: "4", label: "Construction" },
-  { value: "5", label: "Healthcare & Pharmaceuticals" },
-  { value: "6", label: "Chemicals & Materials" },
-  { value: "7", label: "Telecommunications" },
-  { value: "8", label: "Automotive & Transportation" },
-  { value: "9", label: "Financial Services" },
-  { value: "10", label: "Aerospace & Defense" },
-  { value: "11", label: "Consumer Goods & Retail" },
-  { value: "12", label: "Manufacturing & Industrial" },
-  { value: "13", label: "Agriculture" },
-];
-
-
-const REGION_OPTIONS = [
-  { value: "all", label: "All Regions" },
-  { value: "global", label: "Global" },
-  { value: "north-america", label: "North America" },
-  { value: "europe", label: "Europe" },
-  { value: "asia-pacific", label: "Asia Pacific" },
-  { value: "latin-america", label: "Latin America" },
-  { value: "middle-east-africa", label: "Middle East & Africa" },
-];
-
-const YEAR_OPTIONS = [
-  { value: "all", label: "All Years" },
-  { value: "2025", label: "2025" },
-  { value: "2024", label: "2024" },
-  { value: "2023", label: "2023" },
-  { value: "2022", label: "2022" },
-  { value: "2021", label: "2021" },
-];
 
 export default function ReportsFilterBar({ filters, onFilterChange, isLoading, translations }: ReportsFilterBarProps) {
+  const { language } = useLanguageStore();
+  const { data: filterOptions, isLoading: isFilterOptionsLoading } = useFilterOptions({ language });
+  
   const t = translations || {
     searchPlaceholder: "Search By Title",
     filters: {
@@ -61,6 +29,13 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
       year: "YEAR",
     },
     clearFilters: "Clear Filters",
+  };
+  
+  // Ensure filters object exists with fallbacks
+  const filterLabels = t.filters || {
+    industry: "INDUSTRY",
+    region: "REGION", 
+    year: "YEAR",
   };
   const [searchValue, setSearchValue] = useState(filters.search);
   const debouncedSearch = useDebounce(searchValue, 300);
@@ -109,14 +84,14 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
           disabled={isLoading}
         >
           <SelectTrigger className="w-full h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
-            <SelectValue placeholder={t.filters.industry} />
+            <SelectValue placeholder={filterLabels.industry} />
           </SelectTrigger>
           <SelectContent className="text-gray-900">
-            {INDUSTRY_OPTIONS.map((option) => (
+            {filterOptions?.industries?.map((option) => (
               <SelectItem key={option.value} value={option.value} className="text-gray-900">
                 {option.label}
               </SelectItem>
-            ))}
+            )) || []}
           </SelectContent>
         </Select>
 
@@ -128,14 +103,14 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
           disabled={isLoading}
         >
           <SelectTrigger className="w-full h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
-            <SelectValue placeholder={t.filters.region} />
+            <SelectValue placeholder={filterLabels.region} />
           </SelectTrigger>
           <SelectContent className="text-gray-900">
-            {REGION_OPTIONS.map((option) => (
+            {filterOptions?.regions?.map((option) => (
               <SelectItem key={option.value} value={option.value} className="text-gray-900">
                 {option.label}
               </SelectItem>
-            ))}
+            )) || []}
           </SelectContent>
         </Select>
 
@@ -146,14 +121,14 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
           disabled={isLoading}
         >
           <SelectTrigger className="w-full h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
-            <SelectValue placeholder={t.filters.year} />
+            <SelectValue placeholder={filterLabels.year} />
           </SelectTrigger>
           <SelectContent className="text-gray-900">
-            {YEAR_OPTIONS.map((option) => (
+            {filterOptions?.years?.map((option) => (
               <SelectItem key={option.value} value={option.value} className="text-gray-900">
                 {option.label}
               </SelectItem>
-            ))}
+            )) || []}
           </SelectContent>
         </Select>
       </div>

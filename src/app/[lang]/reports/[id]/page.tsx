@@ -5,6 +5,8 @@ import { useLanguageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
 import { ReportDetail, ReportSection } from "@/types/reports";
 import { useReportDetail } from "@/hooks/useReportDetail";
+import { useCategory } from "@/hooks/useCategory";
+import { useTranslations } from "@/hooks/useTranslations";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +18,43 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const translations = {
-  en: {
+
+export default function ReportDetailPage() {
+  const params = useParams();
+  const { language } = useLanguageStore();
+  const [activeTab, setActiveTab] = useState(0);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    businessEmail: '',
+    phoneNumber: '',
+    country: '',
+    countryCode: '+91'
+  });
+  
+  // Get language ID from the language store
+  const languageId = codeToId[language as keyof typeof codeToId] || 1;
+  
+  // Fetch report data from API
+  const { data, isLoading, error } = useReportDetail({
+    reportId: params.id as string,
+    categoryId: "1", // Default category, will be updated once we get the report data
+    languageId: languageId.toString(),
+  });
+
+  const report = data?.data?.report;
+  const sections = data?.data?.sections || [];
+  const commonLayout = data?.common_layout;
+  
+  // Get category information using the report's category_id
+  const { data: categoryData } = useCategory({
+    categoryId: report?.category_id?.toString() || "1",
+    languageId: languageId.toString(),
+  });
+  
+  // Get dynamic translations
+  const { data: translations } = useTranslations({ language, page: 'reportDetail' });
+  const t = translations || {
     breadcrumbHome: "Home",
     breadcrumbCategory: "Technology & Software",
     lastUpdated: "Last Updated",
@@ -43,63 +80,7 @@ const translations = {
     customReportDescription: "Reports can be customized, including stand-alone sections or country-level reports, with discounts for start-ups and universities.",
     requestCustomReport: "Request Custom Report",
     shareAt: "SHARE AT:",
-  },
-  ja: {
-    breadcrumbHome: "ホーム",
-    breadcrumbCategory: "テクノロジー＆ソフトウェア",
-    lastUpdated: "最終更新",
-    baseYear: "基準年データ",
-    format: "フォーマット",
-    industry: "業界",
-    forecastPeriod: "予測期間",
-    reportId: "レポートID",
-    numberOfPages: "ページ数",
-    tocIncluded: "目次含む",
-    introduction: "はじめに",
-    keyHighlights: "レポートの主要ハイライト",
-    dominantSegments: "主要セグメント",
-    competitiveIntelligence: "競合情報",
-    strategicInsights: "戦略的洞察",
-    regionalDynamics: "地域動向",
-    oneTimeCost: "一回限りの費用",
-    addToCart: "カートに追加",
-    getFreeSample: "無料サンプルを取得",
-    sampleDescription: "サンプルには市場データポイント、トレンド分析、市場推定が含まれます。",
-    downloadSample: "サンプルをダウンロード",
-    needCustomReport: "カスタムレポートが必要ですか？",
-    customReportDescription: "レポートは、スタンドアロンセクションや国レベルレポートを含めてカスタマイズでき、スタートアップや大学には割引があります。",
-    requestCustomReport: "カスタムレポートをリクエスト",
-    shareAt: "シェア先:",
-  },
-};
-
-export default function ReportDetailPage() {
-  const params = useParams();
-  const { language } = useLanguageStore();
-  const t = translations[language as keyof typeof translations] || translations.en;
-  const [activeTab, setActiveTab] = useState(0);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    businessEmail: '',
-    phoneNumber: '',
-    country: '',
-    countryCode: '+91'
-  });
-  
-  // Get language ID from the language store
-  const languageId = codeToId[language as keyof typeof codeToId] || 1;
-  
-  // Fetch report data from API
-  const { data, isLoading, error } = useReportDetail({
-    reportId: params.id as string,
-    categoryId: "1", // Default category, could be made dynamic
-    languageId: languageId.toString(),
-  });
-
-  const report = data?.data?.report;
-  const sections = data?.data?.sections || [];
-  const commonLayout = data?.common_layout;
+  };
 
   // Form handlers
   const handleInputChange = (field: string, value: string) => {
@@ -304,7 +285,7 @@ export default function ReportDetailPage() {
                       <span className="ml-2">{report.format.toUpperCase()}</span>
                     </div>
                     <div className="flex items-center">
-                      <span>{t.industry} - Technology</span>
+                      <span>{t.industry} - {categoryData?.name || 'Technology & Software'}</span>
                     </div>
                     <div className="flex items-center">
                       <span>{t.forecastPeriod}:</span>
@@ -629,8 +610,12 @@ export default function ReportDetailPage() {
                   </div>
                   <Button
                     variant="outline"
-                    className="w-full h-[60px] border-2 border-gray-800 text-gray-800 hover:bg-gray-50 font-bold rounded-lg relative bg-white"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                    className="border-2 border-gray-800 text-gray-800 hover:bg-gray-50 font-bold rounded-lg relative bg-white"
+                    style={{ 
+                      fontFamily: 'Space Grotesk, sans-serif',
+                      width: '320px',
+                      height: '88px'
+                    }}
                     onClick={openPopup}
                   >
                     <span 

@@ -4,6 +4,7 @@ import { useLanguageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { useReportsPage } from "../../../hooks/useReportsPage";
+import { useTranslations } from "../../../hooks/useTranslations";
 import ReportCard from "../../../components/ReportCard";
 import ReportsFilterBar from "../../../components/ReportsFilterBar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,13 +13,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Icon } from "@iconify/react";
 import { Report, ReportsResponse } from "@/types/reports";
 
-const translations = {
-  en: {
+
+export default function ReportsPage() {
+  const { language } = useLanguageStore();
+  const searchParams = useSearchParams();
+  const { data: translations, isLoading: isTranslationsLoading } = useTranslations({ language, page: 'reports' });
+  const t = translations || {
     breadcrumbHome: "Home",
     breadcrumbCategory: "Technology & Software",
     heading: "Technology & Software",
-    description:
-      "When preparing to launch a flagship device in Asia, the client lacked pricing clarity across tier-2 cities. SYNAPSea's consumer behavior modeling revealed untapped price thresholds, driving a 32% revenue increase in the first quarter post-launch. When preparing to launch a flagship device in Asia, the client lacked pricing clarity across tier-2 cities.",
+    description: "When preparing to launch a flagship device in Asia, the client lacked pricing clarity across tier-2 cities. SYNAPSea's consumer behavior modeling revealed untapped price thresholds, driving a 32% revenue increase in the first quarter post-launch.",
     searchPlaceholder: "Search By Title",
     filters: {
       industry: "INDUSTRY",
@@ -41,43 +45,7 @@ const translations = {
     },
     noReports: "No reports found",
     noReportsDescription: "Try adjusting your search criteria or filters.",
-  },
-  ja: {
-    breadcrumbHome: "ホーム",
-    breadcrumbCategory: "テクノロジー＆ソフトウェア",
-    heading: "テクノロジー＆ソフトウェア",
-    description:
-      "アジアでフラッグシップデバイスを発売する際、クライアントは第2都市での価格の明確さを欠いていました。SYNAPSeaの消費者行動モデリングは未開拓の価格閾値を明らかにし、発売後最初の四半期で32％の収益増加をもたらしました。",
-    searchPlaceholder: "タイトルで検索",
-    filters: {
-      industry: "業界",
-      region: "地域",
-      year: "年",
-    },
-    clearFilters: "フィルターをクリア",
-    viewReport: "レポートを見る",
-    pagination: {
-      previous: "前へ",
-      next: "次へ",
-    },
-    reportLimit: {
-      label: "ページあたりのレポート数:",
-      options: {
-        "1-10": "1-10",
-        "1-50": "1-50",
-        "1-100": "1-100"
-      }
-    },
-    noReports: "レポートが見つかりません",
-    noReportsDescription: "検索条件やフィルターを調整してください。",
-  },
-  // Add more languages here
-};
-
-export default function ReportsPage() {
-  const { language } = useLanguageStore();
-  const searchParams = useSearchParams();
-  const t = translations[language as keyof typeof translations] || translations.en;
+  };
   
   // Get category from URL parameters
   const categoryFromUrl = searchParams.get('category');
@@ -199,12 +167,28 @@ export default function ReportsPage() {
       );
     }
 
+    // Ensure reportLimit and options exist with fallbacks
+    const reportLimit = {
+      label: t.reportLimit?.label || "Reports per page:",
+      options: {
+        "1-10": t.reportLimit?.options?.["1-10"] || "1-10",
+        "1-50": t.reportLimit?.options?.["1-50"] || "1-50",
+        "1-100": t.reportLimit?.options?.["1-100"] || "1-100"
+      }
+    };
+
+    // Ensure pagination exists with fallbacks
+    const paginationLabels = {
+      previous: t.pagination?.previous || "Previous",
+      next: t.pagination?.next || "Next"
+    };
+
     return (
       <div className="flex items-center justify-between mt-12">
         {/* Report Limit Dropdown */}
         <div className="flex items-center gap-2">
           <label className="text-sm text-gray-600" style={{ fontFamily: 'Noto Sans, sans-serif' }}>
-            {t.reportLimit.label}
+            {reportLimit.label}
           </label>
           <Select 
             value={`1-${filters.per_page}`} 
@@ -214,9 +198,9 @@ export default function ReportsPage() {
               <SelectValue placeholder="Select limit" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1-10" className="text-gray-900">{t.reportLimit.options["1-10"]}</SelectItem>
-              <SelectItem value="1-50" className="text-gray-900">{t.reportLimit.options["1-50"]}</SelectItem>
-              <SelectItem value="1-100" className="text-gray-900">{t.reportLimit.options["1-100"]}</SelectItem>
+              <SelectItem value="1-10" className="text-gray-900">{reportLimit.options["1-10"]}</SelectItem>
+              <SelectItem value="1-50" className="text-gray-900">{reportLimit.options["1-50"]}</SelectItem>
+              <SelectItem value="1-100" className="text-gray-900">{reportLimit.options["1-100"]}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -228,7 +212,7 @@ export default function ReportsPage() {
             disabled={currentPage === 1}
             className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border-r border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t.pagination.previous}
+            {paginationLabels.previous}
           </button>
           {pages}
           <button
@@ -236,7 +220,7 @@ export default function ReportsPage() {
             disabled={currentPage === totalPages}
             className="px-4 py-2 text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t.pagination.next}
+            {paginationLabels.next}
           </button>
         </div>
       </div>

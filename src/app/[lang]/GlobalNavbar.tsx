@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useDeepSearch } from "@/hooks/useDeepSearch";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useNavbarData } from "@/hooks/useNavbarData";
 
 export default function GlobalNavbar() {
   const { language } = useLanguageStore();
@@ -34,6 +35,9 @@ export default function GlobalNavbar() {
     debouncedSearchValue,
     debouncedSearchValue.trim().length > 0
   );
+  
+  // Get navbar-specific data
+  const { data: navbarData } = useNavbarData({ language });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["navbarData", language],
@@ -266,7 +270,7 @@ export default function GlobalNavbar() {
                 <div className="flex items-center bg-white/10 border border-white/20 rounded-lg px-3 py-2">
                   <input
                     type="search"
-                    placeholder="Let's find what you need!"
+                    placeholder={navbarData?.searchPlaceholder || "Let's find what you need!"}
                     className="w-full bg-transparent text-white placeholder:text-white/70 focus:outline-none text-sm"
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
@@ -309,7 +313,7 @@ export default function GlobalNavbar() {
                     ) : searchResults && (searchResults as any).results && (searchResults as any).results.length > 0 ? (
                       <div className="py-2">
                         <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
-                          {(searchResults as any).total || (searchResults as any).results.length} result{((searchResults as any).total || (searchResults as any).results.length) !== 1 ? 's' : ''} found
+                          {(searchResults as any).total || (searchResults as any).results.length} {navbarData?.searchResultsCount || 'result'}{((searchResults as any).total || (searchResults as any).results.length) !== 1 ? 's' : ''} found
                         </div>
                         {(searchResults as any).results.slice(0, 5).map((result: any, index: number) => (
                           <div
@@ -352,7 +356,7 @@ export default function GlobalNavbar() {
                       </div>
                     ) : debouncedSearchValue.trim().length > 0 ? (
                       <div className="p-4 text-center text-gray-500">
-                        <p className="text-sm">No results found for "{debouncedSearchValue}"</p>
+                        <p className="text-sm">{navbarData?.searchNoResults || 'No results found'} for "{debouncedSearchValue}"</p>
                         <div
                           className="text-sm text-blue-600 hover:text-blue-800 font-medium mt-2 inline-block cursor-pointer"
                           onClick={() => {
@@ -400,7 +404,7 @@ export default function GlobalNavbar() {
                 {cartItems.length === 0 ? (
                   <div className="text-center py-8">
                     <Icon icon="mdi:cart-outline" className="text-4xl text-gray-300 mx-auto mb-2" />
-                    <p className="text-gray-500">Your cart is empty</p>
+                    <p className="text-gray-500">{navbarData?.cartEmptyMessage || 'Your cart is empty'}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -423,7 +427,7 @@ export default function GlobalNavbar() {
                     <div className="pt-3 border-t border-gray-200">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-gray-900">
-                          {getItemCount()} item{getItemCount() !== 1 ? 's' : ''}
+                          {getItemCount()} {navbarData?.cartItemsCount || 'item'}{getItemCount() !== 1 ? 's' : ''}
                         </span>
                         <Link href="/checkout">
                           <Button className="bg-blue-600 hover:bg-blue-700 text-white">
@@ -463,7 +467,7 @@ export default function GlobalNavbar() {
                       <Icon icon="mdi:magnify" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
                       <input
                         type="search"
-                        placeholder="Let's find what you need!"
+                        placeholder={navbarData?.searchPlaceholder || "Let's find what you need!"}
                         className="h-[36px] w-full rounded-[7px] border border-white/20 bg-white/10 px-10 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/30"
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
@@ -492,7 +496,7 @@ export default function GlobalNavbar() {
                           ) : searchResults && (searchResults as any).results && (searchResults as any).results.length > 0 ? (
                             <div className="py-2">
                               <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
-                                {(searchResults as any).total || (searchResults as any).results.length} result{((searchResults as any).total || (searchResults as any).results.length) !== 1 ? 's' : ''} found
+                                {(searchResults as any).total || (searchResults as any).results.length} {navbarData?.searchResultsCount || 'result'}{((searchResults as any).total || (searchResults as any).results.length) !== 1 ? 's' : ''} found
                               </div>
                               {(searchResults as any).results.slice(0, 3).map((result: any, index: number) => (
                                 <div
@@ -535,7 +539,7 @@ export default function GlobalNavbar() {
                             </div>
                           ) : debouncedSearchValue.trim().length > 0 ? (
                             <div className="p-4 text-center text-gray-500">
-                              <p className="text-sm">No results found for "{debouncedSearchValue}"</p>
+                              <p className="text-sm">{navbarData?.searchNoResults || 'No results found'} for "{debouncedSearchValue}"</p>
                               <div
                                 className="text-sm text-blue-600 hover:text-blue-800 font-medium mt-2 inline-block cursor-pointer"
                                 onClick={() => {
