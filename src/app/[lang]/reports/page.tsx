@@ -270,12 +270,11 @@ export default function ReportsPage() {
       {/* Page Header */}
       <div className="bg-white" style={{ paddingTop: '7px', paddingBottom: '15px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="mb-6" style={{ 
+          <h1 className="mb-6 bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent" style={{ 
             fontFamily: 'Space Mono, monospace', 
-            fontSize: '20px', 
+            fontSize: '40px', 
             lineHeight: '30px', 
             letterSpacing: '0px', 
-            color: '#202020',
             fontWeight: '400'
           }}>
             {t.heading}

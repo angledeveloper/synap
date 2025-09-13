@@ -83,7 +83,7 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
           onValueChange={(value) => handleFilterChange("category_id", value)}
           disabled={isLoading}
         >
-          <SelectTrigger className="w-full h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
+          <SelectTrigger className="w-full h-12 border-gray-400 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
             <SelectValue placeholder={filterLabels.industry} />
           </SelectTrigger>
           <SelectContent className="text-gray-900">
@@ -102,7 +102,7 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
           onValueChange={(value) => handleFilterChange("region", value)}
           disabled={isLoading}
         >
-          <SelectTrigger className="w-full h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
+          <SelectTrigger className="w-full h-12 border-gray-400 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
             <SelectValue placeholder={filterLabels.region} />
           </SelectTrigger>
           <SelectContent className="text-gray-900">
@@ -120,7 +120,7 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
           onValueChange={(value) => handleFilterChange("year", value)}
           disabled={isLoading}
         >
-          <SelectTrigger className="w-full h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
+          <SelectTrigger className="w-full h-12 border-gray-400 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
             <SelectValue placeholder={filterLabels.year} />
           </SelectTrigger>
           <SelectContent className="text-gray-900">
