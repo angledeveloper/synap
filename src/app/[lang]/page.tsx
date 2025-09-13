@@ -9,12 +9,14 @@ import Link from "next/link";
 import ArrowIcon from "@/components/ArrowIcon";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
+import CustomReportForm from "@/components/CustomReportForm";
 
 export default function Home() {
   const { HomePage } = useHomePageStore();
   const { language } = useLanguageStore();
   const router = useRouter();
   const [testimonialsIndex, setTestimonialsIndex] = useState<number>(0);
+  const [isCustomReportFormOpen, setIsCustomReportFormOpen] = useState(false);
   
   const getReportsHref = (label: string | undefined) => {
     if (!label) return "/";
@@ -99,14 +101,15 @@ export default function Home() {
                   <span>{HomePage.home_section1.first_button}</span>
                 </button>
               </Link>
-              <Link href={getReportsHref(HomePage.home_section1.second_button) || "/reports"}>
-                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
-                  <span className="flex w-full justify-end">
-                    <ArrowIcon variant="white" />
-                  </span>
-                  <span>{HomePage.home_section1.second_button}</span>
-                </button>
-              </Link>
+              <button 
+                onClick={() => setIsCustomReportFormOpen(true)}
+                className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full"
+              >
+                <span className="flex w-full justify-end">
+                  <ArrowIcon variant="white" />
+                </span>
+                <span>{HomePage.home_section1.second_button}</span>
+              </button>
             </div>
             <div className="w-full text-[20px] text-left">
               {HomePage.home_section1.description?.split('\n').map((line: string, index: number) => (
@@ -311,6 +314,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Custom Report Form */}
+      <CustomReportForm 
+        isOpen={isCustomReportFormOpen} 
+        onClose={() => setIsCustomReportFormOpen(false)} 
+      />
     </>
   );
 }

@@ -9,6 +9,7 @@ import { Icon } from "@iconify/react";
 import Link from "next/link";
 import GlobalAboveFooter from "../GlobalAboveFooter";
 import ArrowIcon from "@/components/ArrowIcon";
+import CustomReportForm from "@/components/CustomReportForm";
 
 // Utility function to split title and apply gradient to the last part
 const formatTitle = (title: string) => {
@@ -62,6 +63,7 @@ export default function About() {
   const { AboutPage, setAboutPage } = useAboutPageStore();
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
   const id = codeToId[language];
+  const [isCustomReportFormOpen, setIsCustomReportFormOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["aboutData", language],
@@ -140,7 +142,10 @@ export default function About() {
                 </span>
                 <span>{AboutPage.first_button}</span>
               </Link>
-              <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
+              <button 
+                onClick={() => setIsCustomReportFormOpen(true)}
+                className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full"
+              >
                 <span className="flex w-full justify-end">
                   <ArrowIcon variant="white" />
                 </span>
@@ -178,6 +183,12 @@ export default function About() {
       </section>
 
       <GlobalAboveFooter />
+
+      {/* Custom Report Form */}
+      <CustomReportForm 
+        isOpen={isCustomReportFormOpen} 
+        onClose={() => setIsCustomReportFormOpen(false)} 
+      />
     </>
   );
 }
