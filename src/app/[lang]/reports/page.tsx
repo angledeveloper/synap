@@ -1,12 +1,14 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLanguageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
 import { useReportsPage } from "../../../hooks/useReportsPage";
 import ReportCard from "../../../components/ReportCard";
 import ReportsFilterBar from "../../../components/ReportsFilterBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Icon } from "@iconify/react";
 import { Report, ReportsResponse } from "@/types/reports";
 
@@ -20,7 +22,6 @@ const translations = {
     searchPlaceholder: "Search By Title",
     filters: {
       industry: "INDUSTRY",
-      language: "LANGUAGE",
       region: "REGION",
       year: "YEAR",
     },
@@ -29,6 +30,14 @@ const translations = {
     pagination: {
       previous: "Previous",
       next: "Next",
+    },
+    reportLimit: {
+      label: "Reports per page:",
+      options: {
+        "1-10": "1-10",
+        "1-50": "1-50", 
+        "1-100": "1-100"
+      }
     },
     noReports: "No reports found",
     noReportsDescription: "Try adjusting your search criteria or filters.",
@@ -42,7 +51,6 @@ const translations = {
     searchPlaceholder: "タイトルで検索",
     filters: {
       industry: "業界",
-      language: "言語",
       region: "地域",
       year: "年",
     },
@@ -52,6 +60,14 @@ const translations = {
       previous: "前へ",
       next: "次へ",
     },
+    reportLimit: {
+      label: "ページあたりのレポート数:",
+      options: {
+        "1-10": "1-10",
+        "1-50": "1-50",
+        "1-100": "1-100"
+      }
+    },
     noReports: "レポートが見つかりません",
     noReportsDescription: "検索条件やフィルターを調整してください。",
   },
@@ -60,15 +76,19 @@ const translations = {
 
 export default function ReportsPage() {
   const { language } = useLanguageStore();
+  const searchParams = useSearchParams();
   const t = translations[language as keyof typeof translations] || translations.en;
+  
+  // Get category from URL parameters
+  const categoryFromUrl = searchParams.get('category');
+  
   const [filters, setFilters] = useState({
     search: "",
-    category_id: "all",
-    language_id: codeToId[language],
+    category_id: categoryFromUrl || "all",
     region: "all",
     year: "all",
     page: 1,
-    per_page: 4,
+    per_page: 10,
   });
   const [reports, setReports] = useState<Report[]>([]);
   const [pagination, setPagination] = useState({
@@ -77,49 +97,81 @@ export default function ReportsPage() {
     totalCount: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [lastRenderedReports, setLastRenderedReports] = useState<string>('');
+
 
   const { mutate: fetchReports, isPending } = useReportsPage();
 
-  useEffect(() => {
-    // Update language_id when language changes
-    setFilters(prev => ({
-      ...prev,
-      language_id: codeToId[language],
-      page: 1, // Reset to first page when language changes
-    }));
-  }, [language]);
+  // Memoize the entire translation object to prevent unnecessary re-renders
+  const memoizedTranslations = useMemo(() => t, [language]);
+
+  // Simple memoized reports rendering
+  const memoizedReports = useMemo(() => {
+    if (!reports || reports.length === 0) return null;
+    
+    return reports.map((report) => (
+      <ReportCard 
+        key={report.id} 
+        report={report} 
+        viewReportLabel={memoizedTranslations.viewReport} 
+      />
+    ));
+  }, [reports, memoizedTranslations.viewReport]);
 
   useEffect(() => {
     // Fetch reports when filters change
+    setIsLoading(true); // Set loading state when starting fetch
     fetchReports(filters, {
       onSuccess: (data: ReportsResponse) => {
-        setReports(data.reports);
+        const reportsToSet = data.reports || [];
+        const reportsKey = reportsToSet.map(r => r.id).sort().join(',');
+        
+        if (reportsKey !== lastRenderedReports) {
+          setReports(reportsToSet);
+          setLastRenderedReports(reportsKey);
+        }
+        
         setPagination({
-          totalPages: data.totalPages,
-          currentPage: data.currentPage,
-          totalCount: data.totalCount,
+          totalPages: data.totalPages || 0,
+          currentPage: data.currentPage || 1,
+          totalCount: data.totalCount || 0,
         });
         setIsLoading(false);
       },
       onError: (error: Error) => {
         console.error("Failed to fetch reports:", error);
+        setReports([]); // Set empty array on error
+        setPagination({
+          totalPages: 0,
+          currentPage: 1,
+          totalCount: 0,
+        });
         setIsLoading(false);
       },
     });
-  }, [filters, fetchReports]);
+  }, [filters]); // Removed fetchReports from dependencies
 
-  const handleFilterChange = (newFilters: Partial<typeof filters>) => {
+  const handleFilterChange = useCallback((newFilters: Partial<typeof filters>) => {
     setFilters(prev => ({
       ...prev,
       ...newFilters,
       page: 1, // Reset to first page when filters change
     }));
-  };
+  }, []);
 
   const handlePageChange = (page: number) => {
     setFilters(prev => ({
       ...prev,
       page,
+    }));
+  };
+
+  const handlePerPageChange = (perPage: string) => {
+    const perPageValue = parseInt(perPage.split('-')[1]); // Extract the max number from "1-10", "1-50", etc.
+    setFilters(prev => ({
+      ...prev,
+      per_page: perPageValue,
+      page: 1, // Reset to first page when changing per page
     }));
   };
 
@@ -133,43 +185,60 @@ export default function ReportsPage() {
     
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
-        <Button
+        <button
           key={i}
-          variant={i === currentPage ? "default" : "outline"}
-          size="sm"
           onClick={() => handlePageChange(i)}
-          className={`${
+          className={`px-4 py-2 text-sm font-medium border-r border-gray-300 last:border-r-0 ${
             i === currentPage
-              ? "bg-gradient-to-r from-[#08D2B8] to-[#1160C9] text-white border-0"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50"
+              ? "bg-gray-600 text-white"
+              : "bg-white text-gray-600 hover:bg-gray-50"
           }`}
         >
           {i}
-        </Button>
+        </button>
       );
     }
 
     return (
-      <div className="flex items-center justify-center gap-2 mt-12">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {t.pagination.previous}
-        </Button>
-        {pages}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {t.pagination.next}
-        </Button>
+      <div className="flex items-center justify-between mt-12">
+        {/* Report Limit Dropdown */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600" style={{ fontFamily: 'Noto Sans, sans-serif' }}>
+            {t.reportLimit.label}
+          </label>
+          <Select 
+            value={`1-${filters.per_page}`} 
+            onValueChange={handlePerPageChange}
+          >
+            <SelectTrigger className="w-24 h-8 text-sm text-gray-900 bg-white border-gray-300">
+              <SelectValue placeholder="Select limit" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1-10" className="text-gray-900">{t.reportLimit.options["1-10"]}</SelectItem>
+              <SelectItem value="1-50" className="text-gray-900">{t.reportLimit.options["1-50"]}</SelectItem>
+              <SelectItem value="1-100" className="text-gray-900">{t.reportLimit.options["1-100"]}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="bg-gray-100 border border-gray-300 rounded-lg overflow-hidden">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border-r border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t.pagination.previous}
+          </button>
+          {pages}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t.pagination.next}
+          </button>
+        </div>
       </div>
     );
   };
@@ -177,20 +246,37 @@ export default function ReportsPage() {
   return (
     <div className="min-h-screen bg-white pt-20">
       {/* Breadcrumbs */}
-      <div className="bg-gray-50 py-8">
+      <div className="pt-11 pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2">
               <li>
-                <a href="/" className="text-gray-500 hover:text-gray-700">
+                <a 
+                  href="/" 
+                  className="text-gray-500 hover:text-gray-700 font-normal"
+                  style={{ 
+                    fontSize: '14px', 
+                    lineHeight: '18px', 
+                    letterSpacing: '0px' 
+                  }}
+                >
                   {t.breadcrumbHome}
                 </a>
               </li>
               <li>
-                <Icon icon="mdi:chevron-right" className="text-gray-400" />
+                <Icon icon="mdi:chevron-right" className="text-gray-500" />
               </li>
               <li>
-                <span className="text-gray-900 font-medium">{t.breadcrumbCategory}</span>
+                <span 
+                  className="text-gray-500 font-normal"
+                  style={{ 
+                    fontSize: '14px', 
+                    lineHeight: '18px', 
+                    letterSpacing: '0px' 
+                  }}
+                >
+                  {t.breadcrumbCategory}
+                </span>
               </li>
             </ol>
           </nav>
@@ -198,19 +284,26 @@ export default function ReportsPage() {
       </div>
 
       {/* Page Header */}
-      <div className="bg-white py-12">
+      <div className="bg-white pt-4 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-[#08D2B8] to-[#1160C9] bg-clip-text text-transparent">
+          <h1 className="mb-6" style={{ 
+            fontFamily: 'Space Mono, monospace', 
+            fontSize: '20px', 
+            lineHeight: '30px', 
+            letterSpacing: '0px', 
+            color: '#202020',
+            fontWeight: '400'
+          }}>
             {t.heading}
           </h1>
-          <p className="text-lg text-gray-600 text-left max-w-4xl">
+          <p className="text-lg text-left" style={{ color: '#242424', lineHeight: '26px', letterSpacing: '0%', width: '1315px', height: '78px' }}>
             {t.description}
           </p>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-gray-50 py-8">
+      <div className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ReportsFilterBar
             filters={filters}
@@ -222,33 +315,35 @@ export default function ReportsPage() {
       </div>
 
       {/* Reports Grid */}
-      <div className="bg-white py-12">
+      <div className="pb-12" style={{ paddingTop: '84px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 12 }).map((_, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-sm border border-blue-200 p-6">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1 pr-6">
-                      <Skeleton className="h-5 w-3/4 mb-3" />
-                      <Skeleton className="h-3 w-full mb-2" />
-                      <Skeleton className="h-3 w-2/3 mb-4" />
-                      <div className="flex items-center gap-4">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-4 w-16" />
-                      </div>
-                    </div>
-                    <Skeleton className="h-8 w-24" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : reports.length > 0 ? (
-            <>
+          {isLoading || isPending ? (
+            <div className="bg-[#F0F0F0] pb-6" style={{ paddingTop: '61px', paddingLeft: '41px', paddingRight: '41px' }}>
               <div className="space-y-4">
-                {reports.map((report) => (
-                  <ReportCard key={report.id} report={report} viewReportLabel={t.viewReport} />
+                {Array.from({ length: 12 }).map((_, index) => (
+                  <div key={index} className="bg-white rounded-lg shadow-sm border border-blue-200 p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1 pr-6">
+                        <Skeleton className="h-5 w-3/4 mb-3" />
+                        <Skeleton className="h-3 w-full mb-2" />
+                        <Skeleton className="h-3 w-2/3 mb-4" />
+                        <div className="flex items-center gap-4">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-4 w-16" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-8 w-24" />
+                    </div>
+                  </div>
                 ))}
+              </div>
+            </div>
+          ) : reports && reports.length > 0 ? (
+            <>
+              <div className="bg-gray-100 pb-6" style={{ paddingTop: '61px', paddingLeft: '41px', paddingRight: '41px' }}>
+                <div className="space-y-4">
+                  {memoizedReports}
+                </div>
               </div>
               {pagination.totalPages > 1 && renderPagination()}
             </>

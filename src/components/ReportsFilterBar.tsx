@@ -18,25 +18,20 @@ interface ReportsFilterBarProps {
 const INDUSTRY_OPTIONS = [
   { value: "all", label: "All Industries" },
   { value: "1", label: "Technology & Software" },
-  { value: "2", label: "Healthcare" },
-  { value: "3", label: "Finance" },
-  { value: "4", label: "Manufacturing" },
-  { value: "5", label: "Retail" },
-  { value: "6", label: "Energy" },
-  { value: "7", label: "Automotive" },
-  { value: "8", label: "Logistics" },
-  { value: "9", label: "Strategy" },
+  { value: "2", label: "Energy & Utilities" },
+  { value: "3", label: "Food & Beverages" },
+  { value: "4", label: "Construction" },
+  { value: "5", label: "Healthcare & Pharmaceuticals" },
+  { value: "6", label: "Chemicals & Materials" },
+  { value: "7", label: "Telecommunications" },
+  { value: "8", label: "Automotive & Transportation" },
+  { value: "9", label: "Financial Services" },
+  { value: "10", label: "Aerospace & Defense" },
+  { value: "11", label: "Consumer Goods & Retail" },
+  { value: "12", label: "Manufacturing & Industrial" },
+  { value: "13", label: "Agriculture" },
 ];
 
-const LANGUAGE_OPTIONS = [
-  { value: "1", label: "English" },
-  { value: "2", label: "Spanish" },
-  { value: "3", label: "Japanese" },
-  { value: "4", label: "Chinese" },
-  { value: "5", label: "French" },
-  { value: "6", label: "German" },
-  { value: "7", label: "Portuguese" },
-];
 
 const REGION_OPTIONS = [
   { value: "all", label: "All Regions" },
@@ -62,7 +57,6 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
     searchPlaceholder: "Search By Title",
     filters: {
       industry: "INDUSTRY",
-      language: "LANGUAGE",
       region: "REGION",
       year: "YEAR",
     },
@@ -73,7 +67,9 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
 
   // Update search when debounced value changes
   useEffect(() => {
+    console.log('Debounced search changed:', debouncedSearch, 'Current filters.search:', filters.search);
     if (debouncedSearch !== filters.search) {
+      console.log('Triggering filter change with search:', debouncedSearch);
       onFilterChange({ search: debouncedSearch });
     }
   }, [debouncedSearch, filters.search, onFilterChange]);
@@ -95,7 +91,8 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
           placeholder={t.searchPlaceholder}
           value={searchValue}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="w-full h-12 pl-4 pr-12 text-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-lg shadow-blue-500/20 text-gray-900 placeholder:text-gray-500"
+          className="w-full h-12 pl-4 pr-12 text-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
+          style={{ boxShadow: '2px 8px 29.2px 0px rgba(9, 140, 206, 0.59)' }}
         />
         <Icon 
           icon="mdi:magnify" 
@@ -104,7 +101,7 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
       </div>
 
       {/* Filter Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ marginTop: '41px' }}>
         {/* Industry Filter */}
         <Select
           value={filters.category_id}
@@ -123,23 +120,6 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
           </SelectContent>
         </Select>
 
-        {/* Language Filter */}
-        <Select
-          value={filters.language_id}
-          onValueChange={(value) => handleFilterChange("language_id", value)}
-          disabled={isLoading}
-        >
-          <SelectTrigger className="w-full h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
-            <SelectValue placeholder={t.filters.language} />
-          </SelectTrigger>
-          <SelectContent className="text-gray-900">
-            {LANGUAGE_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value} className="text-gray-900">
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         {/* Region Filter */}
         <Select

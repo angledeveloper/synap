@@ -87,6 +87,28 @@
   }
 }
 
+/* Line clamp utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
 /* remove scrollbar */
 ::-webkit-scrollbar {
   display: none;
@@ -129,6 +151,7 @@
   grid-area: 3 / 2 / 4 / 4;
 }
 
+/* Main headings - use Orbitron */
 h1,
 h2,
 h3,
@@ -140,12 +163,293 @@ h6 {
   line-height: 1em;
 }
 
+/* UI headings - use Space Grotesk */
+.heading-ui,
+h1.heading-ui,
+h2.heading-ui,
+h3.heading-ui,
+h4.heading-ui,
+h5.heading-ui,
+h6.heading-ui {
+  font-family: var(--font-space-grotesk);
+}
+
+/* Report content headings - use Space Grotesk */
+.heading-report,
+h1.heading-report,
+h2.heading-report,
+h3.heading-report,
+h4.heading-report,
+h5.heading-report,
+h6.heading-report {
+  font-family: var(--font-space-grotesk);
+}
+
 p {
   font-family: var(--font-space-grotesk);
 }
 
-.special_font {
+/* Prose paragraph styling for better spacing */
+.prose p {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+/* Responsive typography for mobile devices */
+@media (max-width: 640px) {
+  .prose {
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  
+  .prose h1 {
+    font-size: 1.5rem;
+    line-height: 1.4;
+  }
+  
+  .prose h2 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+  
+  .prose h3 {
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
+  
+  .prose h4 {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  
+  .prose h5 {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  
+  .prose h6 {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+  
+  .prose ul,
+  .prose ol {
+    margin-left: 1rem;
+  }
+  
+  .prose li {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* Custom prose styling for report content */
+.prose ul {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.prose ol {
+  list-style-type: decimal;
+  margin-left: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Nested ordered lists (sub-points) use letters */
+.prose ol ol {
+  list-style-type: lower-alpha;
+  margin-left: 2rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Further nested lists use roman numerals */
+.prose ol ol ol {
+  list-style-type: lower-roman;
+  margin-left: 2.5rem;
+}
+
+.prose li {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.prose strong,
+.prose b {
+  font-weight: 700;
+}
+
+.prose em,
+.prose i {
+  font-style: italic;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
   font-family: var(--font-space-grotesk);
+  font-weight: 800;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.prose h1 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.prose h4 {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.prose h5 {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.prose h6 {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  margin: 0.5rem 0;
+  border-radius: 0.5rem;
+}
+
+.prose blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.prose th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.special_font {
+  font-family: var(--font-orbitron);
   text-transform: none;
   line-height: 1.2em !important;
+}
+
+/* Simple text rendering for testimonials */
+.testimonial-text {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.6;
+  text-align: left;
+}
+
+/* Multilingual text handling */
+.multilingual-testimonial {
+  /* Prevent text overflow and ensure proper wrapping */
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  
+  /* Contain text within bounds */
+  overflow: hidden;
+  
+  /* Better line height for different scripts */
+  line-height: 1.4;
+  
+  /* Prevent horizontal scrolling */
+  max-width: 100%;
+  
+  /* Handle different writing systems */
+  text-align: left;
+  text-justify: inter-word;
+  
+  /* Optimize text rendering for multilingual content */
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1;
+  
+  /* Handle CJK (Chinese, Japanese, Korean) text specifically */
+  word-spacing: normal;
+  letter-spacing: normal;
+}
+
+.multilingual-name {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.3;
+  text-rendering: optimizeLegibility;
+}
+
+.multilingual-title {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.4;
+  text-rendering: optimizeLegibility;
+}
+
+/* Specific handling for CJK languages */
+.multilingual-testimonial:lang(zh),
+.multilingual-testimonial:lang(ja),
+.multilingual-testimonial:lang(ko) {
+  word-break: break-all;
+  line-break: strict;
+  overflow-wrap: anywhere;
+}
+
+/* Specific handling for RTL languages */
+.multilingual-testimonial:lang(ar),
+.multilingual-testimonial:lang(he),
+.multilingual-testimonial:lang(fa) {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Container fixes for testimonials section */
+.testimonials-container {
+  /* Ensure container doesn't expand beyond viewport */
+  max-width: 100%;
+  overflow: hidden;
+  
+  /* Create proper stacking context */
+  position: relative;
+  isolation: isolate;
 }

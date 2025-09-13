@@ -1,18 +1,61 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useHomePageStore } from "@/store";
+import { useHomePageStore, useLanguageStore } from "@/store";
+import { codeToId } from "@/lib/utils";
 import { Icon } from "@iconify/react";
 import GlobalAboveFooter from "./GlobalAboveFooter";
 import Link from "next/link";
+import ArrowIcon from "@/components/ArrowIcon";
+import { useRouter } from "next/navigation";
+import Head from "next/head";
 
 export default function Home() {
   const { HomePage } = useHomePageStore();
+  const { language } = useLanguageStore();
+  const router = useRouter();
   const [testimonialsIndex, setTestimonialsIndex] = useState<number>(0);
+  
   const getReportsHref = (label: string | undefined) => {
     if (!label) return "/";
     const l = label.trim().toLowerCase();
     return l.includes("explore") && l.includes("report") ? "/reports" : "/";
+  };
+
+  const handleReportClick = async (categoryId: string) => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
+      if (!baseUrl) {
+        console.error('NEXT_PUBLIC_DB_URL is not defined');
+        return;
+      }
+
+      const languageId = codeToId[language as keyof typeof codeToId] || "1";
+      
+      const formData = new FormData();
+      formData.append('category_id', categoryId);
+      formData.append('language_id', languageId);
+      formData.append('page', '1');
+      formData.append('per_page', '10');
+
+      const response = await fetch(`${baseUrl}reports_store_page`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        // Redirect to reports page with the category filter
+        router.push(`/${language}/reports?category=${categoryId}`);
+      } else {
+        console.error('Failed to fetch reports:', response.status);
+        // Fallback to general reports page
+        router.push(`/${language}/reports`);
+      }
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+      // Fallback to general reports page
+      router.push(`/${language}/reports`);
+    }
   };
 
   useEffect(() => {
@@ -32,6 +75,9 @@ export default function Home() {
 
   return (
     <>
+      <Head>
+        <link rel="preload" href="/blackgrid.png" as="image" />
+      </Head>
       <section className="relative bg-black text-white">
         <Image
           src="/hero.jpg"
@@ -46,25 +92,29 @@ export default function Home() {
           <div className="flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
             <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
               <Link href={getReportsHref(HomePage.home_section1.first_button) || "/reports"}>
-                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] hover:opacity-85 max-md:w-full">
+                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                   <span className="flex w-full justify-end">
-                    <Icon icon="iconoir:fast-arrow-right" />
+                    <ArrowIcon variant="gradient" />
                   </span>
                   <span>{HomePage.home_section1.first_button}</span>
                 </button>
               </Link>
               <Link href={getReportsHref(HomePage.home_section1.second_button) || "/reports"}>
-                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] hover:opacity-85 max-md:w-full">
+                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                   <span className="flex w-full justify-end">
-                    <Icon icon="iconoir:fast-arrow-right" />
+                    <ArrowIcon variant="white" />
                   </span>
                   <span>{HomePage.home_section1.second_button}</span>
                 </button>
               </Link>
             </div>
-            <p className="w-full text-[20px]">
-              {HomePage.home_section1.description}
-            </p>
+            <div className="w-full text-[20px] text-left">
+              {HomePage.home_section1.description?.split('\n').map((line: string, index: number) => (
+                <div key={index} className="mb-2">
+                  {line}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -98,22 +148,23 @@ export default function Home() {
         </div>
       </section>
       <section
+        className="w-full bg-gradient-to-b from-[#000910] to-[#000] bg-cover bg-center py-20 md:min-h-[650px] md:pt-40 md:pb-40 relative"
         style={{
+          backgroundImage: `url('/blackgrid.png')`,
           backgroundPosition: "bottom",
-          backgroundImage: "url(./blackgrid.png)",
           backgroundSize: "fit",
           backgroundRepeat: "no-repeat",
+          backgroundAttachment: "local",
         }}
-        className="w-full bg-gradient-to-b from-[#000910] to-[#000] bg-cover bg-center py-20 md:min-h-[650px] md:pt-40 md:pb-40"
       >
         <div className="m-auto flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
-          <div className="text-[32px] font-bold max-md:text-center md:text-[40px]">
+          <div className="text-[32px] font-medium max-md:text-center md:text-[40px]">
             {HomePage.home_section3.tagline}
           </div>
           <Link href={getReportsHref(HomePage.home_section3.button) || "/reports"}>
-            <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-black/5 p-4 text-[20px] backdrop-blur-[5px] transition-all duration-300 hover:border-white/40 hover:text-neutral-400 max-md:w-full">
+            <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-black/5 p-4 text-[20px] font-bold backdrop-blur-[5px] transition-all duration-300 hover:border-white/40 hover:text-neutral-400 max-md:w-full">
               <span className="flex w-full justify-end">
-                <Icon icon="iconoir:fast-arrow-right" />
+                <ArrowIcon variant="white" />
               </span>
               <span>{HomePage.home_section3.button}</span>
             </button>
@@ -122,66 +173,67 @@ export default function Home() {
       </section>
       <GlobalAboveFooter />
       <section className="w-full bg-white text-black">
-        <div className="m-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 p-3 py-10 md:grid-cols-3 md:gap-10 md:py-20 lg:grid-cols-4">
-          {HomePage.report_store_dropdown.map((item: any, index: number) => (
-            <Link key={index} href={`/`}>
-              <div
-                key={index}
-                className="group relative h-full w-full bg-[#F2F1EF] hover:bg-[#2F2F2F]"
-              >
-                <Icon
-                  className="absolute top-4 right-4 text-2xl"
-                  icon="iconoir:fast-arrow-right"
-                />
-                <Image
-                  src={item.icon}
-                  alt={item.category_name}
-                  width={1000}
-                  height={1000}
-                  className="aspect-video w-full bg-neutral-200 object-cover"
-                />
-                <div className="flex flex-col gap-2 p-4 group-hover:bg-[#2F2F2F]">
-                  <div className="block from-[#1160C9] to-[#08D2B8] font-mono text-[20px] leading-snug font-bold transition-all duration-200 group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:text-transparent">
-                    {item.category_name}
-                  </div>
-                  <p className="text-[16px] group-hover:text-[#F2F1EF]">
-                    {item.category_tagline}
-                  </p>
+        <div className="m-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 p-3 py-10 md:grid-cols-3 md:gap-10 md:py-20">
+          {HomePage.home_section4_reports?.map((item: any, index: number) => (
+            <div
+              key={index}
+              onClick={() => handleReportClick(item.category_id || item.id || '1')}
+              className="group relative h-full w-full bg-[#F2F1EF] hover:bg-[#2F2F2F] cursor-pointer"
+            >
+              <img
+                src="/barrow.svg"
+                alt="Arrow"
+                className="absolute top-4 right-4"
+                style={{ width: '33px', height: '14px' }}
+              />
+              <Image
+                src={item.image}
+                alt={item.title}
+                width={1000}
+                height={1000}
+                className="aspect-video w-full bg-neutral-200 object-cover"
+              />
+              <div className="flex flex-col gap-2 p-4 group-hover:bg-[#2F2F2F]">
+                <div className="block from-[#1160C9] to-[#08D2B8] font-mono text-[20px] leading-snug font-bold transition-all duration-200 group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:text-transparent">
+                  {item.title}
                 </div>
+                <p className="text-[16px] group-hover:text-[#F2F1EF] line-clamp-3 multilingual-text">
+                  {item.introduction_description}
+                </p>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </section>
       <section className="w-full overflow-hidden bg-[#F5F5F5]">
         <div className="relative m-auto grid w-full max-w-[1440px] grid-cols-1 justify-center justify-items-end bg-white text-black md:grid-cols-2">
-          <div className="flex w-full flex-col bg-[#F5F5F5] p-3 pt-10 md:p-16 md:pt-16">
-            <h4 className="bloc mb-20 text-[32px] font-bold md:text-[64px]">
+          <div className="flex w-full flex-col bg-[#F5F5F5] p-3 pt-10 md:p-16 md:pt-16" style={{ marginLeft: '284px' }}>
+            <h4 className="text-[32px] font-bold md:text-[64px]" style={{ marginBottom: '136px' }}>
               {HomePage.home_section5.title}
             </h4>
-            <div className="relative flex min-h-[350px] w-full max-w-2xl flex-col">
-              {HomePage.testimonials.map((testimonial: any, index: number) => (
-                <div
-                  key={index}
-                  className={`absolute transition-opacity duration-500 ${testimonialsIndex === index ? "z-10 opacity-100" : "z-0 opacity-0"} flex flex-col`}
-                  style={{
-                    pointerEvents:
-                      testimonialsIndex === index ? "auto" : "none",
-                  }}
-                >
-                  <span className="mb-6 block bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text font-mono text-[22px] leading-snug text-transparent md:text-[36px]">
-                    “{testimonial.feedback}”
-                  </span>
-                  <span className="block text-[28px] font-semibold text-black">
-                    {testimonial.name}
-                  </span>
-                  <span className="block text-[20px] text-[#888]">
-                    {testimonial.title}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="flex w-full max-w-md items-center justify-center gap-4">
+            <div className="relative min-h-[500px] w-full max-w-2xl testimonials-container">
+  {HomePage.testimonials.map((testimonial: any, index: number) => (
+    <div
+      key={index}
+      className={`absolute inset-0 transition-opacity duration-500 ${testimonialsIndex === index ? "z-10 opacity-100" : "z-0 opacity-0"}`}
+      style={{
+        pointerEvents:
+          testimonialsIndex === index ? "auto" : "none",
+      }}
+    >
+      <div className="mb-12 text-[22px] md:text-[36px] font-mono bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent multilingual-testimonial">
+        "{testimonial.feedback}"
+      </div>
+      <div className="mb-4 text-[28px] font-semibold text-black multilingual-name">
+        {testimonial.name}
+      </div>
+      <div className="text-[20px] text-[#888] multilingual-title">
+        {testimonial.title}
+      </div>
+    </div>
+  ))}
+</div>
+            <div className="flex w-full max-w-md items-center justify-center gap-4 mt-8">
               <div
                 onClick={() => {
                   setTestimonialsIndex((prev) =>
@@ -247,10 +299,10 @@ export default function Home() {
               <Link className="text-[20px] font-medium underline" href="/">
                 {HomePage.home_section5.second_box_link}
               </Link>
-              <Link className="mt-12" href="/">
-                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] hover:opacity-85 max-md:w-full">
+              <Link className="mt-12" href="/reports">
+                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                   <span className="flex w-full justify-end">
-                    <Icon icon="iconoir:fast-arrow-right" />
+                    <ArrowIcon variant="white" />
                   </span>
                   <span> {HomePage.home_section5.button}</span>
                 </button>

@@ -65,7 +65,7 @@ export default async function RootLayout({
   return (
     <html lang={langCode}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable} bg-black text-white antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable}  bg-black text-white antialiased`}
       >
         <QueryProvider>
           <GlobalNavbar />
