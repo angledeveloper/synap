@@ -268,7 +268,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Page Header */}
-      <div className="bg-white pt-4 pb-12">
+      <div className="bg-white" style={{ paddingTop: '7px', paddingBottom: '15px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="mb-6" style={{ 
             fontFamily: 'Space Mono, monospace', 
@@ -287,7 +287,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="py-8">
+      <div style={{ paddingTop: '20px', paddingBottom: '25px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ReportsFilterBar
             filters={filters}
@@ -299,7 +299,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Reports Grid */}
-      <div className="pb-12" style={{ paddingTop: '84px' }}>
+      <div className="pb-12" style={{ paddingTop: '48px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading || isPending ? (
             <div className="bg-[#F0F0F0] pb-6" style={{ paddingTop: '61px', paddingLeft: '41px', paddingRight: '41px' }}>

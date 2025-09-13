@@ -114,7 +114,7 @@ export default function About() {
               );
             })()}
           </h1>
-          <p className="font-sans mb-8" style={{ fontFamily: 'Noto Sans, sans-serif', fontSize: '20px' }}>
+          <p className="font-sans" style={{ fontFamily: 'Noto Sans, sans-serif', fontSize: '20px', marginTop: '16px', marginBottom: '55px' }}>
             {(() => {
               const descriptionParts = formatDescription(AboutPage.description);
               if (!descriptionParts) return AboutPage.description;
@@ -134,7 +134,7 @@ export default function About() {
               );
             })()}
           </p>
-          <div className="flex w-full flex-wrap justify-between gap-10">
+          <div className="flex w-full flex-wrap justify-between gap-10" style={{ marginBottom: '55px' }}>
             <div className="flex flex-wrap gap-4">
               <Link href="/reports" className="inline-flex h-[105px] min-w-[300px] w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                 <span className="flex w-full justify-end">

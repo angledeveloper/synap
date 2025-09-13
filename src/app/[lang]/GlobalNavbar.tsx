@@ -177,7 +177,7 @@ export default function GlobalNavbar() {
        {/* First row - 4 categories */}
        <div className="grid grid-cols-4 gap-y-10 gap-x-12">
          {HomePage.report_store_dropdown.slice(0, 4).map((item: any, idx: number) => (
-           <Link href="/" key={idx} className="group">
+           <Link href={`/${language}/reports?category=${item.id}`} key={idx} className="group">
              <div className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                <div className="w-7 h-7 relative flex-shrink-0">
                  <Image
@@ -210,7 +210,7 @@ export default function GlobalNavbar() {
        }, []).map((row: any[], rowIdx: number) => (
          <div key={rowIdx} className="grid grid-cols-3 gap-y-10 gap-x-8 mt-6 max-w-[75%]">
            {row.map((item: any, idx: number) => (
-             <Link href="/" key={item.originalIndex} className="group">
+             <Link href={`/${language}/reports?category=${item.id}`} key={item.originalIndex} className="group">
                <div className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                  <div className="w-7 h-7 relative flex-shrink-0">
                    <Image
