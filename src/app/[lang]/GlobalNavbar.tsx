@@ -42,19 +42,33 @@ export default function GlobalNavbar() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["navbarData", language],
     queryFn: () => fetch(`${baseUrl}homepage/${id}`).then((res) => res.json()),
+    retry: 1,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   const [showLoading, setShowLoading] = useState(true);
 
+  // Add a timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setShowLoading(false);
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, []);
+
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (!isLoading) {
+    if (!isLoading || error) {
+      // Stop loading if data is loaded OR if there's an error
       timer = setTimeout(() => setShowLoading(false), 200);
     } else {
       setShowLoading(true);
     }
     return () => clearTimeout(timer);
-  }, [isLoading]);
+  }, [isLoading, error]);
 
   useEffect(() => {
     function fetchData() {

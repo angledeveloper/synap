@@ -17,7 +17,7 @@ import { Report, ReportsResponse } from "@/types/reports";
 export default function ReportsPage() {
   const { language } = useLanguageStore();
   const searchParams = useSearchParams();
-  const { data: translations, isLoading: isTranslationsLoading } = useTranslations({ language, page: 'reports' });
+  const { data: translations, isLoading: isTranslationsLoading, error: translationsError } = useTranslations({ language, page: 'reports' });
   const t = translations || {
     breadcrumbHome: "Home",
     breadcrumbCategory: "Technology & Software",
@@ -117,7 +117,19 @@ export default function ReportsPage() {
         setIsLoading(false);
       },
     });
-  }, [filters]); // Removed fetchReports from dependencies
+  }, [filters, fetchReports]); // Added fetchReports back to dependencies
+
+  // Add timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isLoading) {
+        console.warn("Reports loading timeout - stopping loading state");
+        setIsLoading(false);
+      }
+    }, 15000); // 15 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [isLoading]);
 
   const handleFilterChange = useCallback((newFilters: Partial<typeof filters>) => {
     setFilters(prev => ({
