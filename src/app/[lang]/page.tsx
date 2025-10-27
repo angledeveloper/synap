@@ -1,15 +1,16 @@
+
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useHomePageStore, useLanguageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
 import { Icon } from "@iconify/react";
-import GlobalAboveFooter from "./GlobalAboveFooter";
+import GlobalAboveFooter from "@/components/layout/GlobalAboveFooter";
 import Link from "next/link";
-import ArrowIcon from "@/components/ArrowIcon";
+import ArrowIcon from "@/components/common/ArrowIcon";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
-import CustomReportForm from "@/components/CustomReportForm";
+import CustomReportForm from "@/components/common/CustomReportForm";
 
 export default function Home() {
   const { HomePage } = useHomePageStore();
@@ -94,7 +95,7 @@ export default function Home() {
           <div className="flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
             <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
               <Link href={getReportsHref(HomePage.home_section1.first_button) || "/reports"}>
-                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
+                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                   <span className="flex w-full justify-end">
                     <ArrowIcon variant="gradient" />
                   </span>
@@ -224,7 +225,7 @@ export default function Home() {
           testimonialsIndex === index ? "auto" : "none",
       }}
     >
-      <div className="mb-12 text-[22px] md:text-[36px] font-mono bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent multilingual-testimonial">
+      <div className="mb-12 text-[22px] md:text-[36px] font-mono bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] bg-clip-text text-transparent multilingual-testimonial">
         "{testimonial.feedback}"
       </div>
       <div className="mb-4 text-[28px] font-semibold text-black multilingual-name">

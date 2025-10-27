@@ -321,7 +321,7 @@ export default function CustomReportForm({ isOpen, onClose }: CustomReportFormPr
               className="w-full py-3 text-white font-semibold rounded-lg"
               style={{ 
                 fontFamily: 'Space Grotesk, sans-serif',
-                background: 'linear-gradient(to right, #1160C9, #08D2B8)',
+                background: 'linear-gradient(to right, #1160C9 0%, #08D2B8 100%)',
                 border: 'none'
               }}
             >

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Report } from "@/types/reports";
 import { useLanguageStore } from "@/store";
-import ArrowIcon from "@/components/ArrowIcon";
+import ArrowIcon from "@/components/common/ArrowIcon";
 
 interface ReportCardProps {
   report: Report;

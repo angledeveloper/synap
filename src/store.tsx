@@ -18,20 +18,6 @@ interface AboutPageState {
   setAboutPage: (AboutPage: any) => void;
 }
 
-interface CartItem {
-  id: string;
-  title: string;
-  price?: number;
-  category?: string;
-}
-
-interface CartState {
-  items: CartItem[];
-  addItem: (item: CartItem) => void;
-  removeItem: (id: string) => void;
-  clearCart: () => void;
-  getItemCount: () => number;
-}
 
 export const useLanguageStore = create<LanguageState>()((set) => ({
   language: "en",
@@ -50,21 +36,4 @@ export const useAboutPageStore = create<AboutPageState>()(
   })),
 );
 
-export const useCartStore = create<CartState>()(
-  devtools((set, get) => ({
-    items: [],
-    addItem: (item) => set((state) => {
-      // Check if item already exists
-      const existingItem = state.items.find(i => i.id === item.id);
-      if (existingItem) {
-        return state; // Don't add duplicates
-      }
-      return { items: [...state.items, item] };
-    }),
-    removeItem: (id) => set((state) => ({
-      items: state.items.filter(item => item.id !== id)
-    })),
-    clearCart: () => set({ items: [] }),
-    getItemCount: () => get().items.length,
-  })),
-);
+// Cart store removed

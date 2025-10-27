@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { useHomePageStore } from "@/store";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import ArrowIcon from "@/components/ArrowIcon";
+import ArrowIcon from "@/components/common/ArrowIcon";
 import GlobalLanguageSwitch from "./GlobalLanguageSwitch";
 import FullLogo from "./FullLogo";
 
@@ -36,7 +36,7 @@ export default function GlobalFooter() {
               {HomePage.footer.section?.tagline || ""}
             </p>
             <Link href="/reports">
-              <button className="mt-10 flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] font-bold border border-white hover:opacity-85 max-md:w-full">
+              <button className="mt-10 flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold border border-white hover:opacity-85 max-md:w-full">
                 <span className="flex w-full justify-end">
                   <ArrowIcon variant="white" />
                 </span>

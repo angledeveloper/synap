@@ -261,7 +261,7 @@ export function useTranslations({ language, page }: UseTranslationsParams) {
             strategicInsights: "Strategic Insights",
             regionalDynamics: "Regional Dynamics",
             oneTimeCost: "One Time Cost",
-            addToCart: "Add to Cart",
+            
             getFreeSample: "GET A FREE SAMPLE",
             sampleDescription: "The sample includes market data points, trend analyses, and market estimates.",
             downloadSample: "Download Sample",
@@ -288,7 +288,7 @@ export function useTranslations({ language, page }: UseTranslationsParams) {
             strategicInsights: "Insights stratégiques",
             regionalDynamics: "Dynamiques régionales",
             oneTimeCost: "Coût unique",
-            addToCart: "Ajouter au panier",
+            
             getFreeSample: "OBTENIR UN ÉCHANTILLON GRATUIT",
             sampleDescription: "L'échantillon comprend des points de données de marché, des analyses de tendances et des estimations de marché.",
             downloadSample: "Télécharger l'échantillon",
@@ -315,7 +315,7 @@ export function useTranslations({ language, page }: UseTranslationsParams) {
             strategicInsights: "Insights estratégicos",
             regionalDynamics: "Dinámicas regionales",
             oneTimeCost: "Costo único",
-            addToCart: "Agregar al carrito",
+            
             getFreeSample: "OBTENER MUESTRA GRATIS",
             sampleDescription: "La muestra incluye puntos de datos de mercado, análisis de tendencias y estimaciones de mercado.",
             downloadSample: "Descargar muestra",
@@ -342,7 +342,7 @@ export function useTranslations({ language, page }: UseTranslationsParams) {
             strategicInsights: "Strategische Einblicke",
             regionalDynamics: "Regionale Dynamik",
             oneTimeCost: "Einmalige Kosten",
-            addToCart: "In den Warenkorb",
+            
             getFreeSample: "KOSTENLOSE PROBE ERHALTEN",
             sampleDescription: "Die Probe umfasst Marktdatenpunkte, Trendanalysen und Marktschätzungen.",
             downloadSample: "Probe herunterladen",
@@ -369,7 +369,7 @@ export function useTranslations({ language, page }: UseTranslationsParams) {
             strategicInsights: "戦略的インサイト",
             regionalDynamics: "地域動向",
             oneTimeCost: "一回限りのコスト",
-            addToCart: "カートに追加",
+            
             getFreeSample: "無料サンプルを取得",
             sampleDescription: "サンプルには、市場データポイント、トレンド分析、市場推定が含まれます。",
             downloadSample: "サンプルをダウンロード",
@@ -396,7 +396,7 @@ export function useTranslations({ language, page }: UseTranslationsParams) {
             strategicInsights: "战略洞察",
             regionalDynamics: "区域动态",
             oneTimeCost: "一次性成本",
-            addToCart: "添加到购物车",
+            
             getFreeSample: "获取免费样本",
             sampleDescription: "样本包括市场数据点、趋势分析和市场估计。",
             downloadSample: "下载样本",
@@ -423,7 +423,7 @@ export function useTranslations({ language, page }: UseTranslationsParams) {
             strategicInsights: "전략적 인사이트",
             regionalDynamics: "지역 동향",
             oneTimeCost: "일회성 비용",
-            addToCart: "장바구니에 추가",
+            
             getFreeSample: "무료 샘플 받기",
             sampleDescription: "샘플에는 시장 데이터 포인트, 트렌드 분석 및 시장 추정이 포함됩니다.",
             downloadSample: "샘플 다운로드",
@@ -450,7 +450,7 @@ export function useTranslations({ language, page }: UseTranslationsParams) {
             strategicInsights: "الرؤى الاستراتيجية",
             regionalDynamics: "الديناميكيات الإقليمية",
             oneTimeCost: "التكلفة لمرة واحدة",
-            addToCart: "إضافة إلى السلة",
+            
             getFreeSample: "احصل على عينة مجانية",
             sampleDescription: "تشمل العينة نقاط بيانات السوق وتحليلات الاتجاهات وتقديرات السوق.",
             downloadSample: "تحميل العينة",

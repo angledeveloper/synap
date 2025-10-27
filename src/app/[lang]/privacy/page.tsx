@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useLanguageStore } from '../../../store';
 import { codeToId } from '../../../lib/utils';
-import PrivacyPolicyContent from '../../../components/PrivacyPolicyContent';
+import PrivacyPolicyContent from '@/components/common/PrivacyPolicyContent';
 
 interface PrivacyTab {
   id: number;
@@ -139,7 +139,7 @@ export default function PrivacyPage() {
       </div>
       
       {/* Call to Action Section - Full Width */}
-      <div className="mt-16 bg-gradient-to-r from-[#08D2B8] to-[#1160C9] p-12">
+      <div className="mt-16 bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-12">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between gap-6">
             <h2 className="text-4xl font-bold text-white leading-tight text-left m-0">

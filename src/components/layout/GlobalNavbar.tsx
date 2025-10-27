@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useLanguageStore, useHomePageStore, useCartStore } from "@/store";
+import { useLanguageStore, useHomePageStore } from "@/store";
 import { useQuery } from "@tanstack/react-query";
 import { codeToId } from "@/lib/utils";
 import Image from "next/image";
@@ -16,13 +16,12 @@ import { useNavbarData } from "@/hooks/useNavbarData";
 export default function GlobalNavbar() {
   const { language } = useLanguageStore();
   const { HomePage, setHomePage } = useHomePageStore();
-  const { items: cartItems, getItemCount } = useCartStore();
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
   const id = codeToId[language];
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const [showCart, setShowCart] = useState(false);
+  // cart/login removed
   const [searchValue, setSearchValue] = useState("");
   const [isHoveringSearch, setIsHoveringSearch] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -388,84 +387,10 @@ export default function GlobalNavbar() {
             )}
           </div>
           
-          {/* Cart Button */}
-          <div className="relative">
-            <button
-              onClick={() => setShowCart(!showCart)}
-              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-all cursor-pointer relative"
-            >
-              <Icon icon="mdi:cart" className="text-xl text-white" />
-              {getItemCount() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                  {getItemCount()}
-                </span>
-              )}
-            </button>
-            
-            {/* Cart Dropdown */}
-            {showCart && (
-              <div className="absolute top-12 right-0 w-80 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Cart</h3>
-                  <button
-                    onClick={() => setShowCart(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <Icon icon="mdi:close" className="text-xl" />
-                  </button>
-                </div>
-                
-                {cartItems.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Icon icon="mdi:cart-outline" className="text-4xl text-gray-300 mx-auto mb-2" />
-                    <p className="text-gray-500">{navbarData?.cartEmptyMessage || 'Your cart is empty'}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {cartItems.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-medium text-gray-900">{item.title}</h4>
-                          {item.category && (
-                            <p className="text-xs text-gray-500">{item.category}</p>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => useCartStore.getState().removeItem(item.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Icon icon="mdi:delete" className="text-lg" />
-                        </button>
-                      </div>
-                    ))}
-                    <div className="pt-3 border-t border-gray-200">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold text-gray-900">
-                          {getItemCount()} {navbarData?.cartItemsCount || 'item'}{getItemCount() !== 1 ? 's' : ''}
-                        </span>
-                        <Link href="/checkout">
-                          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                            Checkout
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          
           {/* Language Switch */}
           <GlobalLanguageSwitch />
           
-          {/* Login Button */}
-          <Link href="/login">
-            <Button className="cursor-pointer border border-white bg-transparent hover:bg-white/10 transition-all">
-              <Icon icon="mdi:user" className="mr-2" />
-              Login
-            </Button>
-          </Link>
+          {/* Login removed */}
         </div>
         <div className="flex h-[36px] items-center gap-6 text-2xl text-white lg:hidden">
           <Icon
@@ -570,21 +495,6 @@ export default function GlobalNavbar() {
                         </div>
                       )}
                     </div>
-                  {/* Mobile Cart Button */}
-                  <div className="w-full">
-                    <button
-                      onClick={() => setShowCart(!showCart)}
-                      className="w-full flex items-center justify-center gap-2 p-3 border border-white bg-transparent hover:bg-white/10 transition-all rounded-lg"
-                    >
-                      <Icon icon="mdi:cart" className="text-xl text-white" />
-                      <span className="text-white">Cart</span>
-                      {getItemCount() > 0 && (
-                        <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                          {getItemCount()}
-                        </span>
-                      )}
-                    </button>
-                  </div>
                   
                   <GlobalLanguageSwitch />
                   <Link className="w-full" href="/login">
@@ -601,7 +511,7 @@ export default function GlobalNavbar() {
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
                   <div className="flex cursor-pointer items-center gap-1">
-                    <span className={`bg-gradient-to-r from-[#08D2B8] to-[#1160C9] bg-clip-text text-transparent transition-all ${showDropdown ? 'font-bold' : 'font-normal'}`}>
+                    <span className={`bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] bg-clip-text text-transparent transition-all ${showDropdown ? 'font-bold' : 'font-normal'}`}>
                       Reports Store
                     </span>
                     <Icon icon="mdi:chevron-down" className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />

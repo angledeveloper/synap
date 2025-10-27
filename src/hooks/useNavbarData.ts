@@ -3,8 +3,7 @@ import { codeToId } from "@/lib/utils";
 
 interface NavbarData {
   searchPlaceholder: string;
-  cartEmptyMessage: string;
-  cartItemsCount: string;
+  // cart removed
   searchResultsCount: string;
   searchNoResults: string;
 }
@@ -45,57 +44,49 @@ export function useNavbarData({ language }: UseNavbarDataParams) {
       const fallbackData: { [key: string]: NavbarData } = {
         en: {
           searchPlaceholder: "Let's find what you need!",
-          cartEmptyMessage: "Your cart is empty",
-          cartItemsCount: "item",
+          
           searchResultsCount: "result",
           searchNoResults: "No results found",
         },
         fr: {
           searchPlaceholder: "Trouvons ce dont vous avez besoin !",
-          cartEmptyMessage: "Votre panier est vide",
-          cartItemsCount: "article",
+          
           searchResultsCount: "résultat",
           searchNoResults: "Aucun résultat trouvé",
         },
         es: {
           searchPlaceholder: "¡Encontremos lo que necesitas!",
-          cartEmptyMessage: "Tu carrito está vacío",
-          cartItemsCount: "artículo",
+          
           searchResultsCount: "resultado",
           searchNoResults: "No se encontraron resultados",
         },
         de: {
           searchPlaceholder: "Lassen Sie uns finden, was Sie brauchen!",
-          cartEmptyMessage: "Ihr Warenkorb ist leer",
-          cartItemsCount: "Artikel",
+          
           searchResultsCount: "Ergebnis",
           searchNoResults: "Keine Ergebnisse gefunden",
         },
         ja: {
           searchPlaceholder: "必要なものを探しましょう！",
-          cartEmptyMessage: "カートは空です",
-          cartItemsCount: "アイテム",
+          
           searchResultsCount: "結果",
           searchNoResults: "結果が見つかりません",
         },
         zh: {
           searchPlaceholder: "让我们找到您需要的！",
-          cartEmptyMessage: "您的购物车是空的",
-          cartItemsCount: "项目",
+          
           searchResultsCount: "结果",
           searchNoResults: "未找到结果",
         },
         ko: {
           searchPlaceholder: "필요한 것을 찾아보세요!",
-          cartEmptyMessage: "장바구니가 비어있습니다",
-          cartItemsCount: "항목",
+          
           searchResultsCount: "결과",
           searchNoResults: "결과를 찾을 수 없습니다",
         },
         ar: {
           searchPlaceholder: "دعنا نجد ما تحتاجه!",
-          cartEmptyMessage: "سلة التسوق فارغة",
-          cartItemsCount: "عنصر",
+          
           searchResultsCount: "نتيجة",
           searchNoResults: "لم يتم العثور على نتائج",
         },

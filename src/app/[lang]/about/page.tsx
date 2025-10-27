@@ -7,9 +7,9 @@ import React from "react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import GlobalAboveFooter from "../GlobalAboveFooter";
-import ArrowIcon from "@/components/ArrowIcon";
-import CustomReportForm from "@/components/CustomReportForm";
+import GlobalAboveFooter from "@/components/layout/GlobalAboveFooter";
+import ArrowIcon from "@/components/common/ArrowIcon";
+import CustomReportForm from "@/components/common/CustomReportForm";
 
 // Utility function to split title and apply gradient to the last part
 const formatTitle = (title: string) => {
@@ -105,7 +105,7 @@ export default function About() {
                   {titleParts.afterBreak && (
                     <>
                       <br />
-                      <span className="bg-gradient-to-r from-[#08D2B8] to-[#1160C9] bg-clip-text text-transparent">
+                      <span className="bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] bg-clip-text text-transparent">
                         {titleParts.afterBreak}
                       </span>
                     </>
@@ -136,7 +136,7 @@ export default function About() {
           </p>
           <div className="flex w-full flex-wrap justify-between gap-10" style={{ marginBottom: '55px' }}>
             <div className="flex flex-wrap gap-4">
-              <Link href="/reports" className="inline-flex h-[105px] min-w-[300px] w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#08D2B8] from-0% to-[#1160C9] to-100% p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
+              <Link href="/reports" className="inline-flex h-[105px] min-w-[300px] w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                 <span className="flex w-full justify-end">
                   <ArrowIcon variant="gradient" />
                 </span>

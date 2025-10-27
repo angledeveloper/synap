@@ -2,10 +2,10 @@ import { Metadata } from "next";
 import { supportedLanguages } from "@/lib/utils";
 import { Geist, Geist_Mono, Orbitron, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import QueryProvider from "@/components/Queryprovider";
+import QueryProvider from "@/components/common/QueryProvider";
 
-import GlobalNavbar from "./GlobalNavbar";
-import GlobalFooter from "./GlobalFooter";
+import GlobalNavbar from "@/components/layout/GlobalNavbar";
+import GlobalFooter from "@/components/layout/GlobalFooter";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -19,6 +19,7 @@ const orbitron = Orbitron({
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-space-grotesk",
 });
 

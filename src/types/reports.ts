@@ -45,7 +45,6 @@ export interface ReportDetail {
   regional_description: string;
   one_time_section: string;
   cost: string;
-  add_to_cart: string;
   free_sample: string;
   free_sample_section: string;
   download_button: string;

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@iconify/react";
-import ArrowIcon from "@/components/ArrowIcon";
+import ArrowIcon from "@/components/common/ArrowIcon";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
@@ -477,7 +477,7 @@ export default function ReportDetailPage() {
           <div className="lg:col-span-1 order-first lg:order-last">
             <div className="sticky top-32" style={{ display: 'flex', flexDirection: 'column', gap: '38px' }}>
               {/* One Time Cost */}
-              <div className="relative w-[322px] h-[255px] mx-auto lg:mx-0 rounded-lg" style={{ background: 'linear-gradient(to right, #08D2B8, #1160C9)', padding: '2px' }}>
+              <div className="relative w-[322px] h-[255px] mx-auto lg:mx-0 rounded-lg" style={{ background: 'linear-gradient(to right, #1160C9, #08D2B8)', padding: '2px' }}>
                 <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-4 sm:p-6">
                   <div>
                     <h3 
@@ -507,43 +507,12 @@ export default function ReportDetailPage() {
                       {report.cost}
                     </div>
                   </div>
-                  <Button
-                    className="w-full max-w-[297px] h-[60px] sm:h-[91px] bg-gradient-to-r from-[#08D2B8] to-[#1160C9] hover:opacity-90 text-white font-bold rounded-lg relative flex items-center justify-end px-4 text-sm sm:text-base"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    <span 
-                      className="absolute font-bold"
-                      style={{ 
-                        fontFamily: 'Space Mono, monospace',
-                        fontSize: '20px',
-                        fontWeight: '700',
-                        top: '50px',
-                        left: '19px',
-                        right: '132px',
-                        bottom: '11px'
-                      }}
-                    >
-                      {report.add_to_cart}
-                    </span>
-                    <img 
-                      src="/warrow.svg" 
-                      alt="Arrow" 
-                      className="absolute"
-                      style={{
-                        right: '14px',
-                        left: '220px',
-                        top: '16.67px',
-                        bottom: '61.67px',
-                        width: '33px',
-                        height: '14px'
-                      }}
-                    />
-                  </Button>
+                  {/* Add to Cart removed */}
                 </div>
               </div>
 
               {/* Get Free Sample */}
-              <div className="relative w-[322px] h-[255px] mx-auto lg:mx-0 rounded-lg" style={{ background: 'linear-gradient(to right, #08D2B8, #1160C9)', padding: '2px' }}>
+              <div className="relative w-[322px] h-[255px] mx-auto lg:mx-0 rounded-lg" style={{ background: 'linear-gradient(to right, #1160C9, #08D2B8)', padding: '2px' }}>
                 <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-4 sm:p-6">
                   <div>
                     <h3 
