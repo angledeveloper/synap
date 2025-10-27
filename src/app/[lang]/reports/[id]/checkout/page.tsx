@@ -292,6 +292,7 @@ export default function CheckoutPage() {
                       // Implement analyst contact logic
                     }}
                     onClose={handleCloseSuccess}
+                    orderConfirmation={order_confirmation}
                   />
                 </div>
               ) : !showBilling ? (

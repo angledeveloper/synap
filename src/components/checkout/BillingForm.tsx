@@ -178,7 +178,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
       <div   className="flex flex-col lg:flex-row items-start gap-8">
         {/* Left Column - Billing Details */}
-        <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-6" style={{ width: '762px', height: '789px' }}>
+        <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-6" style={{ width: '762px', height: '896px' }}>
           <h2 className="text-[24px] text-gray-900 mb-6 billing-heading" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700', marginBottom:'41px' }}>
             1. {billingInformation?.bill_details_heading || billingInformation?.bill_info_heading || 'Your Billing Details'}:
           </h2>
@@ -384,8 +384,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
             {/* Company Details Fields - Only show when checkbox is checked */}
             {formData.addCompanyDetails && (
-              <div className="space-y-6 mb-6">
-                <div>
+              <div className="flex flex-row gap-4 mb-6">
+                <div className="flex-1">
                   <Label htmlFor="companyName" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
                     {billingInformation?.company_name || 'Company Name'}
                   </Label>
@@ -397,7 +397,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                     style={{ fontFamily: 'Space Grotesk, sans-serif', width: '353px', height: '50px' }}
                   />
                 </div>
-                <div>
+                <div className="flex-1">
                   <Label htmlFor="gstin" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
                     {billingInformation?.GSTIN || 'GSTIN'}
                   </Label>

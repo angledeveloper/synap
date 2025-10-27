@@ -20,6 +20,7 @@ interface OrderConfirmationProps {
   onDownloadInvoice: () => void;
   onCallAnalyst: () => void;
   onClose?: () => void;
+  orderConfirmation?: any; // API data for order confirmation
 }
 
 export default function OrderConfirmation({
@@ -35,7 +36,8 @@ export default function OrderConfirmation({
   customerEmail,
   onDownloadInvoice,
   onCallAnalyst,
-  onClose
+  onClose,
+  orderConfirmation
 }: OrderConfirmationProps) {
   return (
     <div className="w-full">
@@ -67,11 +69,11 @@ export default function OrderConfirmation({
               </div>
               
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                Thank you for your purchase!
+                {orderConfirmation?.thank_you_text || 'Thank you for your purhase!'}
               </h1>
               
               <p className="text-lg text-gray-600 mb-8" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                Payment received successfully. You'll receive payment confirmation and an invoice on your email soon.
+                {orderConfirmation?.payment_confirm_description || 'Payment received succesfully. You\'ll receive payment confirmation and an invoice on your email soon.'}
               </p>
             </div>
 
@@ -83,10 +85,10 @@ export default function OrderConfirmation({
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    Report Delivery in Progress....
+                    {orderConfirmation?.report_delivery_text || 'Report Delvery in Progress....'}
                   </h3>
                   <p className="text-gray-600 mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    Our team is preparing your report package. You'll receive it at <span className="font-medium">{customerEmail}</span> within 24-72 business hours. You will also be contacted by our analyst during that time.
+                    {orderConfirmation?.report_delivery_description || 'Our tea is preparing your report package. You\'ll receive it at'} <span className="font-medium">{customerEmail}</span> {orderConfirmation?.report_delivery_description?.includes('within') ? '' : 'within 24-72 business hours. You will also be contacted by our analyst during that time.'}
                   </p>
                   
                   <div className="space-y-3">
@@ -97,7 +99,7 @@ export default function OrderConfirmation({
                       style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                     >
                       <Phone className="w-4 h-4 mr-2" />
-                      Call Analyst
+                      {orderConfirmation?.call_anaylyst_btn_text || 'Call Anlyst'}
                     </Button>
                     
                     <Button
@@ -106,7 +108,7 @@ export default function OrderConfirmation({
                       style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      Download Invoice
+                      {orderConfirmation?.download_invoice_btn_text || 'Dowload Invoice'}
                     </Button>
                   </div>
                 </div>
@@ -115,43 +117,43 @@ export default function OrderConfirmation({
 
             {/* Thank You Message */}
             <p className="text-sm text-gray-500 text-center lg:text-left" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-              Thank you for choosing SynapSEA Global. Your trust empowers us to deliver data-driven intelligence that drives real-world impact.
+              {orderConfirmation?.thank_you_description || 'Thank you for chosing SynapSEA Global. Your trust empowers us to deliver data-driven intelligence that drives real-world impact.'}
             </p>
           </div>
 
           {/* Right Section - Order Summary */}
           <div className="lg:ml-8">
             <Card className="p-6 border-l-4 border-blue-500 rounded-xl">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                Your Order Summary:
+              <h2 className="text-xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                {orderConfirmation?.order_summary_heading || 'Your Order ummary:'}
               </h2>
               
               {/* Order Details */}
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Order ID:</span>
+                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderConfirmation?.order_id_text || 'Order ID'}:</span>
                   <span className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderId}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Transaction ID:</span>
+                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderConfirmation?.transaction_id_text || 'Transaction ID'}:</span>
                   <span className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{transactionId}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Payment Method:</span>
+                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderConfirmation?.payment_method_text || 'Payment Method'}:</span>
                   <span className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{paymentMethod}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Purchase Date:</span>
+                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderConfirmation?.report_date_text || 'Purchase Date'}:</span>
                   <span className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{purchaseDate}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Report Title:</span>
+                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderConfirmation?.report_title || 'Report Title'}:</span>
                   <span className="font-medium text-gray-900 text-right max-w-xs" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                     {reportTitle}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>License Type:</span>
+                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderConfirmation?.license_type_text || 'License Type'}:</span>
                   <span className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{licenseType}</span>
                 </div>
               </div>
