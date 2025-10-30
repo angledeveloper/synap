@@ -48,15 +48,18 @@ export default function ReportsPage() {
   };
   
   // Get category from URL parameters
-  const categoryFromUrl = searchParams.get('category');
-  
+  const rawCategoryFromUrl = searchParams.get('category');
+  const categoryIdSanitized = rawCategoryFromUrl && rawCategoryFromUrl !== 'undefined' ? rawCategoryFromUrl : '1';
+  const languageId = codeToId[language as keyof typeof codeToId] || '1';
+
   const [filters, setFilters] = useState({
     search: "",
-    category_id: categoryFromUrl || "all",
+    category_id: categoryIdSanitized,
     region: "all",
     year: "all",
     page: 1,
     per_page: 10,
+    language_id: languageId,
   });
   const [reports, setReports] = useState<Report[]>([]);
   const [pagination, setPagination] = useState({
@@ -69,6 +72,17 @@ export default function ReportsPage() {
 
 
   const { mutate: fetchReports, isPending } = useReportsPage();
+
+  // Keep filters in sync if ?category in URL changes (for SPA navigation from navbar)
+  useEffect(() => {
+    const categoryIdSanitized = rawCategoryFromUrl && rawCategoryFromUrl !== 'undefined' ? rawCategoryFromUrl : '1';
+    setFilters(prev => {
+      if (categoryIdSanitized !== prev.category_id || prev.language_id !== languageId) {
+        return { ...prev, category_id: categoryIdSanitized, language_id: languageId, page: 1 };
+      }
+      return prev;
+    });
+  }, [rawCategoryFromUrl, languageId]);
 
   // Memoize the entire translation object to prevent unnecessary re-renders
   const memoizedTranslations = useMemo(() => t, [language]);
@@ -135,9 +149,10 @@ export default function ReportsPage() {
     setFilters(prev => ({
       ...prev,
       ...newFilters,
-      page: 1, // Reset to first page when filters change
+      language_id: languageId,
+      page: 1,
     }));
-  }, []);
+  }, [languageId]);
 
   const handlePageChange = (page: number) => {
     setFilters(prev => ({

@@ -14,7 +14,7 @@ const fetchReports = async (filters: Filters): Promise<ReportsResponse> => {
   // Create FormData as required by the API
   const formData = new FormData();
   formData.append('category_id', filters.category_id === "all" ? "1" : filters.category_id);
-  formData.append('language_id', "1"); // Default to English for now
+  formData.append('language_id', filters.language_id || "1"); // <-- use passed value not '1'
   
   // Add search parameter - try different parameter names
   if (filters.search && filters.search.trim()) {

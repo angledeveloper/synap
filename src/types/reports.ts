@@ -96,4 +96,5 @@ export interface Filters {
   year: string;
   page: number;
   per_page: number;
+  language_id: string;
 }
