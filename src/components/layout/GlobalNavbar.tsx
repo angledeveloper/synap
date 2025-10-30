@@ -160,8 +160,8 @@ export default function GlobalNavbar() {
   }
 
   return (
-    <nav className="fixed top-4 left-0 z-50 flex w-full justify-center px-3">
-      <div className="relative flex h-20 w-full max-w-[1440px] items-center justify-between rounded-3xl bg-black/80 px-8 backdrop-blur-xs lg:px-8">
+    <nav className="fixed top-0 left-0 z-50 w-full">
+      <div className="relative flex h-20 w-full items-center justify-between bg-black/90 px-6 lg:px-8">
         <Link href="/">
           <div className="h-[30px] w-auto">
             <FullLogo />

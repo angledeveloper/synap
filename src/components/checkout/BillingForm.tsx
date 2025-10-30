@@ -25,9 +25,10 @@ export interface BillingFormProps {
   billInfoOrderSummary?: any;
   licenseOptions: LicenseOption[];
   checkoutPage?: any; // Add checkout_page data for pricing
+  onOrderSuccess?: (orderData: any) => void; // NEW: notify parent to show confirmation
 }
 
-export default function BillingForm({ selectedLicense, reportData, onContinue, onBack, billingInformation, billInfoOrderSummary, licenseOptions, checkoutPage }: BillingFormProps) {
+export default function BillingForm({ selectedLicense, reportData, onContinue, onBack, billingInformation, billInfoOrderSummary, licenseOptions, checkoutPage, onOrderSuccess }: BillingFormProps) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -250,62 +251,75 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     return (apiObj && key && typeof apiObj[key] === 'string') ? apiObj[key] : fallback;
   }
 
-  function getPriceStrings() {
-    // string keys for pricing based on dropdown selection
-    let offerPriceStr = '';
-    let actualPriceStr = '';
-    let totalStr = '';
-    if (selectedOrderLicenseId === 'single') {
-      offerPriceStr = getApiString(checkoutPage, `single_license_offer_price_in_${selectedOrderCurrency}`);
-      actualPriceStr = getApiString(checkoutPage, `single_license_actual_price_in_${selectedOrderCurrency}`);
-      if (isINR && checkoutPage?.single_license_offer_price_in_INR_total) {
-        totalStr = getApiString(checkoutPage, 'single_license_offer_price_in_INR_total');
-      }
-    } else if (selectedOrderLicenseId === 'team') {
-      offerPriceStr = getApiString(checkoutPage, `team_license_offer_price_in_${selectedOrderCurrency}`);
-      actualPriceStr = getApiString(checkoutPage, `team_license_actual_price_in_${selectedOrderCurrency}`);
-      if (isINR && checkoutPage?.team_license_offer_price_in_INR_total) {
-        totalStr = getApiString(checkoutPage, 'team_license_offer_price_in_INR_total');
-      }
-    } else if (selectedOrderLicenseId === 'enterprise') {
-      offerPriceStr = getApiString(checkoutPage, `enterprise_license_offer_price_in_${selectedOrderCurrency}`);
-      actualPriceStr = getApiString(checkoutPage, `enterprise_license_actual_price_in_${selectedOrderCurrency}`);
-      if (isINR && checkoutPage?.enterprise_license_offer_price_in_INR_total) {
-        totalStr = getApiString(checkoutPage, 'enterprise_license_offer_price_in_INR_total');
-      }
-    }
-    // For non-INR, or if API total not found, set to offerPriceStr
-    if (!totalStr) totalStr = offerPriceStr;
-    return { offerPriceStr, actualPriceStr, totalStr };
+  // Helper to pick right API string by license/currency
+  const getSummaryStrings = () => {
+    const type = selectedOrderLicenseId;
+    const cur = selectedOrderCurrency;
+    // Map license type to key prefix
+    let prefix = '';
+    if (type === 'single') prefix = 'single_license';
+    else if (type === 'team') prefix = 'team_license';
+    else if (type === 'enterprise') prefix = 'enterprise_license';
+    
+    let apiObj = checkoutPage;
+    const suffix = cur === 'INR' ? 'INR' : cur === 'EUR' ? 'EUR' : 'USD';
+    // Offer price (post-discount, pre-tax):
+    const offerPriceKey = `${prefix}_offer_price_in_${suffix}`;
+    const offerPriceStr = apiObj?.[offerPriceKey] || '';
+    // Actual price (pre-discount):
+    const actualPriceKey = `${prefix}_actual_price_in_${suffix}`;
+    const actualPriceStr = apiObj?.[actualPriceKey] || '';
+    // Discount percent
+    const discountStr = apiObj?.[`${prefix}_discount_percent`] || '';
+    // Tax lines (INR only)
+    const cgstStr = apiObj?.[`${prefix}_offer_price_in_INR_with_CGST`] || '';
+    const sgstStr = apiObj?.[`${prefix}_offer_price_in_INR_with_SGST`] || '';
+    const igstStr = apiObj?.[`${prefix}_offer_price_in_INR_with_IGST`] || '';
+    // Total (post-tax):
+    const totalKey = (cur === 'INR') ? `${prefix}_offer_price_in_INR_total` : offerPriceKey;
+    const totalStr = apiObj?.[totalKey] || offerPriceStr;
+    return { offerPriceStr, actualPriceStr, discountStr, cgstStr, sgstStr, igstStr, totalStr };
+  };
+
+  const { offerPriceStr, actualPriceStr, discountStr, cgstStr, sgstStr, igstStr, totalStr } = getSummaryStrings();
+  let cgstDiff = '', sgstDiff = '', igstDiff = '';
+  if (selectedOrderCurrency === 'INR') {
+    // Both offerPriceStr and *_with_* fields are strings (e.g. "₹15,881.40", "₹17,310.73"). Remove non-numeric chars, and subtract.
+    const parse = (v:string) => parseFloat(String(v).replace(/[^0-9.\-]/g,'')) || 0;
+    const offer = parse(offerPriceStr);
+    if (cgstStr) cgstDiff = (parse(cgstStr) - offer).toFixed(2);
+    if (sgstStr) sgstDiff = (parse(sgstStr) - offer).toFixed(2);
+    if (igstStr) igstDiff = (parse(igstStr) - offer).toFixed(2);
   }
 
-  const { offerPriceStr, actualPriceStr, totalStr } = getPriceStrings();
-
   const [paypalLoaded, setPaypalLoaded] = useState(false);
+  const [paypalScriptTag, setPaypalScriptTag] = useState<HTMLScriptElement|null>(null);
   const [paypalStatus, setPaypalStatus] = useState("");
 
   // Dynamically load PayPal JS SDK if PayPal is selected
   useEffect(() => {
-    if (selectedPaymentMethod === 'paypal' && !paypalLoaded) {
-      // Check if already loaded
-      if (window.paypal) {
-        setPaypalLoaded(true);
-        return;
-      }
-      // IMPORTANT: Set your own Client ID here for prod/live
+    // Remove ALL PayPal script tags before loading new (avoids currency mismatch bugs)
+    Array.from(document.querySelectorAll('script[src^="https://www.paypal.com/sdk/js"]')).forEach(script => {
+      script.remove();
+    });
+    setPaypalLoaded(false); // always reset
+    setPaypalScriptTag(null);
+    // Clear PayPal button DOM
+    const el = document.getElementById('paypal-button-container');
+    if (el) el.innerHTML = '';
+    if (selectedPaymentMethod === 'paypal') {
+      // Insert new SDK for this currency
       const script = document.createElement('script');
-      script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=${selectedOrderCurrency}`; // <-- replace with env/client id
+      script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=${selectedOrderCurrency}`;
       script.async = true;
-      script.onload = () => setPaypalLoaded(true);
+      script.onload = () => {
+        setPaypalLoaded(true);
+        setPaypalScriptTag(script);
+      };
       document.body.appendChild(script);
     }
-    if (selectedPaymentMethod !== 'paypal') {
-      setPaypalStatus("");
-      // Optionally clean up button container
-      const el = document.getElementById('paypal-button-container');
-      if (el) el.innerHTML = '';
-    }
-  }, [selectedPaymentMethod, selectedOrderCurrency, paypalLoaded]);
+    // No dependency on paypalLoaded here -- order matters (re-inject script on every switch)
+  }, [selectedPaymentMethod, selectedOrderCurrency]);
 
   // Render PayPal Buttons when selected and sdk loaded
   useEffect(() => {
@@ -318,30 +332,105 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
       setPaypalStatus("");
       window.paypal.Buttons({
         style: { layout: 'vertical', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
-        createOrder: function(data: any, actions: any) {
-          return actions.order.create({
-            purchase_units: [{
-              amount: {
-                value: finalTotal.toFixed(2),
-                currency_code: selectedOrderCurrency
-              }
-            }]
-          });
+        createOrder: async function(data: any, actions: any) {
+          // POST to backend to create order
+          setPaypalStatus('Contacting payment server...');
+          try {
+            const res = await fetch('/api/payments/create-order', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                reportId: reportData?.id || '',
+                licenseType: selectedOrderLicenseId,
+                currency: selectedOrderCurrency,
+                amount: finalTotal.toFixed(2),
+              })
+            });
+            if (!res.ok) {
+              const err = await res.json();
+              setPaypalStatus('Failed to create PayPal order: ' + (err.error || res.status));
+              throw new Error(err.error || 'Order creation failed');
+            }
+            const result = await res.json();
+            setPaypalStatus('PayPal order created, awaiting payment...');
+            return result.orderID;
+          } catch (e:any) {
+            setPaypalStatus('PayPal order failed: ' + (e.message || e.toString()));
+          }
         },
         onApprove: async function(data: any, actions: any) {
-          setPaypalStatus('approved');
-          // Optional: Capture transaction and POST order details
-          const details = await actions.order.capture();
-          setPaypalStatus('Order successful! Thank you, ' + details.payer.name.given_name + '.');
-          // Here, optionally call your own handlePayment logic or backend to finalize the order
-          // Or set additional success state as needed
+          setPaypalStatus('Capturing payment...');
+          try {
+            const captureRes = await actions.order.capture();
+            if (!captureRes.id || captureRes.status !== 'COMPLETED') {
+              setPaypalStatus('Capture failed: Payment not completed, please try again.');
+              return;
+            }
+            setPaypalStatus('Verifying payment...');
+            // POST to backend to verify order
+            const res = await fetch('/api/payments/verify-order', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderID: captureRes.id,
+                reportId: reportData?.id || '',
+                licenseType: selectedOrderLicenseId,
+                amount: finalTotal.toFixed(2),
+                currency: selectedOrderCurrency
+              })
+            });
+            const result = await res.json();
+            if (!res.ok || !result.valid) {
+              setPaypalStatus('Payment error: ' + (result.error || 'Verification failed'));
+              return;
+            }
+            setPaypalStatus('Order successful! Thank you.');
+            // Save to external server (already implemented below)
+            // Generate randoms required by external API contract
+            const randomTxId = `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`;
+            const payload = {
+              user_id: 6,
+              language_id: 1,
+              order_id: captureRes.id,
+              transaction_id: randomTxId,
+              payment_method: 'PayPal',
+              purchase_date: new Date().toISOString().split('T')[0],
+              report_title: reportData?.title || '',
+              invoice_file: ''
+            };
+            try {
+              await fetch('https://dashboard.synapseaglobal.com/api/customer-orders/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+            } catch (e) {
+              setPaypalStatus('Order completed, but error saving to backend.');
+            }
+            // Notify parent to render Order Confirmation step
+            const orderDataForConfirmation = {
+              orderId: captureRes.id,
+              transactionId: payload.transaction_id,
+              paymentMethod: 'PayPal',
+              purchaseDate: payload.purchase_date,
+              reportTitle: reportData?.title || '',
+              licenseType: selectedLicense?.title || selectedOrderLicenseId,
+              originalPrice: calculatedActualPrice,
+              discountAmount: discountAmount,
+              subtotal: subtotal,
+              customerEmail: formData.email || ''
+            };
+            onOrderSuccess && onOrderSuccess(orderDataForConfirmation);
+          } catch (e:any) {
+            setPaypalStatus('Verification failed: ' + (e.message || e.toString()));
+          }
         },
         onError: function(err: any) {
           setPaypalStatus('Error with PayPal payment: ' + err);
         }
       }).render('#paypal-button-container');
     }
-  }, [selectedPaymentMethod, paypalLoaded, finalTotal, selectedOrderCurrency]);
+  }, [selectedPaymentMethod, paypalLoaded, finalTotal, selectedOrderCurrency, reportData, selectedOrderLicenseId, onOrderSuccess, selectedLicense, formData.email, calculatedActualPrice, discountAmount, subtotal]);
 
   return (
     <div className="space-y-8">
@@ -677,10 +766,10 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{billInfoOrderSummary?.discount_percentage_text || 'Discount'}</span>
-                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{discountPercent}% off</span>
+                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{discountStr}</span>
               </div>
               <div className="font-medium text-green-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                -{finalDiscountAmount.toLocaleString()}
+                -{discountAmount.toLocaleString()}
               </div>
             </div>
             <div className="flex justify-between items-center border-t border-gray-200 pt-3">
@@ -698,7 +787,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                     {billInfoOrderSummary?.CGST || 'CGST'}
                   </div>
                   <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    ₹{cgst.toLocaleString()}
+                  ₹{cgstDiff}
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
@@ -706,7 +795,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                     {billInfoOrderSummary?.SGST || 'SGST'}
                   </div>
                   <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    ₹{sgst.toLocaleString()}
+                  ₹{sgstDiff}
                   </div>
                 </div>
                 {/* IGST (use API string) */}
@@ -714,16 +803,16 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   (() => {
                     let igstStr = '';
                     if (selectedOrderLicenseId === 'single') {
-                      igstStr = checkoutPage?.single_license_offer_price_in_INR_with_IGST || '';
+                      igstStr = igstStr = checkoutPage?.single_license_offer_price_in_INR_with_IGST || '';
                     } else if (selectedOrderLicenseId === 'team') {
-                      igstStr = checkoutPage?.team_license_offer_price_in_INR_with_IGST || '';
+                      igstStr = igstStr = checkoutPage?.team_license_offer_price_in_INR_with_IGST || '';
                     } else if (selectedOrderLicenseId === 'enterprise') {
-                      igstStr = checkoutPage?.enterprise_license_offer_price_in_INR_with_IGST || '';
+                      igstStr = igstStr = checkoutPage?.enterprise_license_offer_price_in_INR_with_IGST || '';
                     }
                     return igstStr ? (
                       <div className="flex justify-between items-center">
                         <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{billInfoOrderSummary?.IGST || 'IGST'}</div>
-                        <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{igstStr}</div>
+                        <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>₹{igstDiff}</div>
                       </div>
                     ) : null;
                   })()
@@ -744,7 +833,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 {billInfoOrderSummary?.total_text || 'Total'}
               </div>
               <div className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                {isINR ? `₹${finalTotal.toLocaleString()}` : `${selectedOrderCurrency === 'USD' ? '$' : selectedOrderCurrency === 'EUR' ? '€' : ''}${finalTotal.toLocaleString()}`}
+                {totalStr}
               </div>
             </div>
           </div>
@@ -791,30 +880,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             )}
           </div>
 
-          {/* Continue Button */}
-          <Button
-            onClick={onContinue}
-            className="bg-transparent border-1 border-black text-gray-700 hover:bg-gray-50 hover:border-gray-400 rounded-md"
-            style={{ 
-              fontFamily: 'Space Mono, monospace',
-              fontWeight: 'bold',
-              width: '100%',
-              height: '57px'
-            }}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <span>{billingInformation?.continue_btn_text || 'Continue to Payment'}</span>
-              {billingInformation?.continue_btn_icon && (
-              <Image 
-                  src={`/${billingInformation.continue_btn_icon}`}
-                alt="Arrow" 
-                width={32.19} 
-                height={12.67}
-                className="text-gray-700"
-              />
-              )}
-            </div>
-          </Button>
+          
         </div>
       </div>
 
@@ -902,17 +968,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                {paypalStatus && <div className="mt-4 text-blue-700 text-base">{paypalStatus}</div>}
              </div>
            )}
-           {selectedPaymentMethod && (
-             <div className="mt-6">
-               <Button
-                 onClick={handlePayment}
-                 className="w-full bg-gradient-to-r from-blue-600 to-green-400 text-white py-3 px-6 rounded-lg font-medium hover:opacity-90 transition-all"
-                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-               >
-                 {selectedPaymentMethod === "ccavenue" ? "Pay with CCAvenue" : "Pay with PayPal"}
-               </Button>
-             </div>
-           )}
+           
          </div>
        )}
     </div>

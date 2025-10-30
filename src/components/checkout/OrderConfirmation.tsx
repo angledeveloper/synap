@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -23,22 +23,58 @@ interface OrderConfirmationProps {
   orderConfirmation?: any; // API data for order confirmation
 }
 
-export default function OrderConfirmation({
-  orderId,
-  transactionId,
-  paymentMethod,
-  purchaseDate,
-  reportTitle,
-  licenseType,
-  originalPrice,
-  discountAmount,
-  subtotal,
-  customerEmail,
-  onDownloadInvoice,
-  onCallAnalyst,
-  onClose,
-  orderConfirmation
-}: OrderConfirmationProps) {
+export default function OrderConfirmation(props: OrderConfirmationProps) {
+  const {
+    orderId,
+    transactionId,
+    paymentMethod,
+    purchaseDate,
+    reportTitle,
+    licenseType,
+    originalPrice,
+    discountAmount,
+    subtotal,
+    customerEmail,
+    onDownloadInvoice,
+    onCallAnalyst,
+    onClose,
+    orderConfirmation
+  } = props;
+
+  // State for tracking order save result
+  const [updateStatus, setUpdateStatus] = useState<'idle'|'saving'|'success'|'fail'>('idle');
+
+  useEffect(() => {
+    let isMounted = true;
+    setUpdateStatus('saving');
+    const payload = {
+      user_id: 6,
+      language_id: 1,
+      order_id: orderId,
+      transaction_id: transactionId,
+      payment_method: paymentMethod || 'PayPal',
+      purchase_date: purchaseDate,
+      report_title: reportTitle,
+      invoice_file: ''
+    };
+    fetch('https://dashboard.synapseaglobal.com/api/customer-orders/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed');
+        return res.json();
+      })
+      .then(data => {
+        if (isMounted) setUpdateStatus('success');
+      })
+      .catch(() => {
+        if (isMounted) setUpdateStatus('fail');
+      });
+    return () => { isMounted = false; };
+  }, [orderId, transactionId, paymentMethod, purchaseDate, reportTitle]);
+
   return (
     <div className="w-full">
       {/* Close Button */}

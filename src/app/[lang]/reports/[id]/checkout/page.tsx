@@ -48,7 +48,7 @@ export interface LicenseOption {
   // plus any others from the API actually used in LicenseCard, LicenseGrid
 }
 
-type SuccessData = { success: boolean; license_key: string } | null;
+type SuccessData = any;
 
 const fetchCheckoutData = async () => {
   const res = await fetch('https://dashboard.synapseaglobal.com/api/checkout');
@@ -220,6 +220,12 @@ export default function CheckoutPage() {
     router.back();
   };
 
+  const handleOrderSuccess = (orderData: any) => {
+    setSuccessData(orderData);
+    setShowBilling(false);
+    setShowPayment(false);
+  };
+
   return (
     <div className="min-h-screen bg-white pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -269,20 +275,16 @@ export default function CheckoutPage() {
                 /* Order Confirmation - Step 3 */
                 <div className="pt-8">
                   <OrderConfirmation
-                    orderId={`SYN-INV-2025-${String(Math.floor(Math.random() * 1000)).padStart(4, '0')}`}
-                    transactionId={`TXN-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`}
-                    paymentMethod={selectedLicense?.id === 'team' ? 'PayPal' : 'CCAvenue'}
-                    purchaseDate={new Date().toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                    reportTitle={reportData?.title || ''}
-                    licenseType={selectedLicense?.title || ''}
-                    originalPrice={0}
-                    discountAmount={0}
-                    subtotal={0}
-                    customerEmail="customer@example.com"
+                    orderId={successData?.orderId || ''}
+                    transactionId={successData?.transactionId || ''}
+                    paymentMethod={successData?.paymentMethod || 'PayPal'}
+                    purchaseDate={successData?.purchaseDate || ''}
+                    reportTitle={successData?.reportTitle || ''}
+                    licenseType={successData?.licenseType || ''}
+                    originalPrice={Number(successData?.originalPrice || 0)}
+                    discountAmount={Number(successData?.discountAmount || 0)}
+                    subtotal={Number(successData?.subtotal || 0)}
+                    customerEmail={successData?.customerEmail || ''}
                     onDownloadInvoice={() => {
                       console.log('Download invoice');
                       // Implement invoice download logic
@@ -331,6 +333,7 @@ export default function CheckoutPage() {
                    billInfoOrderSummary={bill_info_order_summary}
                    licenseOptions={licenseOptions}
                    checkoutPage={checkout_page}
+                   onOrderSuccess={handleOrderSuccess}
                  />
                ) : null}
             </div>

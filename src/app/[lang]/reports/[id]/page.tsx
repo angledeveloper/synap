@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useLanguageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
 import { ReportDetail, ReportSection } from "@/types/reports";
@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function ReportDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { language } = useLanguageStore();
   const [activeTab, setActiveTab] = useState(0);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -477,7 +478,7 @@ export default function ReportDetailPage() {
           <div className="lg:col-span-1 order-first lg:order-last">
             <div className="sticky top-32" style={{ display: 'flex', flexDirection: 'column', gap: '38px' }}>
               {/* One Time Cost */}
-              <div className="relative w-[322px] h-[255px] mx-auto lg:mx-0 rounded-lg" style={{ background: 'linear-gradient(to right, #1160C9, #08D2B8)', padding: '2px' }}>
+              <div className="relative w-[322px] h-[179px] mx-auto lg:mx-0 rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
                 <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-4 sm:p-6">
                   <div>
                     <h3 
@@ -493,26 +494,36 @@ export default function ReportDetailPage() {
                     >
                       {report.one_time_section}
                     </h3>
-                    <div 
-                      className="mb-4"
-                      style={{ 
-                        fontFamily: 'Space Grotesk, sans-serif',
-                        fontSize: '32px',
-                        lineHeight: '41px',
-                        letterSpacing: '0px',
-                        fontWeight: '400',
-                        color: '#000000'
-                      }}
-                    >
-                      {report.cost}
-                    </div>
+                    <div className="w-20 h-7.5 absolute top-4 right-4 bg-[#C7D8E5] text-[#1074C6] px-3 py-1 rounded-[25px] text-[14px] font-bold"style={{fontFamily: 'var(--font-space-grotesk), sans-serif'}}>
+                    20% off
+        </div>
+        <div className="mb-2">
+        <div className="flex items-baseline gap-2">
+          <span className="text-gray-900 line-through text-[16px]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+          {String((report as any)?.offer || '')}
+          </span>
+          <span className="text-[32px] font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+            {String((report as any)?.offer || '')}
+          </span>
+        </div>
+        </div>
+                    
                   </div>
                   {/* Add to Cart removed */}
+                  <Button
+                    className="w-full max-w-[297px] h-[50px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-sm sm:text-base"
+                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                    onClick={() => router.push(`/${params?.lang}/reports/${params?.id}/checkout`)}
+                    aria-label="Buy License Now"
+                  >
+                    <span className="truncate">Buy License Now</span>
+                    <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                  </Button>
                 </div>
               </div>
 
               {/* Get Free Sample */}
-              <div className="relative w-[322px] h-[255px] mx-auto lg:mx-0 rounded-lg" style={{ background: 'linear-gradient(to right, #1160C9, #08D2B8)', padding: '2px' }}>
+              <div className="relative w-[322px] h-[239px] mx-auto lg:mx-0 rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
                 <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-4 sm:p-6">
                   <div>
                     <h3 
