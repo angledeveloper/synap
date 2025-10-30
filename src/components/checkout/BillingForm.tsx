@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Image from "next/image";
 import CurrencySelector from "@/components/checkout/CurrencySelector";
 import type { LicenseOption, ReportData } from "@/app/[lang]/reports/[id]/checkout/page";
+import countries from '@/utils/countries.json';
+import phoneCodes from '@/utils/phoneCodes.json';
+import states from '@/utils/states.json';
+
+declare global {
+  interface Window {
+    paypal?: any;
+  }
+}
 
 export interface BillingFormProps {
   selectedLicense: LicenseOption;
@@ -39,6 +48,22 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   const [selectedOrderCurrency, setSelectedOrderCurrency] = useState("USD");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const [activeStep, setActiveStep] = useState<"billing" | "payment">("billing");
+
+  // 1. State for offer code and its logic
+  const [showOfferField, setShowOfferField] = useState(false);
+  const [offerCode, setOfferCode] = useState("");
+  const [appliedOfferCode, setAppliedOfferCode] = useState("");
+  const [dynamicDiscount, setDynamicDiscount] = useState(0);
+  const [discountError, setDiscountError] = useState("");
+
+  // helper for offer discount logic (simulate a discount for example's sake)
+  function getOfferDiscount(code: string, subtotal: number) {
+    const val = code.trim().toUpperCase();
+    // simulate: only one demo code
+    if (val === "WELCOME10") return 10; // e.g. 10 off for example
+    if (!val) return 0;
+    return 0; // could be extended for more codes or server validation
+  }
 
   // Get pricing data from API based on selected license and currency
   const getLicensePricing = () => {
@@ -92,29 +117,51 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   };
 
   const { offerPrice, actualPrice, discountPercent, licenseTitle } = getLicensePricing();
-  
+
   // Calculate actual price if it's null/0 from API but we have offer price and discount
   let calculatedActualPrice = actualPrice;
   if (actualPrice === 0 && offerPrice > 0 && discountPercent > 0) {
-    // Calculate original price: offerPrice = originalPrice * (1 - discountPercent/100)
     calculatedActualPrice = offerPrice / (1 - discountPercent / 100);
   }
-  
+
   const discountAmount = calculatedActualPrice > 0 ? (calculatedActualPrice - offerPrice) : 0;
   const subtotal = offerPrice;
   const isINR = selectedOrderCurrency === 'INR';
-  const cgst = isINR ? +(subtotal * 0.09).toFixed(2) : 0; // 9% CGST
-  const igst = isINR ? +(subtotal * 0.09).toFixed(2) : 0; // 9% IGST
-  const total = subtotal + cgst + igst;
-  
-  console.log('Debug - Final calculations:', { 
-    offerPrice, 
-    actualPrice, 
-    calculatedActualPrice, 
-    discountAmount, 
-    subtotal, 
-    total 
-  });
+
+  // Compute CGST/SGST amounts from API rate fields when available
+  const getRate = (rateStr?: string): number => {
+    if (!rateStr) return 0;
+    const n = parseFloat(String(rateStr).replace(/[^0-9.]/g, ''));
+    return isNaN(n) ? 0 : n / 100;
+  };
+
+  let cgstRate = 0;
+  let sgstRate = 0;
+  if (isINR) {
+    if (selectedOrderLicenseId === 'single') {
+      cgstRate = getRate(checkoutPage?.single_license_offer_price_in_INR_CGST_rate);
+      sgstRate = getRate(checkoutPage?.single_license_offer_price_in_INR_SGST_rate);
+    } else if (selectedOrderLicenseId === 'team') {
+      cgstRate = getRate(checkoutPage?.team_license_offer_price_in_INR_CGST_rate);
+      sgstRate = getRate(checkoutPage?.team_license_offer_price_in_INR_SGST_rate);
+    } else if (selectedOrderLicenseId === 'enterprise') {
+      cgstRate = getRate(checkoutPage?.enterprise_license_offer_price_in_INR_CGST_rate);
+      sgstRate = getRate(checkoutPage?.enterprise_license_offer_price_in_INR_SGST_rate);
+    }
+    // Fallback to 9% each if API missing
+    if (cgstRate === 0 && sgstRate === 0) {
+      cgstRate = 0.09;
+      sgstRate = 0.09;
+    }
+  }
+
+  const cgst = isINR ? +(subtotal * cgstRate).toFixed(2) : 0;
+  const sgst = isINR ? +(subtotal * sgstRate).toFixed(2) : 0;
+  const total = subtotal + cgst + sgst;
+
+  // 2. Update order breakdown to use discount responsive to offer code
+  const finalDiscountAmount = dynamicDiscount > 0 ? dynamicDiscount : discountAmount;
+  const finalTotal = Math.max(0, (subtotal - finalDiscountAmount) + cgst + sgst);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
@@ -149,17 +196,152 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     setSelectedPaymentMethod(method);
   };
 
-  const handlePayment = () => {
-    if (selectedPaymentMethod === "ccavenue") {
-      // Handle CCAvenue payment
-      console.log("Processing CCAvenue payment...");
-      // Here you would integrate with CCAvenue API
-    } else if (selectedPaymentMethod === "paypal") {
-      // Handle PayPal payment
-      console.log("Processing PayPal payment...");
-      // Here you would integrate with PayPal API
+  // --- SUBMISSION logic: POST to /customer-orders. Use proper keys/casing ---
+  const handlePayment = async (e: React.FormEvent) => {
+    e.preventDefault && e.preventDefault();
+    // Compose payload as required
+    const payload = {
+      language_id: 1, // change to dynamic if needed
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      email: formData.email,
+      residence: formData.country,
+      phone: `${formData.phoneCode}${formData.phoneNumber}`,
+      first_line_add: formData.address,
+      state_province: formData.state,
+      city: formData.city,
+      postal_zipcode: formData.postalCode,
+      add_company_details: formData.addCompanyDetails ? "Yes" : "No",
+      ...(formData.addCompanyDetails ? {
+        company_name: formData.companyName,
+        GSTIN: formData.gstin,
+      } : {}),
+      license_type: licenseTitle,
+      discount: String(finalDiscountAmount),
+      subtotal: String(subtotal),
+      cgst: String(cgst),
+      sgst: String(sgst),
+      igst: "0", // Add correct logic if you want IGST value (from API, if needed)
+      total: String(finalTotal),
+      ...(appliedOfferCode ? {offer_code: appliedOfferCode} : {})
+    };
+    try {
+      const res = await fetch('https://dashboard.synapseaglobal.com/api/customer-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error('Failed to submit order: ' + errText);
+      }
+      const data = await res.json();
+      // Pass fields to parent/order-confirmation component as needed
+      // e.g. props.onOrderComplete(data) or setOrderData context
+      // For now, just log:
+      console.log('Order response:', data);
+    } catch (err) {
+      console.error('Failed to submit order', err);
+      setDiscountError('Failed to submit order. Please try again!');
     }
   };
+
+  function getApiString(apiObj: any, key: string, fallback = '') {
+    return (apiObj && key && typeof apiObj[key] === 'string') ? apiObj[key] : fallback;
+  }
+
+  function getPriceStrings() {
+    // string keys for pricing based on dropdown selection
+    let offerPriceStr = '';
+    let actualPriceStr = '';
+    let totalStr = '';
+    if (selectedOrderLicenseId === 'single') {
+      offerPriceStr = getApiString(checkoutPage, `single_license_offer_price_in_${selectedOrderCurrency}`);
+      actualPriceStr = getApiString(checkoutPage, `single_license_actual_price_in_${selectedOrderCurrency}`);
+      if (isINR && checkoutPage?.single_license_offer_price_in_INR_total) {
+        totalStr = getApiString(checkoutPage, 'single_license_offer_price_in_INR_total');
+      }
+    } else if (selectedOrderLicenseId === 'team') {
+      offerPriceStr = getApiString(checkoutPage, `team_license_offer_price_in_${selectedOrderCurrency}`);
+      actualPriceStr = getApiString(checkoutPage, `team_license_actual_price_in_${selectedOrderCurrency}`);
+      if (isINR && checkoutPage?.team_license_offer_price_in_INR_total) {
+        totalStr = getApiString(checkoutPage, 'team_license_offer_price_in_INR_total');
+      }
+    } else if (selectedOrderLicenseId === 'enterprise') {
+      offerPriceStr = getApiString(checkoutPage, `enterprise_license_offer_price_in_${selectedOrderCurrency}`);
+      actualPriceStr = getApiString(checkoutPage, `enterprise_license_actual_price_in_${selectedOrderCurrency}`);
+      if (isINR && checkoutPage?.enterprise_license_offer_price_in_INR_total) {
+        totalStr = getApiString(checkoutPage, 'enterprise_license_offer_price_in_INR_total');
+      }
+    }
+    // For non-INR, or if API total not found, set to offerPriceStr
+    if (!totalStr) totalStr = offerPriceStr;
+    return { offerPriceStr, actualPriceStr, totalStr };
+  }
+
+  const { offerPriceStr, actualPriceStr, totalStr } = getPriceStrings();
+
+  const [paypalLoaded, setPaypalLoaded] = useState(false);
+  const [paypalStatus, setPaypalStatus] = useState("");
+
+  // Dynamically load PayPal JS SDK if PayPal is selected
+  useEffect(() => {
+    if (selectedPaymentMethod === 'paypal' && !paypalLoaded) {
+      // Check if already loaded
+      if (window.paypal) {
+        setPaypalLoaded(true);
+        return;
+      }
+      // IMPORTANT: Set your own Client ID here for prod/live
+      const script = document.createElement('script');
+      script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=${selectedOrderCurrency}`; // <-- replace with env/client id
+      script.async = true;
+      script.onload = () => setPaypalLoaded(true);
+      document.body.appendChild(script);
+    }
+    if (selectedPaymentMethod !== 'paypal') {
+      setPaypalStatus("");
+      // Optionally clean up button container
+      const el = document.getElementById('paypal-button-container');
+      if (el) el.innerHTML = '';
+    }
+  }, [selectedPaymentMethod, selectedOrderCurrency, paypalLoaded]);
+
+  // Render PayPal Buttons when selected and sdk loaded
+  useEffect(() => {
+    if (
+      selectedPaymentMethod === 'paypal' &&
+      paypalLoaded &&
+      window.paypal &&
+      finalTotal > 0
+    ) {
+      setPaypalStatus("");
+      window.paypal.Buttons({
+        style: { layout: 'vertical', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
+        createOrder: function(data: any, actions: any) {
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: finalTotal.toFixed(2),
+                currency_code: selectedOrderCurrency
+              }
+            }]
+          });
+        },
+        onApprove: async function(data: any, actions: any) {
+          setPaypalStatus('approved');
+          // Optional: Capture transaction and POST order details
+          const details = await actions.order.capture();
+          setPaypalStatus('Order successful! Thank you, ' + details.payer.name.given_name + '.');
+          // Here, optionally call your own handlePayment logic or backend to finalize the order
+          // Or set additional success state as needed
+        },
+        onError: function(err: any) {
+          setPaypalStatus('Error with PayPal payment: ' + err);
+        }
+      }).render('#paypal-button-container');
+    }
+  }, [selectedPaymentMethod, paypalLoaded, finalTotal, selectedOrderCurrency]);
 
   return (
     <div className="space-y-8">
@@ -180,7 +362,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
         {/* Left Column - Billing Details */}
         <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-6" style={{ width: '762px', height: '896px' }}>
           <h2 className="text-[24px] text-gray-900 mb-6 billing-heading" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700', marginBottom:'41px' }}>
-            1. {billingInformation?.bill_details_heading || billingInformation?.bill_info_heading || 'Your Billing Details'}:
+            1. {billingInformation?.bill_details_heading || billingInformation?.bill_info_heading || 'Your Billing Details'}
           </h2>
           
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -248,14 +430,10 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                      backgroundSize: '16px'
                    }}
                  >
-                   <option value="" disabled style={{ color: '#888888' }}>Please select an option</option>
-                   <option value="United States">United States</option>
-                   <option value="Canada">Canada</option>
-                   <option value="United Kingdom">United Kingdom</option>
-                   <option value="Germany">Germany</option>
-                   <option value="France">France</option>
-                   <option value="India">India</option>
-                   <option value="Australia">Australia</option>
+                   <option value="" disabled style={{ color: '#888888' }}>Please select a country</option>
+                   {countries.map((c: any) => (
+                     <option key={c.name.common || c.name} value={c.name.common || c.name}>{c.name.common || c.name}</option>
+                   ))}
                  </select>
               </div>
 
@@ -285,12 +463,9 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                     }}
                   >
                     <option value="" disabled style={{ color: '#888888' }}>Code</option>
-                    <option value="+1">+1</option>
-                    <option value="+91">+91</option>
-                    <option value="+44">+44</option>
-                    <option value="+49">+49</option>
-                    <option value="+33">+33</option>
-                    <option value="+61">+61</option>
+                    {phoneCodes.map((p: any) => (
+                      <option key={p.dial_code + p.name} value={p.dial_code}>{p.dial_code} ({p.name})</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -315,14 +490,18 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 <Label htmlFor="state" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
                   {billingInformation?.state_province || 'State / Province'}*
                 </Label>
-                <Input
-                  id="state"
+                <select
                   value={formData.state}
                   onChange={(e) => handleInputChange("state", e.target.value)}
                    className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-[353px] h-[50px] text-black"
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   required
-                />
+                >
+                  <option value="" disabled style={{ color: '#888888' }}>Please select a state/province</option>
+                  {states.map((s: any) => (
+                    <option key={s.name} value={s.name}>{s.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -332,26 +511,13 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 <Label htmlFor="city" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
                   {billingInformation?.city || 'City'}*
                 </Label>
-                 <select 
+                 <Input
                    value={formData.city} 
                    onChange={(e) => handleInputChange("city", e.target.value)}
-                   className="mt-1 border border-[#DBDBDB] rounded-[10px] bg-white w-[353px] h-[50px] px-3 text-black appearance-none cursor-pointer focus:border-black focus:outline-none"
-                   style={{ 
-                     fontFamily: 'Space Grotesk, sans-serif',
-                     backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
-                     backgroundPosition: 'right 12px center',
-                     backgroundRepeat: 'no-repeat',
-                     backgroundSize: '16px'
-                   }}
-                 >
-                   <option value="" disabled style={{ color: '#888888' }}>Please select an option</option>
-                   <option value="New York">New York</option>
-                   <option value="Los Angeles">Los Angeles</option>
-                   <option value="Chicago">Chicago</option>
-                   <option value="Houston">Houston</option>
-                   <option value="Phoenix">Phoenix</option>
-                   <option value="Philadelphia">Philadelphia</option>
-                 </select>
+                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-[353px] h-[50px] text-black"
+                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                   required
+                 />
               </div>
               <div>
                 <Label htmlFor="postalCode" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
@@ -426,13 +592,13 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               <div className="flex items-center justify-center gap-2">
                 <span>{billingInformation?.continue_btn_text || 'Continue to Payment'}</span>
                 {billingInformation?.continue_btn_icon && (
-                  <Image 
+                <Image 
                     src={`/${billingInformation.continue_btn_icon}`}
-                    alt="Arrow" 
-                    width={32.19} 
-                    height={12.67}
-                    className="text-gray-700"
-                  />
+                  alt="Arrow" 
+                  width={32.19} 
+                  height={12.67}
+                  className="text-gray-700"
+                />
                 )}
               </div>
             </Button>
@@ -457,22 +623,22 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
           <div className="flex gap-4 mb-8">
             <div className="flex-1">
               <label className="block mb-1 text-xs text-gray-700 font-medium">{billInfoOrderSummary?.license_dropdown_text || 'Choose License'}</label>
-              <select
+               <select 
                 value={selectedOrderLicenseId}
                 onChange={e => setSelectedOrderLicenseId(e.target.value)}
-                className="w-[118px] h-[38px] border border-black rounded-none px-3 text-black appearance-none cursor-pointer"
-                style={{ 
-                  fontFamily: 'Space Grotesk, sans-serif',
-                  backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
-                  backgroundPosition: 'right 8px center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundSize: '14px'
-                }}
-              >
+                 className="w-[118px] h-[38px] border border-black rounded-none px-3 text-black appearance-none cursor-pointer"
+                 style={{ 
+                   fontFamily: 'Space Grotesk, sans-serif',
+                   backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
+                   backgroundPosition: 'right 8px center',
+                   backgroundRepeat: 'no-repeat',
+                   backgroundSize: '14px'
+                 }}
+               >
                 <option value="single">{checkoutPage?.single_license_heading || 'Single License'}</option>
                 <option value="team">{checkoutPage?.team_license_heading || 'Team License'}</option>
                 <option value="enterprise">{checkoutPage?.enterprise_license_heading || 'Enterprise License'}</option>
-              </select>
+               </select>
             </div>
             <div className="w-24">
               <label className="block mb-1 text-xs text-gray-700 font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
@@ -505,7 +671,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 <div className="text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>(One time purchase)</div>
               </div>
               <div className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                ${calculatedActualPrice.toLocaleString()}
+                {actualPriceStr}
               </div>
             </div>
             <div className="flex justify-between items-center">
@@ -514,7 +680,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{discountPercent}% off</span>
               </div>
               <div className="font-medium text-green-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                -${discountAmount.toLocaleString()}
+                -{finalDiscountAmount.toLocaleString()}
               </div>
             </div>
             <div className="flex justify-between items-center border-t border-gray-200 pt-3">
@@ -522,14 +688,14 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 {billInfoOrderSummary?.subtotal_text || 'Subtotal'}
               </div>
               <div className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                ${subtotal.toLocaleString()}
+                {offerPriceStr}
               </div>
             </div>
             {isINR ? (
               <>
                 <div className="flex justify-between items-center">
                   <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    {billInfoOrderSummary?.SGST || 'SGST'}
+                    {billInfoOrderSummary?.CGST || 'CGST'}
                   </div>
                   <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                     ₹{cgst.toLocaleString()}
@@ -537,19 +703,38 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    {billInfoOrderSummary?.IGST || 'IGST'}
+                    {billInfoOrderSummary?.SGST || 'SGST'}
                   </div>
                   <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    ₹{igst.toLocaleString()}
+                    ₹{sgst.toLocaleString()}
                   </div>
                 </div>
+                {/* IGST (use API string) */}
+                {
+                  (() => {
+                    let igstStr = '';
+                    if (selectedOrderLicenseId === 'single') {
+                      igstStr = checkoutPage?.single_license_offer_price_in_INR_with_IGST || '';
+                    } else if (selectedOrderLicenseId === 'team') {
+                      igstStr = checkoutPage?.team_license_offer_price_in_INR_with_IGST || '';
+                    } else if (selectedOrderLicenseId === 'enterprise') {
+                      igstStr = checkoutPage?.enterprise_license_offer_price_in_INR_with_IGST || '';
+                    }
+                    return igstStr ? (
+                      <div className="flex justify-between items-center">
+                        <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{billInfoOrderSummary?.IGST || 'IGST'}</div>
+                        <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{igstStr}</div>
+                      </div>
+                    ) : null;
+                  })()
+                }
               </>
             ) : (
-              <div className="flex justify-between items-center">
-                <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+            <div className="flex justify-between items-center">
+              <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                   {billInfoOrderSummary?.tax_text || 'Tax'}
-                </div>
-                <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              </div>
+              <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                   {billInfoOrderSummary?.not_applicable_text || 'Not Applicable'}
                 </div>
               </div>
@@ -559,16 +744,51 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 {billInfoOrderSummary?.total_text || 'Total'}
               </div>
               <div className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                {isINR ? `₹${total.toLocaleString()}` : `$${total.toLocaleString()}`}
+                {isINR ? `₹${finalTotal.toLocaleString()}` : `${selectedOrderCurrency === 'USD' ? '$' : selectedOrderCurrency === 'EUR' ? '€' : ''}${finalTotal.toLocaleString()}`}
               </div>
             </div>
           </div>
 
-          {/* Offer Code Link */}
-          <div className="mb-8">
-            <button className="text-blue-600 underline text-sm hover:text-blue-800" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-              {billInfoOrderSummary?.have_offer_text || 'Have an offer code?'}
+          {/* Offer Code Link/Button */}
+          <div className="mb-2">
+            {showOfferField ? null : (
+              <button type="button" className="text-blue-600 underline text-sm hover:text-blue-800" style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                onClick={() => setShowOfferField(true)}>
+                {billInfoOrderSummary?.have_offer_text || 'Have an offer code?'}
             </button>
+            )}
+            {showOfferField && (
+              <div className="flex gap-2 mb-2">
+                <Input
+                  className="flex-1 border-[#DBDBDB] rounded-[8px]"
+                  value={offerCode}
+                  placeholder="Enter offer code"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                  onChange={(e) => setOfferCode(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  className="bg-blue-600 text-white px-4"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                  onClick={() => {
+                    const disc = getOfferDiscount(offerCode, subtotal);
+                    if (disc > 0) {
+                      setAppliedOfferCode(offerCode);
+                      setDynamicDiscount(disc);
+                      setDiscountError("");
+                    } else {
+                      setAppliedOfferCode("");
+                      setDynamicDiscount(0);
+                      setDiscountError("Invalid or no discount");
+                    }
+                  }}
+                >Apply</Button>
+              </div>
+            )}
+            {discountError && <div className="text-red-500 text-xs mb-3">{discountError}</div>}
+            {appliedOfferCode && dynamicDiscount > 0 && (
+              <div className="text-green-700 text-xs mb-3">Applied: {appliedOfferCode} (-{dynamicDiscount})</div>
+            )}
           </div>
 
           {/* Continue Button */}
@@ -585,13 +805,13 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             <div className="flex items-center justify-center gap-2">
               <span>{billingInformation?.continue_btn_text || 'Continue to Payment'}</span>
               {billingInformation?.continue_btn_icon && (
-                <Image 
+              <Image 
                   src={`/${billingInformation.continue_btn_icon}`}
-                  alt="Arrow" 
-                  width={32.19} 
-                  height={12.67}
-                  className="text-gray-700"
-                />
+                alt="Arrow" 
+                width={32.19} 
+                height={12.67}
+                className="text-gray-700"
+              />
               )}
             </div>
           </Button>
@@ -676,6 +896,12 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
            </div>
 
            {/* Payment Button */}
+           {selectedPaymentMethod === 'paypal' && (
+             <div className="py-8">
+               <div id="paypal-button-container"></div>
+               {paypalStatus && <div className="mt-4 text-blue-700 text-base">{paypalStatus}</div>}
+             </div>
+           )}
            {selectedPaymentMethod && (
              <div className="mt-6">
                <Button

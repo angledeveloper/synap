@@ -1,0 +1,18 @@
+[
+      {"name": "California", "country_iso2": "US"},
+      {"name": "New York", "country_iso2": "US"},
+      {"name": "Texas", "country_iso2": "US"},
+      {"name": "Florida", "country_iso2": "US"},
+      {"name": "Ontario", "country_iso2": "CA"},
+      {"name": "Quebec", "country_iso2": "CA"},
+      {"name": "British Columbia", "country_iso2": "CA"},
+      {"name": "Maharashtra", "country_iso2": "IN"},
+      {"name": "Karnataka", "country_iso2": "IN"},
+      {"name": "Uttar Pradesh", "country_iso2": "IN"},
+      {"name": "New South Wales", "country_iso2": "AU"},
+      {"name": "Queensland", "country_iso2": "AU"},
+      {"name": "Victoria", "country_iso2": "AU"},
+      {"name": "England", "country_iso2": "GB"},
+      {"name": "Scotland", "country_iso2": "GB"},
+      {"name": "Wales", "country_iso2": "GB"}
+    ]

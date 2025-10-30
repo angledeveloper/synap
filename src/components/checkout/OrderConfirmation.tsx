@@ -143,7 +143,7 @@ export default function OrderConfirmation({
                   <span className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{paymentMethod}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderConfirmation?.report_date_text || 'Purchase Date'}:</span>
+                  <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderConfirmation?.purchase_date_text || orderConfirmation?.report_date_text || 'Purchase Date'}:</span>
                   <span className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{purchaseDate}</span>
                 </div>
                 <div className="flex justify-between">
