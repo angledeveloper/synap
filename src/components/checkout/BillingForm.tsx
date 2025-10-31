@@ -56,6 +56,15 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   const [appliedOfferCode, setAppliedOfferCode] = useState("");
   const [dynamicDiscount, setDynamicDiscount] = useState(0);
   const [discountError, setDiscountError] = useState("");
+  const [couponTotalStr, setCouponTotalStr] = useState<string>("");
+
+  // reset coupon when license/currency changes
+  useEffect(() => {
+    setAppliedOfferCode("");
+    setDynamicDiscount(0);
+    setDiscountError("");
+    setCouponTotalStr("");
+  }, [selectedOrderLicenseId, selectedOrderCurrency]);
 
   // helper for offer discount logic (simulate a discount for example's sake)
   function getOfferDiscount(code: string, subtotal: number) {
@@ -164,6 +173,47 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   const finalDiscountAmount = dynamicDiscount > 0 ? dynamicDiscount : discountAmount;
   const finalTotal = Math.max(0, (subtotal - finalDiscountAmount) + cgst + sgst);
 
+  // Helper to pick right API string by license/currency
+  const getSummaryStrings = () => {
+    const type = selectedOrderLicenseId;
+    const cur = selectedOrderCurrency;
+    // Map license type to key prefix
+    let prefix = '';
+    if (type === 'single') prefix = 'single_license';
+    else if (type === 'team') prefix = 'team_license';
+    else if (type === 'enterprise') prefix = 'enterprise_license';
+    
+    let apiObj = checkoutPage;
+    const suffix = cur === 'INR' ? 'INR' : cur === 'EUR' ? 'EUR' : 'USD';
+    // Offer price (post-discount, pre-tax):
+    const offerPriceKey = `${prefix}_offer_price_in_${suffix}`;
+    const offerPriceStr = apiObj?.[offerPriceKey] || '';
+    // Actual price (pre-discount):
+    const actualPriceKey = `${prefix}_actual_price_in_${suffix}`;
+    const actualPriceStr = apiObj?.[actualPriceKey] || '';
+    // Discount percent
+    const discountStr = apiObj?.[`${prefix}_discount_percent`] || '';
+    // Tax lines (INR only)
+    const cgstStr = apiObj?.[`${prefix}_offer_price_in_INR_with_CGST`] || '';
+    const sgstStr = apiObj?.[`${prefix}_offer_price_in_INR_with_SGST`] || '';
+    const igstStr = apiObj?.[`${prefix}_offer_price_in_INR_with_IGST`] || '';
+    // Total (post-tax):
+    const totalKey = (cur === 'INR') ? `${prefix}_offer_price_in_INR_total` : offerPriceKey;
+    const totalStr = apiObj?.[totalKey] || offerPriceStr;
+    return { offerPriceStr, actualPriceStr, discountStr, cgstStr, sgstStr, igstStr, totalStr };
+  };
+
+  const { offerPriceStr, actualPriceStr, discountStr, cgstStr, sgstStr, igstStr, totalStr } = getSummaryStrings();
+  // Helpers to parse currency strings like $80.00, ₹8,375.17, €69.26
+  const parseMoney = (v: string): number => {
+    if (!v) return 0;
+    const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
+    return isNaN(n) ? 0 : n;
+  };
+  // Base total numeric derived from API display string
+  const baseTotalNumeric = parseMoney(totalStr);
+  const couponTotalNumeric = parseMoney(couponTotalStr);
+
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
@@ -247,41 +297,6 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     }
   };
 
-  function getApiString(apiObj: any, key: string, fallback = '') {
-    return (apiObj && key && typeof apiObj[key] === 'string') ? apiObj[key] : fallback;
-  }
-
-  // Helper to pick right API string by license/currency
-  const getSummaryStrings = () => {
-    const type = selectedOrderLicenseId;
-    const cur = selectedOrderCurrency;
-    // Map license type to key prefix
-    let prefix = '';
-    if (type === 'single') prefix = 'single_license';
-    else if (type === 'team') prefix = 'team_license';
-    else if (type === 'enterprise') prefix = 'enterprise_license';
-    
-    let apiObj = checkoutPage;
-    const suffix = cur === 'INR' ? 'INR' : cur === 'EUR' ? 'EUR' : 'USD';
-    // Offer price (post-discount, pre-tax):
-    const offerPriceKey = `${prefix}_offer_price_in_${suffix}`;
-    const offerPriceStr = apiObj?.[offerPriceKey] || '';
-    // Actual price (pre-discount):
-    const actualPriceKey = `${prefix}_actual_price_in_${suffix}`;
-    const actualPriceStr = apiObj?.[actualPriceKey] || '';
-    // Discount percent
-    const discountStr = apiObj?.[`${prefix}_discount_percent`] || '';
-    // Tax lines (INR only)
-    const cgstStr = apiObj?.[`${prefix}_offer_price_in_INR_with_CGST`] || '';
-    const sgstStr = apiObj?.[`${prefix}_offer_price_in_INR_with_SGST`] || '';
-    const igstStr = apiObj?.[`${prefix}_offer_price_in_INR_with_IGST`] || '';
-    // Total (post-tax):
-    const totalKey = (cur === 'INR') ? `${prefix}_offer_price_in_INR_total` : offerPriceKey;
-    const totalStr = apiObj?.[totalKey] || offerPriceStr;
-    return { offerPriceStr, actualPriceStr, discountStr, cgstStr, sgstStr, igstStr, totalStr };
-  };
-
-  const { offerPriceStr, actualPriceStr, discountStr, cgstStr, sgstStr, igstStr, totalStr } = getSummaryStrings();
   let cgstDiff = '', sgstDiff = '', igstDiff = '';
   if (selectedOrderCurrency === 'INR') {
     // Both offerPriceStr and *_with_* fields are strings (e.g. "₹15,881.40", "₹17,310.73"). Remove non-numeric chars, and subtract.
@@ -343,7 +358,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 reportId: reportData?.id || '',
                 licenseType: selectedOrderLicenseId,
                 currency: selectedOrderCurrency,
-                amount: finalTotal.toFixed(2),
+                amount: (couponTotalNumeric > 0 ? couponTotalNumeric : finalTotal).toFixed(2),
               })
             });
             if (!res.ok) {
@@ -375,7 +390,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 orderID: captureRes.id,
                 reportId: reportData?.id || '',
                 licenseType: selectedOrderLicenseId,
-                amount: finalTotal.toFixed(2),
+                amount: (couponTotalNumeric > 0 ? couponTotalNumeric : finalTotal).toFixed(2),
                 currency: selectedOrderCurrency
               })
             });
@@ -416,7 +431,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               reportTitle: reportData?.title || '',
               licenseType: selectedLicense?.title || selectedOrderLicenseId,
               originalPrice: calculatedActualPrice,
-              discountAmount: discountAmount,
+              discountAmount: dynamicDiscount || discountAmount,
               subtotal: subtotal,
               customerEmail: formData.email || ''
             };
@@ -430,7 +445,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
         }
       }).render('#paypal-button-container');
     }
-  }, [selectedPaymentMethod, paypalLoaded, finalTotal, selectedOrderCurrency, reportData, selectedOrderLicenseId, onOrderSuccess, selectedLicense, formData.email, calculatedActualPrice, discountAmount, subtotal]);
+  }, [selectedPaymentMethod, paypalLoaded, finalTotal, selectedOrderCurrency, reportData, selectedOrderLicenseId, onOrderSuccess, selectedLicense, formData.email, calculatedActualPrice, discountAmount, subtotal, couponTotalNumeric]);
 
   return (
     <div className="space-y-8">
@@ -831,7 +846,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 {billInfoOrderSummary?.total_text || 'Total'}
               </div>
               <div className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                {totalStr}
+                {couponTotalStr || totalStr}
               </div>
             </div>
           </div>
@@ -847,7 +862,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             {showOfferField && (
               <div className="flex gap-2 mb-2">
                 <Input
-                  className="flex-1 border-[#DBDBDB] rounded-[8px]"
+                  className="flex-1 border-[#DBDBDB] rounded-[8px] text-black"
                   value={offerCode}
                   placeholder="Enter offer code"
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
@@ -858,15 +873,27 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   className="bg-blue-600 text-white px-4"
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   onClick={() => {
-                    const disc = getOfferDiscount(offerCode, subtotal);
-                    if (disc > 0) {
-                      setAppliedOfferCode(offerCode);
-                      setDynamicDiscount(disc);
+                    const code = (offerCode || '').trim().toUpperCase();
+                    if (!code) {
+                      setDiscountError('Enter a valid code');
+                      return;
+                    }
+                    // Build API key from selection
+                    const prefix = selectedOrderLicenseId === 'single' ? 'single_license' : selectedOrderLicenseId === 'team' ? 'team_license' : 'enterprise_license';
+                    const suffix = selectedOrderCurrency === 'INR' ? 'INR' : selectedOrderCurrency === 'EUR' ? 'EUR' : 'USD';
+                    const key = `${prefix}_offer_price_in_${suffix}_with_coupan${code}_total`;
+                    const str = checkoutPage?.[key] as string | undefined;
+                    if (str) {
+                      setAppliedOfferCode(code);
+                      setCouponTotalStr(str);
+                      const discount = Math.max(0, baseTotalNumeric - parseMoney(str));
+                      setDynamicDiscount(discount);
                       setDiscountError("");
                     } else {
                       setAppliedOfferCode("");
+                      setCouponTotalStr("");
                       setDynamicDiscount(0);
-                      setDiscountError("Invalid or no discount");
+                      setDiscountError('Invalid or unsupported code');
                     }
                   }}
                 >Apply</Button>

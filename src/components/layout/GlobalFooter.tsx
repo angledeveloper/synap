@@ -46,8 +46,8 @@ export default function GlobalFooter() {
             </Link>
           </div>
           <div className="flex w-full flex-col gap-8 md:w-fit">
-            <div className="flex w-full flex-wrap gap-6 md:justify-end">
-              <div className="min-w-[120px]">
+            <div className="flex w-full flex-wrap md:flex-nowrap gap-5 md:gap-9 lg:gap-12 xl:gap-16 md:justify-between">
+              <div className="min-w-[130px] md:min-w-[150px] shrink-0">
                 <span className="text-[20px] underline">{HomePage.footer.section?.solutions ?? ''}</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
@@ -60,7 +60,7 @@ export default function GlobalFooter() {
                   ) || []}
                 </ul>
               </div>
-              <div className="min-w-[120px]">
+              <div className="min-w-[160px] md:min-w-[200px] shrink-0">
                 <span className="text-[20px] underline">{HomePage.footer.section?.resources ?? ''}</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
@@ -73,7 +73,7 @@ export default function GlobalFooter() {
                   ) || []}
                 </ul>
               </div>
-              <div className="min-w-[120px]">
+              <div className="min-w-[160px] md:min-w-[200px] shrink-0">
                 <span className="text-[20px] underline">{HomePage.footer.section?.company ?? ''}</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
@@ -87,7 +87,7 @@ export default function GlobalFooter() {
                   }) || []}
                 </ul>
               </div>
-              <div className="min-w-[120px]">
+              <div className="min-w-[160px] md:min-w-[200px] shrink-0">
                 <span className="text-[20px] underline">{HomePage.footer.section?.legal ?? ''}</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">

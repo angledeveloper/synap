@@ -39,7 +39,6 @@ const TickerCounter = () => {
 
 export default function GlobalAboveFooter() {
   const { HomePage } = useHomePageStore();
-  const { AboutPage } = useHomePageStore();
   const { language } = useLanguageStore();
 
   // Show loading state if HomePage data is not available
