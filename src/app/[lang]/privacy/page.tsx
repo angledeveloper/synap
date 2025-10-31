@@ -35,6 +35,11 @@ export default function PrivacyPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setPrivacyData(null);
+    setIsLoading(true);
+  }, [language]);
+
+  useEffect(() => {
     const fetchPrivacyData = async () => {
       try {
         setIsLoading(true);

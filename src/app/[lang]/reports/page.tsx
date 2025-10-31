@@ -263,7 +263,7 @@ export default function ReportsPage() {
             <ol className="flex items-center space-x-2">
               <li>
                 <a 
-                  href="/" 
+                  href={`/${language}`} 
                   className="text-gray-500 hover:text-gray-700 font-normal"
                   style={{ 
                     fontSize: '14px', 

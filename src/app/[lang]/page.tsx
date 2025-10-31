@@ -13,7 +13,7 @@ import Head from "next/head";
 import CustomReportForm from "@/components/common/CustomReportForm";
 
 export default function Home() {
-  const { HomePage } = useHomePageStore();
+    const { HomePage, setHomePage } = useHomePageStore();
   const { language } = useLanguageStore();
   const router = useRouter();
   const [testimonialsIndex, setTestimonialsIndex] = useState<number>(0);
@@ -22,7 +22,7 @@ export default function Home() {
   const getReportsHref = (label: string | undefined) => {
     if (!label) return "/";
     const l = label.trim().toLowerCase();
-    return l.includes("explore") && l.includes("report") ? "/reports" : "/";
+    return l.includes("explore") && l.includes("report") ? `/${language}/reports` : `/${language}`;
   };
 
   const handleReportClick = async (categoryId: string) => {
@@ -68,6 +68,10 @@ export default function Home() {
     }, 5000);
     return () => clearInterval(interval);
   }, [HomePage]);
+
+  useEffect(() => {
+    setHomePage(null);
+  }, [language]);
 
   if (!HomePage)
     return (
@@ -165,7 +169,7 @@ export default function Home() {
           <div className="text-[32px] font-medium max-md:text-center md:text-[40px]">
             {HomePage.home_section3.tagline}
           </div>
-          <Link href={getReportsHref(HomePage.home_section3.button) || "/reports"}>
+          <Link href={getReportsHref(HomePage.home_section3.button) || `/${language}/reports`}>
             <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-black/5 p-4 text-[20px] font-bold backdrop-blur-[5px] transition-all duration-300 hover:border-white/40 hover:text-neutral-400 max-md:w-full">
               <span className="flex w-full justify-end">
                 <ArrowIcon variant="white" />
@@ -211,7 +215,7 @@ export default function Home() {
       </section>
       <section className="w-full overflow-hidden bg-[#F5F5F5]">
         <div className="relative m-auto grid w-full max-w-[1440px] grid-cols-1 justify-center justify-items-end bg-white text-black md:grid-cols-2">
-          <div className="flex w-full flex-col bg-[#F5F5F5] p-3 pt-10 md:p-16 md:pt-16" style={{ marginLeft: '284px' }}>
+          <div className="flex w-full flex-col bg-[#F5F5F5] p-3 pt-10 md:p-16 md:pt-16 ml-0 md:ml-[284px]">
             <h4 className="text-[32px] font-bold md:text-[64px]" style={{ marginBottom: '136px' }}>
               {HomePage.home_section5.title}
             </h4>
@@ -288,7 +292,7 @@ export default function Home() {
               </span>
               <Link
                 className="mt-12 text-[20px] font-medium underline"
-                href="/"
+                href={`/${language}`}
               >
                 {HomePage.home_section5.first_box_link}
               </Link>
@@ -300,10 +304,10 @@ export default function Home() {
               <span className="text-[20px] font-light">
                 {HomePage.home_section5.second_box_description}
               </span>
-              <Link className="text-[20px] font-medium underline" href="/">
+            <Link className="text-[20px] font-medium underline" href={`/${language}`}>
                 {HomePage.home_section5.second_box_link}
               </Link>
-              <Link className="mt-12" href="/reports">
+              <Link className="mt-12" href={`/${language}/reports`}>
                 <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                   <span className="flex w-full justify-end">
                     <ArrowIcon variant="white" />

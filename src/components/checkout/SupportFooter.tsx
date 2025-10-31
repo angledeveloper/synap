@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useLanguageStore } from "@/store";
 import ArrowIcon from "@/components/common/ArrowIcon";
 
 interface SupportFooterProps {
@@ -11,6 +12,7 @@ interface SupportFooterProps {
 
 export default function SupportFooter({ className = "", heading }: SupportFooterProps) {
   const title = heading || "Need help? We are available 24/7 for your queries";
+  const { language } = useLanguageStore();
 
   return (
     <div className={`w-full bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] ${className}`}>
@@ -23,7 +25,7 @@ export default function SupportFooter({ className = "", heading }: SupportFooter
           <div>24/7 for your queries</div>
         </div>
 
-        <Link href="/contact" className="inline-flex">
+        <Link href={`/${language}/contact`} className="inline-flex">
           <button
             className="mt-10 flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-black p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full relative"
             style={{ fontFamily: 'Space Grotesk, sans-serif' }}

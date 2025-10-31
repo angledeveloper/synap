@@ -65,6 +65,10 @@ export default function About() {
   const id = codeToId[language];
   const [isCustomReportFormOpen, setIsCustomReportFormOpen] = useState(false);
 
+  useEffect(() => {
+    setAboutPage(null);
+  }, [language]);
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["aboutData", language],
     queryFn: () => fetch(`${baseUrl}aboutus/${id}`).then((res) => res.json()),
@@ -136,7 +140,7 @@ export default function About() {
           </p>
           <div className="flex w-full flex-wrap justify-between gap-10" style={{ marginBottom: '55px' }}>
             <div className="flex flex-wrap gap-4">
-              <Link href="/reports" className="inline-flex h-[105px] min-w-[300px] w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
+              <Link href={`/${language}/reports`} className="inline-flex h-[105px] min-w-[300px] w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                 <span className="flex w-full justify-end">
                   <ArrowIcon variant="gradient" />
                 </span>

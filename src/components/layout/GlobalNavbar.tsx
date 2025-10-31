@@ -162,14 +162,14 @@ export default function GlobalNavbar() {
   return (
     <nav className="fixed top-0 left-0 z-50 w-full">
       <div className="relative flex h-20 w-full items-center justify-between bg-black/90 px-6 lg:px-8">
-        <Link href="/">
+        <Link href={`/${language}`}>
           <div className="h-[30px] w-auto">
             <FullLogo />
           </div>
         </Link>
         {/* Center Navigation */}
         <div className="hidden items-center gap-8 text-sm text-white lg:flex">
-          <Link href="/about" className="hover:font-bold transition-all">
+          <Link href={`/${language}/about`} className="hover:font-bold transition-all">
             About Us
           </Link>
           <div
@@ -182,13 +182,13 @@ export default function GlobalNavbar() {
   </span>
   <Icon icon="mdi:chevron-down" className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
   {showDropdown && (
-    <div id="dropdown-container" className="absolute top-[90px] left-1/2 transform -translate-x-1/2 w-[1440px] h-[450px] rounded-2xl bg-white shadow-sm px-8 py-12">
+  <div id="dropdown-container" className="relative lg:absolute lg:top-[90px] lg:left-1/2 lg:-translate-x-1/2 w-full max-w-[1440px] h-auto lg:h-[450px] rounded-2xl bg-white shadow-sm px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
       <h2 className="text-left text-xl font-medium text-gray-900 mb-8" style={{ fontFamily: 'var(--font-geist-mono)' }}>
         Reports Based On Industries
       </h2>
 
-       {/* First row - 4 categories */}
-       <div className="grid grid-cols-4 gap-y-10 gap-x-12">
+       {/* First row - responsive categories */}
+       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-y-6 sm:gap-y-8 gap-x-6 sm:gap-x-8 lg:gap-x-12">
          {HomePage.report_store_dropdown.slice(0, 4).map((item: any, idx: number) => (
            <Link href={`/${language}/reports?category=${item.id}`} key={idx} className="group">
              <div className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">
@@ -214,14 +214,14 @@ export default function GlobalNavbar() {
          ))}
        </div>
        
-       {/* Subsequent rows - 3 categories each */}
+       {/* Subsequent rows - responsive 3-up rows */}
        {HomePage.report_store_dropdown.slice(4).reduce((rows: any[], item: any, idx: number) => {
          const rowIndex = Math.floor(idx / 3);
          if (!rows[rowIndex]) rows[rowIndex] = [];
          rows[rowIndex].push({...item, originalIndex: idx + 4});
          return rows;
        }, []).map((row: any[], rowIdx: number) => (
-         <div key={rowIdx} className="grid grid-cols-3 gap-y-10 gap-x-8 mt-6 max-w-[75%]">
+         <div key={rowIdx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 sm:gap-y-8 gap-x-6 sm:gap-x-8 mt-6 w-full lg:max-w-[75%]">
            {row.map((item: any, idx: number) => (
              <Link href={`/${language}/reports?category=${item.id}`} key={item.originalIndex} className="group">
                <div className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">
@@ -250,7 +250,7 @@ export default function GlobalNavbar() {
     </div>
   )}
 </div>
-          <Link href="/contact" className="hover:font-bold transition-all">
+          <Link href={`/${language}/contact`} className="hover:font-bold transition-all">
             Contact Us
           </Link>
         </div>
@@ -336,7 +336,7 @@ export default function GlobalNavbar() {
                               setSearchValue('');
                               setShowSearchResults(false);
                               setIsHoveringSearch(false);
-                              window.location.href = `/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
+                              window.location.href = `/${language}/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
                             }}
                           >
                             <div className="flex items-start space-x-3">
@@ -359,7 +359,7 @@ export default function GlobalNavbar() {
                                 setSearchValue('');
                                 setShowSearchResults(false);
                                 setIsHoveringSearch(false);
-                                window.location.href = `/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
+                                window.location.href = `/${language}/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
                               }}
                             >
                               View all {(searchResults as any).results.length} results
@@ -376,7 +376,7 @@ export default function GlobalNavbar() {
                             setSearchValue('');
                             setShowSearchResults(false);
                             setIsHoveringSearch(false);
-                            window.location.href = `/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
+                            window.location.href = `/${language}/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
                           }}
                         >
                           Search in reports
@@ -445,7 +445,7 @@ export default function GlobalNavbar() {
                                     setSearchValue('');
                                     setShowSearchResults(false);
                                     setShowMenu(false);
-                                    window.location.href = `/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
+                                    window.location.href = `/${language}/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
                                   }}
                                 >
                                   <div className="flex items-start space-x-3">
@@ -468,7 +468,7 @@ export default function GlobalNavbar() {
                                       setSearchValue('');
                                       setShowSearchResults(false);
                                       setShowMenu(false);
-                                      window.location.href = `/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
+                                      window.location.href = `/${language}/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
                                     }}
                                   >
                                     View all {(searchResults as any).results.length} results
@@ -485,7 +485,7 @@ export default function GlobalNavbar() {
                                   setSearchValue('');
                                   setShowSearchResults(false);
                                   setShowMenu(false);
-                                  window.location.href = `/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
+                                  window.location.href = `/${language}/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
                                 }}
                               >
                                 Search in reports
@@ -497,60 +497,71 @@ export default function GlobalNavbar() {
                     </div>
                   
                   <GlobalLanguageSwitch />
-                  <Link className="w-full" href="/login">
-                    <Button className="w-full cursor-pointer border border-white bg-transparent">
-                      <Icon icon="mdi:user" className="mr-2" />
-                      Login
-                    </Button>
-                  </Link>
                 </div>
-                <Link href="/about" className="hover:font-bold transition-all">About Us</Link>
+                <Link href={`/${language}/about`} className="hover:font-bold transition-all">About Us</Link>
                 <div
-                  id="mobile-dropdown-button"
-                  className="flex cursor-pointer flex-col gap-1"
+                  id="dropdown-button"
+                  className="flex cursor-pointer items-center gap-1 hover:font-bold transition-all"
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
-                  <div className="flex cursor-pointer items-center gap-1">
-                    <span className={`bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] bg-clip-text text-transparent transition-all ${showDropdown ? 'font-bold' : 'font-normal'}`}>
-                      Reports Store
-                    </span>
-                    <Icon icon="mdi:chevron-down" className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
-                  </div>
-
-                  {showDropdown && (
-                    <div id="dropdown-container" className="text-white">
-                      <h3 className="text-center text-xl font-medium text-white mb-8" style={{ fontFamily: 'var(--font-geist-mono)' }}>Reports Based On Industries</h3>
-                      <div className="grid grid-cols-1 gap-y-6 gap-x-4">
-                        {HomePage.report_store_dropdown.map(
-                          (item: any, idx: number) => (
-                            <Link href="/" key={idx} className="group">
-                              <div className="flex items-start space-x-4 hover:bg-white/10 p-3 rounded-lg transition-colors">
-                                <div className="w-7 h-7 relative flex-shrink-0">
-                                  <Image
-                                    src={item.icon}
-                                    alt={item.category_name}
-                                    width={28}
-                                    height={28}
-                                    className="w-full h-full object-contain"
-                                  />
-                                </div>
-                                <div>
-                                  <h4 className="text-[15px] font-semibold text-white leading-snug group-hover:text-blue-300 transition-colors" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-                                    {item.category_name}
-                                  </h4>
-                                  <p className="text-[13px] text-gray-300 mt-1" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-                                    {item.category_tagline?.split(' ').slice(0, 3).join(' ')}
-                                  </p>
-                                </div>
-                              </div>
-                            </Link>
-                          ),
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  <span className={`text-white transition-all ${showDropdown ? 'font-bold' : 'font-normal'}`}>
+                    Reports Store
+                  </span>
+                  <Icon icon="mdi:chevron-down" className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
                 </div>
-                <Link href="/contact" className="hover:font-bold transition-all">Contact Us</Link>
+                {showDropdown && (
+                  <div id="dropdown-container" className="relative w-full rounded-2xl bg-white text-black shadow-sm px-4 sm:px-6 py-8">
+                    <h2 className="text-left text-xl font-medium text-gray-900 mb-6" style={{ fontFamily: 'var(--font-geist-mono)' }}>
+                      Reports Based On Industries
+                    </h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-6 gap-x-6">
+                      {HomePage.report_store_dropdown.slice(0, 4).map((item: any, idx: number) => (
+                        <Link href={`/${language}/reports?category=${item.id}`} key={`m-top-${idx}`} className="group">
+                          <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                            <div className="w-6 h-6 relative flex-shrink-0">
+                              <Image src={item.icon} alt={item.category_name} width={24} height={24} className="w-full h-full object-contain" />
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-medium text-gray-900 leading-snug group-hover:text-blue-600 transition-colors" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                                {item.category_name}
+                              </h3>
+                              <p className="text-xs text-black font-normal mt-1" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                                {item.category_tagline?.split(' ').slice(0, 3).join(' ')}
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                    {HomePage.report_store_dropdown.slice(4).reduce((rows: any[], item: any, idx: number) => {
+                      const rowIndex = Math.floor(idx / 3);
+                      if (!rows[rowIndex]) rows[rowIndex] = [];
+                      rows[rowIndex].push({...item, originalIndex: idx + 4});
+                      return rows;
+                    }, []).map((row: any[], rowIdx: number) => (
+                      <div key={`m-row-${rowIdx}`} className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6 mt-6">
+                        {row.map((item: any) => (
+                          <Link href={`/${language}/reports?category=${item.id}`} key={`m-item-${item.originalIndex}`} className="group">
+                            <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                              <div className="w-6 h-6 relative flex-shrink-0">
+                                <Image src={item.icon} alt={item.category_name} width={24} height={24} className="w-full h-full object-contain" />
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-bold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                                  {item.category_name}
+                                </h3>
+                                <p className="text-xs text-black font-normal mt-1" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                                  {item.category_tagline?.split(' ').slice(0, 3).join(' ')}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <Link href={`/${language}/contact`} className="hover:font-bold transition-all">Contact Us</Link>
               </div>
             </div>
           )}

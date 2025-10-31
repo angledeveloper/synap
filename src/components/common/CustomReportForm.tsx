@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useLanguageStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ interface CustomReportFormProps {
 }
 
 export default function CustomReportForm({ isOpen, onClose }: CustomReportFormProps) {
+  const { language } = useLanguageStore();
   const [formData, setFormData] = useState({
     fullName: '',
     businessEmail: '',
@@ -291,11 +293,11 @@ export default function CustomReportForm({ isOpen, onClose }: CustomReportFormPr
                 <div className="text-sm text-gray-600 leading-relaxed" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                   <div className="mb-2">
                     I agree to the{" "}
-                    <a href="/privacy" className="text-blue-600 hover:underline">
+                    <a href={`/${language}/privacy`} className="text-blue-600 hover:underline">
                       Privacy Policy
                     </a>{" "}
                     and{" "}
-                    <a href="/terms" className="text-blue-600 hover:underline">
+                    <a href={`/${language}/terms`} className="text-blue-600 hover:underline">
                       Terms of Service
                     </a>
                     .

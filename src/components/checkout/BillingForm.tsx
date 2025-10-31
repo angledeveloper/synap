@@ -356,7 +356,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             return result.orderID;
           } catch (e:any) {
             setPaypalStatus('PayPal order failed: ' + (e.message || e.toString()));
-          }
+    }
         },
         onApprove: async function(data: any, actions: any) {
           setPaypalStatus('Capturing payment...');
@@ -449,14 +449,14 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
       <div   className="flex flex-col lg:flex-row items-start gap-8">
         {/* Left Column - Billing Details */}
-        <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-6" style={{ width: '762px', height: '896px' }}>
+        <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-6 w-full lg:w-[762px] h-auto">
           <h2 className="text-[24px] text-gray-900 mb-6 billing-heading" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700', marginBottom:'41px' }}>
             1. {billingInformation?.bill_details_heading || billingInformation?.bill_info_heading || 'Your Billing Details'}
           </h2>
           
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Name Fields */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
                 <Label htmlFor="firstName" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
                   {billingInformation?.first_name_text || 'First Name'}*
@@ -465,8 +465,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   id="firstName"
                   value={formData.firstName}
                   onChange={(e) => handleInputChange("firstName", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black"
-                  style={{ fontFamily: 'Space Grotesk, sans-serif', width: '353px', height: '50px'}}
+                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full md:w-[353px] h-[50px]"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   required
                 />
               </div>
@@ -478,8 +478,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   id="lastName"
                   value={formData.lastName}
                   onChange={(e) => handleInputChange("lastName", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black"
-                  style={{ fontFamily: 'Space Grotesk, sans-serif', width: '353px', height: '50px' }}
+                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full md:w-[353px] h-[50px]"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   required
                 />
               </div>
@@ -495,14 +495,14 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black"
-                style={{ fontFamily: 'Space Grotesk, sans-serif', width: '722px', height: '50px' }}
+                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full h-[50px]"
+                style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                 required
               />
             </div>
 
              {/* Country and Phone Number */}
-             <div className="grid grid-cols-2 gap-4 mb-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                <div>
                  <Label htmlFor="country" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px'}}>
                    {billingInformation?.residence_text || 'Country of Residence'}*
@@ -510,7 +510,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                  <select 
                    value={formData.country} 
                    onChange={(e) => handleInputChange("country", e.target.value)}
-                   className="mt-1 border border-[#DBDBDB] rounded-[10px] bg-white w-[353px] h-[50px] px-3 text-black appearance-none cursor-pointer focus:border-black focus:outline-none"
+                   className="mt-1 border border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] px-3 text-black appearance-none cursor-pointer focus:border-black focus:outline-none"
                    style={{ 
                      fontFamily: 'Space Grotesk, sans-serif',
                      backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
@@ -530,7 +530,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 <Label className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
                   {billingInformation?.phone || 'Phone Number'}*       
                 </Label>
-                <div className="relative w-[353px] h-[50px]">
+                <div className="relative w-full md:w-[353px] h-[50px]">
                   <Input
                     type="tel"
                     className="w-full h-full border border-[#DBDBDB] bg-white rounded-r-[10px] px-4 pl-[70px] text-black text-base placeholder-[#888888] focus:border-black"
@@ -561,7 +561,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             </div>
 
             {/* Address and State/Province */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
                 <Label htmlFor="address" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
                   {billingInformation?.first_line_add || 'Street Address'}*
@@ -570,7 +570,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   id="address"
                   value={formData.address}
                   onChange={(e) => handleInputChange("address", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-[353px] h-[50px] text-black"
+                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] text-black"
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   required
                 />
@@ -582,7 +582,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 <select
                   value={formData.state}
                   onChange={(e) => handleInputChange("state", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-[353px] h-[50px] text-black"
+                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] text-black"
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   required
                 >
@@ -595,7 +595,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             </div>
 
             {/* City and Postal Code */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
                 <Label htmlFor="city" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
                   {billingInformation?.city || 'City'}*
@@ -603,7 +603,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                  <Input
                    value={formData.city} 
                    onChange={(e) => handleInputChange("city", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-[353px] h-[50px] text-black"
+                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] text-black"
                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                    required
                  />
@@ -616,7 +616,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   id="postalCode"
                   value={formData.postalCode}
                   onChange={(e) => handleInputChange("postalCode", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-[353px] h-[50px] text-black"
+                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] text-black"
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   required
                 />
@@ -639,7 +639,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
             {/* Company Details Fields - Only show when checkbox is checked */}
             {formData.addCompanyDetails && (
-              <div className="flex flex-row gap-4 mb-6">
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="flex-1">
                   <Label htmlFor="companyName" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
                     {billingInformation?.company_name || 'Company Name'}
@@ -648,8 +648,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                     id="companyName"
                     value={formData.companyName}
                     onChange={(e) => handleInputChange("companyName", e.target.value)}
-                    className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif', width: '353px', height: '50px' }}
+                    className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full md:w-[353px] h-[50px]"
+                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   />
                 </div>
                 <div className="flex-1">
@@ -660,8 +660,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                     id="gstin"
                     value={formData.gstin}
                     onChange={(e) => handleInputChange("gstin", e.target.value)}
-                    className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif', width: '353px', height: '50px' }}
+                    className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full md:w-[353px] h-[50px]"
+                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   />
                 </div>
               </div>
@@ -696,12 +696,10 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
         {/* Right Column - Order Summary */}
         <div 
-          className="bg-white rounded-[20px] p-7 mt-12 lg:mt-0 lg:ml-12"
+          className="bg-white rounded-[20px] p-7 mt-12 lg:mt-0 lg:ml-12 w-full lg:w-[440px] h-auto"
           style={{
             border: '1px solid transparent',
-            background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box',
-            width: '440px',
-            height: '576px'
+            background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box'
           }}
         >
           <h2 className="text-[24px] text-gray-900 mb-[31px] billing-heading" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700' }}>
@@ -886,7 +884,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
        {/* Payment Method Section - Only show when form is complete */}
        {isFormComplete() && (
-         <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-6 mt-8" style={{ width: '762px', height: '400px' }}>
+         <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-6 mt-8 w-full lg:w-[762px] h-auto">
            <h2 className="text-[24px] text-gray-900 mb-6" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700' }}>
              2. {billingInformation?.payment_method_text || 'Payment Method'}
            </h2>

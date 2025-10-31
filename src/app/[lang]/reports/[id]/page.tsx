@@ -17,6 +17,7 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import useSWR from 'swr';
 
 
 export default function ReportDetailPage() {
@@ -85,6 +86,33 @@ export default function ReportDetailPage() {
     requestCustomReport: "Request Custom Report",
     shareAt: "SHARE AT:",
   };
+
+  // Fetch checkout page to read Single License pricing (for One Time Cost box)
+  const fetchCheckoutData = async () => {
+    const res = await fetch('https://dashboard.synapseaglobal.com/api/checkout');
+    if (!res.ok) throw new Error('Failed to fetch checkout data');
+    return res.json();
+  };
+  const { data: checkoutApi } = useSWR('checkout-api', fetchCheckoutData);
+  const checkout_page = checkoutApi?.checkout_page;
+  // Pick a currency (first from dropdown) → derive suffix and symbol. Fallback USD
+  let singleActualPriceStr: string = '';
+  let singleOfferPriceStr: string = '';
+  if (checkout_page) {
+    const dropdown: string = checkout_page?.currency_dropdown || 'USD,INR,EUR';
+    const first = (dropdown.split(',')[0] || 'USD').trim();
+    const map: Record<string, { suffix: string; symbol: string }> = {
+      USD: { suffix: 'USD', symbol: '$' },
+      INR: { suffix: 'INR', symbol: '₹' },
+      EUR: { suffix: 'EUR', symbol: '€' },
+      '5': { suffix: 'USD', symbol: '$' },
+      '6': { suffix: 'INR', symbol: '₹' },
+      '7': { suffix: 'EUR', symbol: '€' },
+    };
+    const label = map[first] || map.USD;
+    singleOfferPriceStr = checkout_page[`single_license_offer_price_in_${label.suffix}`] || checkout_page[`single_license_offer_price_in_USD`] || '';
+    singleActualPriceStr = checkout_page[`single_license_actual_price_in_${label.suffix}`] || checkout_page[`single_license_actual_price_in_USD`] || '';
+  }
 
   // Form handlers
   const handleInputChange = (field: string, value: string) => {
@@ -194,7 +222,7 @@ export default function ReportDetailPage() {
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
               <li>
-                <a href="/" className="text-gray-500 hover:text-gray-700 font-normal">
+                <a href={`/${language}`} className="text-gray-500 hover:text-gray-700 font-normal">
                   {t.breadcrumbHome}
                 </a>
               </li>
@@ -202,7 +230,7 @@ export default function ReportDetailPage() {
                 <Icon icon="mdi:chevron-right" className="text-gray-500" />
               </li>
               <li>
-                <a href="/reports" className="text-gray-500 hover:text-gray-700 whitespace-nowrap font-normal">
+                <a href={`/${language}/reports`} className="text-gray-500 hover:text-gray-700 whitespace-nowrap font-normal">
                   {t.breadcrumbCategory}
                 </a>
               </li>
@@ -221,8 +249,9 @@ export default function ReportDetailPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4 sm:py-6 lg:py-8">
+        {/* Content and Sidebar: mobile stack, desktop grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-          {/* Main Content Area */}
+          {/* Main Content Area: always comes first for stacking */}
           <div className="lg:col-span-2">
             {/* Report Header */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -474,11 +503,12 @@ export default function ReportDetailPage() {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1 order-first lg:order-last">
-            <div className="sticky top-32" style={{ display: 'flex', flexDirection: 'column', gap: '38px' }}>
+          {/* Sidebar: always second in markup, first on desktop grid */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-32 flex flex-col gap-10">
+
               {/* One Time Cost */}
-              <div className="relative w-[322px] h-[179px] mx-auto lg:mx-0 rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+              <div className="relative w-full max-w-xs mx-auto rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
                 <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-4 sm:p-6">
                   <div>
                     <h3 
@@ -500,10 +530,10 @@ export default function ReportDetailPage() {
         <div className="mb-2">
         <div className="flex items-baseline gap-2">
           <span className="text-gray-900 line-through text-[16px]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-          {String((report as any)?.offer || '')}
+          {singleActualPriceStr}
           </span>
           <span className="text-[32px] font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-            {String((report as any)?.offer || '')}
+            {singleOfferPriceStr}
           </span>
         </div>
         </div>
@@ -522,8 +552,8 @@ export default function ReportDetailPage() {
                 </div>
               </div>
 
-              {/* Get Free Sample */}
-              <div className="relative w-[322px] h-[239px] mx-auto lg:mx-0 rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+              {/* Free Sample */}
+              <div className="relative w-full max-w-xs mx-auto rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
                 <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-4 sm:p-6">
                   <div>
                     <h3 
@@ -563,9 +593,9 @@ export default function ReportDetailPage() {
                 </div>
               </div>
 
-              {/* Custom Report - Fixed Alignment */}
-              <div className="w-[322px] mx-auto lg:mx-0">
-                <div className="flex flex-col" style={{ minHeight: '255px' }}>
+              {/* Custom Report */}
+              <div className="w-full max-w-xs mx-auto">
+                <div className="flex flex-col min-h-[255px]">
                   <div className="flex-1">
                     <h3 
                       className="mb-3"
@@ -631,8 +661,8 @@ export default function ReportDetailPage() {
         {/* Common Layout Section */}
         {commonLayout && (
           <div className="bg-white py-12 sm:py-16 lg:py-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {/* Main Heading */}
+            <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+              {/* API-provided Heading, split to two lines at colon */}
               <h2 
                 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8"
                 style={{ 
@@ -643,87 +673,78 @@ export default function ReportDetailPage() {
                   backgroundClip: 'text'
                 }}
               >
-                <div>Seize Tomorrow's Opportunities</div>
-                <div>Today: Access the Full Report</div>
+                {(() => {
+                  if (!commonLayout.title) return null;
+                  const words = commonLayout.title.split(/\s+/);
+                  if (words.length <= 3) return commonLayout.title;
+                  return (
+                    <>
+                      <div>{words.slice(0, 3).join(' ')}</div>
+                      <div>{words.slice(3).join(' ')}</div>
+                    </>
+                  );
+                })()}
               </h2>
 
-              {/* Dynamic Paragraph */}
-              <p 
+              {/* API-provided Conclusion Description, as HTML */}
+              <div 
                 className="text-base sm:text-lg text-gray-700 text-center max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed"
                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-              >
-                {commonLayout.report_conclusion}
-              </p>
+                dangerouslySetInnerHTML={{ __html: commonLayout.report_conclusion || '' }}
+              />
 
-              {/* Three Cards */}
-              <div className="flex flex-col md:flex-row gap-4 sm:gap-6 lg:gap-8 justify-center items-center">
-                {/* Card 1 - Top Selling Reports */}
-                <div 
-                  className="bg-white overflow-hidden shadow-lg border border-gray-200"
-                  style={{ width: '471px', height: '468px' }}
-                >
-                  <div 
-                    className="flex items-center justify-center"
-                    style={{ 
-                      background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                      width: '471px',
-                      height: '83px'
-                    }}
-                  >
-                    <h3 
-                      className="text-sm sm:text-base font-medium text-white text-center"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      {commonLayout.card_one_title}
-                    </h3>
-                  </div>
-                  <div className="bg-gray-900" style={{ height: '375px' }}></div>
-                </div>
+              {/* Cards using API titles */}
+              <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="w-full overflow-x-auto">
+                  <div className="flex flex-row flex-nowrap gap-4 sm:gap-6 lg:gap-8 items-center" style={{ minWidth: '1440px' }}>
+                    {/* Card 1 */}
+                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-none" style={{ width: '471px', height: '468px' }}>
+                      <div 
+                        className="flex items-center justify-center"
+                        style={{ 
+                          background: 'linear-gradient(to right, #1160C9, #08D2B8)',
+                          width: '100%', height: '83px'
+                        }}
+                      >
+                        <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                          {commonLayout.card_one_title || null}
+                        </h3>
+                      </div>
+                      <div className="bg-gray-900 flex-1" />
+                    </div>
 
-                {/* Card 2 - Personalise This Report */}
-                <div 
-                  className="bg-white overflow-hidden shadow-lg border border-gray-200"
-                  style={{ width: '471px', height: '468px' }}
-                >
-                  <div 
-                    className="flex items-center justify-center"
-                    style={{ 
-                      background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                      width: '471px',
-                      height: '83px'
-                    }}
-                  >
-                    <h3 
-                      className="text-sm sm:text-base font-medium text-white text-center"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      {commonLayout.card_two_title}
-                    </h3>
-                  </div>
-                  <div className="bg-gray-900" style={{ height: '375px' }}></div>
-                </div>
+                    {/* Card 2 */}
+                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-none" style={{ width: '471px', height: '468px' }}>
+                      <div 
+                        className="flex items-center justify-center"
+                        style={{ 
+                          background: 'linear-gradient(to right, #1160C9, #08D2B8)',
+                          width: '100%', height: '83px'
+                        }}
+                      >
+                        <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                          {commonLayout.card_two_title || null}
+                        </h3>
+                      </div>
+                      <div className="bg-gray-900 flex-1" />
+                    </div>
 
-                {/* Card 3 - Let Us Help You */}
-                <div 
-                  className="bg-white overflow-hidden shadow-lg border border-gray-200"
-                  style={{ width: '471px', height: '468px' }}
-                >
-                  <div 
-                    className="flex items-center justify-center"
-                    style={{ 
-                      background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                      width: '471px',
-                      height: '83px'
-                    }}
-                  >
-                    <h3 
-                      className="text-sm sm:text-base font-medium text-white text-center"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      {commonLayout.card_three_title}
-                    </h3>
+                    {/* Card 3 */}
+                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-none" style={{ width: '471px', height: '468px' }}>
+                      <div 
+                        className="flex items-center justify-center"
+                        style={{ 
+                          background: 'linear-gradient(to right, #1160C9, #08D2B8)',
+                          width: '100%', height: '83px'
+                        }}
+                      >
+                        <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                          {commonLayout.card_three_title || null}
+                        </h3>
+                      </div>
+                      <div className="bg-gray-900 flex-1" />
+                    </div>
                   </div>
-                  <div className="bg-gray-900" style={{ height: '375px' }}></div>
                 </div>
               </div>
             </div>
@@ -970,11 +991,11 @@ export default function ReportDetailPage() {
                       <div className="text-sm text-gray-600 leading-relaxed" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                         <div className="mb-2">
                           I agree to the{" "}
-                          <a href="/privacy" className="text-blue-600 hover:underline">
+                          <a href={`/${language}/privacy`} className="text-blue-600 hover:underline">
                             Privacy Policy
                           </a>{" "}
                           and{" "}
-                          <a href="/terms" className="text-blue-600 hover:underline">
+                          <a href={`/${language}/terms`} className="text-blue-600 hover:underline">
                             Terms of Service
                           </a>
                           .
