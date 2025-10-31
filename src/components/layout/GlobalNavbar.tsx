@@ -170,7 +170,7 @@ export default function GlobalNavbar() {
         {/* Center Navigation */}
         <div className="hidden items-center gap-8 text-sm text-white lg:flex">
           <Link href={`/${language}/about`} className="hover:font-bold transition-all">
-            About Us
+            {HomePage?.navbar?.item_one_name ?? ''}
           </Link>
           <div
   id="dropdown-button"
@@ -178,13 +178,13 @@ export default function GlobalNavbar() {
   onClick={() => setShowDropdown(!showDropdown)}
 >
   <span className={`bg-clip-text text-white transition-all ${showDropdown ? 'font-bold' : 'font-normal'}`}>
-    Reports Store
+    {HomePage?.navbar?.item_two ?? ''}
   </span>
   <Icon icon="mdi:chevron-down" className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
   {showDropdown && (
   <div id="dropdown-container" className="relative lg:absolute lg:top-[90px] lg:left-1/2 lg:-translate-x-1/2 w-full max-w-[1440px] h-auto lg:h-[450px] rounded-2xl bg-white shadow-sm px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
       <h2 className="text-left text-xl font-medium text-gray-900 mb-8" style={{ fontFamily: 'var(--font-geist-mono)' }}>
-        Reports Based On Industries
+        {HomePage?.report_store_dropdown?.[0]?.title ?? ''}
       </h2>
 
        {/* First row - responsive categories */}
@@ -251,7 +251,7 @@ export default function GlobalNavbar() {
   )}
 </div>
           <Link href={`/${language}/contact`} className="hover:font-bold transition-all">
-            Contact Us
+            {HomePage?.navbar?.button_text ?? ''}
           </Link>
         </div>
 
@@ -498,15 +498,13 @@ export default function GlobalNavbar() {
                   
                   <GlobalLanguageSwitch />
                 </div>
-                <Link href={`/${language}/about`} className="hover:font-bold transition-all">About Us</Link>
+                <Link href={`/${language}/about`} className="hover:font-bold transition-all">{HomePage?.navbar?.item_one_name ?? ''}</Link>
                 <div
                   id="dropdown-button"
                   className="flex cursor-pointer items-center gap-1 hover:font-bold transition-all"
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
-                  <span className={`text-white transition-all ${showDropdown ? 'font-bold' : 'font-normal'}`}>
-                    Reports Store
-                  </span>
+                  <span className={`text-white transition-all ${showDropdown ? 'font-bold' : 'font-normal'}`}>{HomePage?.navbar?.item_two ?? ''}</span>
                   <Icon icon="mdi:chevron-down" className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
                 </div>
                 {showDropdown && (
@@ -561,7 +559,7 @@ export default function GlobalNavbar() {
                     ))}
                   </div>
                 )}
-                <Link href={`/${language}/contact`} className="hover:font-bold transition-all">Contact Us</Link>
+                <Link href={`/${language}/contact`} className="hover:font-bold transition-all">{HomePage?.navbar?.button_text ?? ''}</Link>
               </div>
             </div>
           )}

@@ -39,6 +39,7 @@ const TickerCounter = () => {
 
 export default function GlobalAboveFooter() {
   const { HomePage } = useHomePageStore();
+  const { AboutPage } = useHomePageStore();
   const { language } = useLanguageStore();
 
   // Show loading state if HomePage data is not available
@@ -81,11 +82,11 @@ export default function GlobalAboveFooter() {
         <div className="relative z-10 h-full w-full bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-3 py-12 md:from-transparent md:to-transparent md:p-16 md:before:absolute md:before:top-0 md:before:right-[0%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-gradient-to-l md:before:from-[#1160C9] md:before:to-[#08D2B8] md:before:to-60% md:before:content-['']">
           {/* Title from API, fallback only if necessary */}
           <h4 className="text-[32px] text-left md:text-[64px]">
-            <div>{HomePage.common_layout_above_footer?.title || "Empowering"}</div>
-            <div><span className="whitespace-nowrap">{HomePage.common_layout_above_footer?.subtitle || "Success Across"}</span></div>
+            <div>{HomePage.common_layout_above_footer?.title ?? ''}</div>
+            <div><span className="whitespace-nowrap">{HomePage.common_layout_above_footer?.subtitle ?? ''}</span></div>
           </h4>
           <p className="mt-10 text-[20px]">
-            {HomePage.common_layout_above_footer?.description || ""}
+            {HomePage.common_layout_above_footer?.description ?? ''}
           </p>
         </div>
         <div className="w-full bg-[#F5F5F5] p-3 py-12 text-black md:h-full md:p-16">
@@ -95,10 +96,7 @@ export default function GlobalAboveFooter() {
             </h5>
             <div className="font-space-grotesk text-left">
               <div className="text-[24px] font-low text-[#1c1c1c] md:text-[40px]">
-                {HomePage.common_layout_above_footer?.right_title_first || "Major"}
-              </div>
-              <div className="text-[24px] font-low text-[#1c1c1c] md:text-[40px]">
-                {HomePage.common_layout_above_footer?.right_title_second || "Industries"}
+                {HomePage.common_layout_above_footer?.major_industries ?? ''}
               </div>
             </div>
           </div>
@@ -106,7 +104,7 @@ export default function GlobalAboveFooter() {
             <span className="flex w-full justify-end">
               <ArrowIcon variant="gradient" />
             </span>
-            <span>{HomePage.home_section1?.first_button || "Explore Reports"}</span>
+            <span>{HomePage.common_layout_above_footer?.button ?? ''}</span>
           </Link>
         </div>
       </div>

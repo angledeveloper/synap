@@ -41,14 +41,14 @@ export default function GlobalFooter() {
                 <span className="flex w-full justify-end">
                   <ArrowIcon variant="white" />
                 </span>
-                <span>{HomePage.footer.section?.button || "Explore Reports"}</span>
+                <span>{HomePage.footer.section?.button ?? ''}</span>
               </button>
             </Link>
           </div>
           <div className="flex w-full flex-col gap-8 md:w-fit">
             <div className="flex w-full flex-wrap gap-6 md:justify-end">
               <div className="min-w-[120px]">
-                <span className="text-[20px] underline">Solution</span>
+                <span className="text-[20px] underline">{HomePage.footer.section?.solutions ?? ''}</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
                   {HomePage.footer.menu.Solution?.map(
@@ -61,7 +61,7 @@ export default function GlobalFooter() {
                 </ul>
               </div>
               <div className="min-w-[120px]">
-                <span className="text-[20px] underline">Resources</span>
+                <span className="text-[20px] underline">{HomePage.footer.section?.resources ?? ''}</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
                   {HomePage.footer.menu.Resources?.map(
@@ -74,7 +74,7 @@ export default function GlobalFooter() {
                 </ul>
               </div>
               <div className="min-w-[120px]">
-                <span className="text-[20px] underline">Company</span>
+                <span className="text-[20px] underline">{HomePage.footer.section?.company ?? ''}</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
                   {HomePage.footer.menu.Company?.map((link: any, index: number) => {
@@ -88,7 +88,7 @@ export default function GlobalFooter() {
                 </ul>
               </div>
               <div className="min-w-[120px]">
-                <span className="text-[20px] underline">Legal</span>
+                <span className="text-[20px] underline">{HomePage.footer.section?.legal ?? ''}</span>
 
                 <ul className="mt-6 flex flex-col gap-2 text-[16px]">
                   {HomePage.footer.menu.Legal?.map((link: any, index: number) => {

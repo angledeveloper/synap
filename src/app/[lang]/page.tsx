@@ -88,22 +88,22 @@ export default function Home() {
       <section className="relative bg-black text-white">
         <Image
           src="/hero.jpg"
-          alt={HomePage.home_section1.title}
+          alt={HomePage.home_section1?.title ?? ''}
           fill
           className="bg-no-repeat object-cover"
         />
         <div className="relative flex h-screen min-h-[500px] w-full flex-col items-center justify-end p-4">
           <h1 className="mb-20 max-w-[900px] text-center text-[32px] uppercase md:text-[64px]">
-            {HomePage.home_section1.title}
+            {HomePage.home_section1?.title ?? ''}
           </h1>
           <div className="flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
             <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
-              <Link href={getReportsHref(HomePage.home_section1.first_button) || "/reports"}>
+              <Link href={getReportsHref(HomePage.home_section1?.first_button) || "/reports"}>
                 <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                   <span className="flex w-full justify-end">
                     <ArrowIcon variant="gradient" />
                   </span>
-                  <span>{HomePage.home_section1.first_button}</span>
+                  <span>{HomePage.home_section1?.first_button ?? ''}</span>
                 </button>
               </Link>
               <button 
@@ -113,11 +113,11 @@ export default function Home() {
                 <span className="flex w-full justify-end">
                   <ArrowIcon variant="white" />
                 </span>
-                <span>{HomePage.home_section1.second_button}</span>
+                <span>{HomePage.home_section1?.second_button ?? ''}</span>
               </button>
             </div>
             <div className="w-full text-[20px] text-left">
-              {HomePage.home_section1.description?.split('\n').map((line: string, index: number) => (
+              {HomePage.home_section1?.description?.split('\n').map((line: string, index: number) => (
                 <div key={index} className="mb-2">
                   {line}
                 </div>
@@ -128,7 +128,7 @@ export default function Home() {
       </section>
       <section className="flex w-full justify-center bg-[#000] p-3 py-20">
         <div className="flex w-full max-w-[1440px] flex-col items-center justify-center gap-10 md:flex-row">
-          {HomePage.home_section2.map((section: any, index: number) => (
+          {HomePage.home_section2?.map((section: any, index: number) => (
             <div
               key={index}
               style={{
@@ -167,14 +167,14 @@ export default function Home() {
       >
         <div className="m-auto flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
           <div className="text-[32px] font-medium max-md:text-center md:text-[40px]">
-            {HomePage.home_section3.tagline}
+            {HomePage.home_section3?.tagline ?? ''}
           </div>
-          <Link href={getReportsHref(HomePage.home_section3.button) || `/${language}/reports`}>
+          <Link href={getReportsHref(HomePage.home_section3?.button) || `/${language}/reports`}>
             <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-black/5 p-4 text-[20px] font-bold backdrop-blur-[5px] transition-all duration-300 hover:border-white/40 hover:text-neutral-400 max-md:w-full">
               <span className="flex w-full justify-end">
                 <ArrowIcon variant="white" />
               </span>
-              <span>{HomePage.home_section3.button}</span>
+              <span>{HomePage.home_section3?.button ?? ''}</span>
             </button>
           </Link>
         </div>
@@ -217,7 +217,7 @@ export default function Home() {
         <div className="relative m-auto grid w-full max-w-[1440px] grid-cols-1 justify-center justify-items-end bg-white text-black md:grid-cols-2">
           <div className="flex w-full flex-col bg-[#F5F5F5] p-3 pt-10 md:p-16 md:pt-16 ml-0 md:ml-[284px]">
             <h4 className="text-[32px] font-bold md:text-[64px]" style={{ marginBottom: '136px' }}>
-              {HomePage.home_section5.title}
+              {HomePage.home_section5?.title ?? ''}
             </h4>
             <div className="relative min-h-[500px] w-full max-w-2xl testimonials-container">
   {HomePage.testimonials.map((testimonial: any, index: number) => (
@@ -285,34 +285,34 @@ export default function Home() {
           <div className="relative z-10 flex w-full flex-col bg-black text-white">
             <div className="md; flex flex-col gap-4 bg-[#06A591] pt-10 max-md:px-3 max-md:py-12 md:p-16 md:pt-16 md:before:absolute md:before:top-0 md:before:left-[90%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-[#06A591] md:before:content-['']">
               <span className="text-[32px]">
-                {HomePage.home_section5.first_box_title}
+                {HomePage.home_section5?.first_box_title ?? ''}
               </span>
               <span className="text-[20px] font-light">
-                {HomePage.home_section5.first_box_description}
+                {HomePage.home_section5?.first_box_description ?? ''}
               </span>
               <Link
                 className="mt-12 text-[20px] font-medium underline"
                 href={`/${language}`}
               >
-                {HomePage.home_section5.first_box_link}
+                {HomePage.home_section5?.first_box_link ?? ''}
               </Link>
             </div>
             <div className="relative flex flex-col gap-4 max-md:px-3 max-md:py-12 md:p-16 md:pt-16 md:before:absolute md:before:top-[0%] md:before:left-[90%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-[#000] md:before:content-['']">
               <span className="text-[32px]">
-                {HomePage.home_section5.second_box_title}
+                {HomePage.home_section5?.second_box_title ?? ''}
               </span>
               <span className="text-[20px] font-light">
-                {HomePage.home_section5.second_box_description}
+                {HomePage.home_section5?.second_box_description ?? ''}
               </span>
             <Link className="text-[20px] font-medium underline" href={`/${language}`}>
-                {HomePage.home_section5.second_box_link}
+                {HomePage.home_section5?.second_box_link ?? ''}
               </Link>
               <Link className="mt-12" href={`/${language}/reports`}>
                 <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                   <span className="flex w-full justify-end">
                     <ArrowIcon variant="white" />
                   </span>
-                  <span> {HomePage.home_section5.button}</span>
+                  <span> {HomePage.home_section5?.button ?? ''}</span>
                 </button>
               </Link>
             </div>
