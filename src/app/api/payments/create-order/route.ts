@@ -9,9 +9,9 @@ export async function POST(req: NextRequest) {
     }
     const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
     const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
-    const baseURL = process.env.NODE_ENV === 'production'
+    const baseURL = process.env.PAYPAL_BASE_URL || (process.env.NODE_ENV === 'production'
       ? 'https://api-m.paypal.com'
-      : 'https://api-m.sandbox.paypal.com';
+      : 'https://api-m.sandbox.paypal.com');
     // 1. Get Auth token
     const basic = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString('base64');
     const tokenRes = await fetch(`${baseURL}/v1/oauth2/token`, {
