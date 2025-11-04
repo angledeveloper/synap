@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     if (!reportId || !licenseType || !currency || !amount) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+    const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
     const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
     const baseURL = process.env.PAYPAL_BASE_URL || (process.env.NODE_ENV === 'production'
       ? 'https://api-m.paypal.com'
