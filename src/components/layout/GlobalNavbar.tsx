@@ -182,14 +182,45 @@ export default function GlobalNavbar() {
   </span>
   <Icon icon="mdi:chevron-down" className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
   {showDropdown && (
-  <div id="dropdown-container" className="relative lg:absolute lg:top-[90px] lg:left-1/2 lg:-translate-x-1/2 w-full max-w-[1440px] h-auto lg:h-[450px] rounded-2xl bg-white shadow-sm px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+  <div id="dropdown-container" className="relative lg:absolute lg:top-[90px] lg:left-1/2 lg:-translate-x-1/2 w-full max-w-[1440px] h-auto max-h-[80vh] overflow-y-auto rounded-2xl bg-white shadow-sm px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
       <h2 className="text-left text-xl font-medium text-gray-900 mb-8" style={{ fontFamily: 'var(--font-geist-mono)' }}>
         {HomePage?.report_store_dropdown?.[0]?.title ?? ''}
       </h2>
 
        {/* First row - responsive categories */}
-       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-y-6 sm:gap-y-8 gap-x-6 sm:gap-x-8 lg:gap-x-12">
-         {HomePage.report_store_dropdown.slice(0, 4).map((item: any, idx: number) => (
+       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-y-4 sm:gap-y-4 gap-x-4 sm:gap-x-4 lg:gap-x-6">
+         {/* All Industries first */}
+         {HomePage.report_store_dropdown
+           .filter(item => item.category_name === 'All Industries')
+           .map((item: any) => (
+             <Link href={`/${language}/reports`} key={item.category_id} className="group">
+               <div className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                 <div className="w-7 h-7 relative flex-shrink-0">
+                   <Image
+                     src={item.icon}
+                     alt={item.category_name}
+                     width={28}
+                     height={28}
+                     className="w-full h-full object-contain"
+                   />
+                 </div>
+                 <div>
+                   <h3 className="text-[15px] font-medium text-gray-900 leading-snug group-hover:text-blue-600 transition-colors" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                     {item.category_name}
+                   </h3>
+                   <p className="text-[13px] text-black font-normal mt-1" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                     {item.category_tagline?.split(' ').slice(0, 3).join(' ')}
+                   </p>
+                 </div>
+               </div>
+             </Link>
+           ))}
+         
+         {/* Other categories (excluding All Industries) */}
+         {HomePage.report_store_dropdown
+           .filter(item => item.category_name !== 'All Industries')
+           .slice(0, 3)  // Take 3 more to make it 4 in total with All Industries
+           .map((item: any, idx: number) => (
            <Link href={`/${language}/reports?category=${item.id}`} key={idx} className="group">
              <div className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                <div className="w-7 h-7 relative flex-shrink-0">
@@ -215,13 +246,16 @@ export default function GlobalNavbar() {
        </div>
        
        {/* Subsequent rows - responsive 3-up rows */}
-       {HomePage.report_store_dropdown.slice(4).reduce((rows: any[], item: any, idx: number) => {
+       {HomePage.report_store_dropdown
+         .filter(item => item.category_name !== 'All Industries')
+         .slice(3)  // Skip the first 3 we already showed
+         .reduce((rows: any[], item: any, idx: number) => {
          const rowIndex = Math.floor(idx / 3);
          if (!rows[rowIndex]) rows[rowIndex] = [];
          rows[rowIndex].push({...item, originalIndex: idx + 4});
          return rows;
        }, []).map((row: any[], rowIdx: number) => (
-         <div key={rowIdx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 sm:gap-y-8 gap-x-6 sm:gap-x-8 mt-6 w-full lg:max-w-[75%]">
+         <div key={rowIdx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 sm:gap-y-4 gap-x-4 sm:gap-x-4 mt-4 w-full lg:max-w-[75%]">
            {row.map((item: any, idx: number) => (
              <Link href={`/${language}/reports?category=${item.id}`} key={item.originalIndex} className="group">
                <div className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">

@@ -14,38 +14,15 @@ import { Icon } from "@iconify/react";
 import { Report, ReportsResponse } from "@/types/reports";
 
 
+// Default category data
+const defaultCategoryData = {
+  name: "Technology & Software",
+  description: "When preparing to launch a flagship device in Asia, the client lacked pricing clarity across tier-2 cities. SYNAPSea's consumer behavior modeling revealed untapped price thresholds, driving a 32% revenue increase in the first quarter post-launch.",
+};
+
 export default function ReportsPage() {
   const { language } = useLanguageStore();
   const searchParams = useSearchParams();
-  const { data: translations, isLoading: isTranslationsLoading, error: translationsError } = useTranslations({ language, page: 'reports' });
-  const t = translations || {
-    breadcrumbHome: "Home",
-    breadcrumbCategory: "Technology & Software",
-    heading: "Technology & Software",
-    description: "When preparing to launch a flagship device in Asia, the client lacked pricing clarity across tier-2 cities. SYNAPSea's consumer behavior modeling revealed untapped price thresholds, driving a 32% revenue increase in the first quarter post-launch.",
-    searchPlaceholder: "Search By Title",
-    filters: {
-      industry: "INDUSTRY",
-      region: "REGION",
-      year: "YEAR",
-    },
-    clearFilters: "Clear Filters",
-    viewReport: "View Report",
-    pagination: {
-      previous: "Previous",
-      next: "Next",
-    },
-    reportLimit: {
-      label: "Reports per page:",
-      options: {
-        "1-10": "1-10",
-        "1-50": "1-50", 
-        "1-100": "1-100"
-      }
-    },
-    noReports: "No reports found",
-    noReportsDescription: "Try adjusting your search criteria or filters.",
-  };
   
   // Get category from URL parameters
   const rawCategoryFromUrl = searchParams.get('category');
@@ -61,7 +38,101 @@ export default function ReportsPage() {
     per_page: 10,
     language_id: languageId,
   });
+  
   const [reports, setReports] = useState<Report[]>([]);
+  const [categoryData, setCategoryData] = useState(defaultCategoryData);
+  
+  // Memoize the category data to prevent unnecessary re-renders
+  const memoizedCategoryData = useMemo(() => categoryData, [categoryData]);
+  
+  const { data: translations, isLoading: isTranslationsLoading, error: translationsError } = useTranslations({ 
+    language, 
+    page: 'reports' 
+  });
+  
+  // Define the translation type to ensure type safety
+  type TranslationType = {
+    breadcrumbHome: string;
+    breadcrumbCategory: string;
+    heading: string;
+    description: string;
+    searchPlaceholder: string;
+    filters: {
+      industry: string;
+      region: string;
+      year: string;
+    };
+    clearFilters: string;
+    viewReport: string;
+    pagination: {
+      previous: string;
+      next: string;
+    };
+    reportLimit: {
+      label: string;
+      options: Record<string, string>;
+    };
+    noReports: string;
+    noReportsDescription: string;
+  };
+
+  // Create translations with fallback to default values
+  const t = useMemo<TranslationType>(() => {
+    const defaultTranslations: TranslationType = {
+      breadcrumbHome: "Home",
+      breadcrumbCategory: memoizedCategoryData.name,
+      heading: memoizedCategoryData.name,
+      description: memoizedCategoryData.description,
+      searchPlaceholder: "Search By Title",
+      filters: {
+        industry: "INDUSTRY",
+        region: "REGION",
+        year: "YEAR",
+      },
+      clearFilters: "Clear Filters",
+      viewReport: "View Report",
+      pagination: {
+        previous: "Previous",
+        next: "Next",
+      },
+      reportLimit: {
+        label: "Reports per page:",
+        options: {
+          "1-10": "1-10",
+          "1-50": "1-50", 
+          "1-100": "1-100"
+        }
+      },
+      noReports: "No reports found",
+      noReportsDescription: "Try adjusting your search criteria or filters.",
+    };
+
+    if (!translations) {
+      return defaultTranslations;
+    }
+
+    // Merge translations with dynamic category data
+    return {
+      ...defaultTranslations, // Start with all default values
+      ...translations, // Override with any provided translations
+      breadcrumbCategory: memoizedCategoryData.name,
+      heading: memoizedCategoryData.name,
+      description: memoizedCategoryData.description,
+      // Ensure all required properties are present
+      filters: {
+        ...defaultTranslations.filters,
+        ...(translations.filters || {})
+      },
+      pagination: {
+        ...defaultTranslations.pagination,
+        ...(translations.pagination || {})
+      },
+      reportLimit: {
+        ...defaultTranslations.reportLimit,
+        ...(translations.reportLimit || {})
+      }
+    };
+  }, [translations, memoizedCategoryData]);
   const [pagination, setPagination] = useState({
     totalPages: 0,
     currentPage: 1,
@@ -85,7 +156,7 @@ export default function ReportsPage() {
   }, [rawCategoryFromUrl, languageId]);
 
   // Memoize the entire translation object to prevent unnecessary re-renders
-  const memoizedTranslations = useMemo(() => t, [language]);
+  const memoizedTranslations = useMemo(() => t, [t]);
 
   // Simple memoized reports rendering
   const memoizedReports = useMemo(() => {
@@ -95,16 +166,20 @@ export default function ReportsPage() {
       <ReportCard 
         key={report.id} 
         report={report} 
-        viewReportLabel={memoizedTranslations.viewReport} 
+        viewReportLabel={memoizedTranslations.viewReport || 'View Report'} 
       />
     ));
-  }, [reports, memoizedTranslations.viewReport]);
+  }, [reports, memoizedTranslations]);
 
   useEffect(() => {
     // Fetch reports when filters change
+    console.log('Fetching reports with filters:', filters);
     setIsLoading(true); // Set loading state when starting fetch
     fetchReports(filters, {
       onSuccess: (data: ReportsResponse) => {
+        console.log('API Response Data:', data);
+        
+        // Extract reports and update state
         const reportsToSet = data.reports || [];
         const reportsKey = reportsToSet.map(r => r.id).sort().join(',');
         
@@ -113,11 +188,31 @@ export default function ReportsPage() {
           setLastRenderedReports(reportsKey);
         }
         
+        // Extract and update category data if available
+        const apiCategoryName = (data as any).category_name;
+        const apiCategoryDesc = (data as any).category_desc;
+        
+        if (apiCategoryName || apiCategoryDesc) {
+          console.log('Updating category data:', { 
+            name: apiCategoryName, 
+            description: apiCategoryDesc 
+          });
+          
+          setCategoryData(prev => ({
+            name: apiCategoryName || prev.name,
+            description: apiCategoryDesc || prev.description
+          }));
+        } else {
+          console.log('No category data in response, using existing data');
+        }
+        
+        // Update pagination
         setPagination({
           totalPages: data.totalPages || 0,
           currentPage: data.currentPage || 1,
           totalCount: data.totalCount || 0,
         });
+        
         setIsLoading(false);
       },
       onError: (error: Error) => {
@@ -307,9 +402,18 @@ export default function ReportsPage() {
           }}>
             {t.heading}
           </h1>
-          <p className="text-lg text-left" style={{ color: '#242424', lineHeight: '26px', letterSpacing: '0%', width: '1315px', height: '78px' }}>
-            {t.description}
-          </p>
+          <div className="w-full max-w-7xl">
+            <p className="text-lg text-left text-gray-800 leading-relaxed" style={{ 
+              maxWidth: '100%',
+              margin: '0.5rem 0',
+              whiteSpace: 'pre-line',
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              hyphens: 'auto'
+            }}>
+              {t.description}
+            </p>
+          </div>
         </div>
       </div>
 

@@ -89,6 +89,8 @@ export interface ReportsResponse {
   totalPages: number;
   currentPage: number;
   totalCount: number;
+  category_name?: string;
+  category_desc?: string;
 }
 
 export interface Filters {

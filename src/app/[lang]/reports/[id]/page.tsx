@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useLanguageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
@@ -26,6 +26,31 @@ export default function ReportDetailPage() {
   const { language } = useLanguageStore();
   const [activeTab, setActiveTab] = useState(0);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isSampleFormOpen, setIsSampleFormOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const formRef = useRef<HTMLDivElement>(null);
+
+  // Close form when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (formRef.current && !formRef.current.contains(event.target as Node)) {
+        setIsSampleFormOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleSampleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle form submission here
+    console.log('Submitted email:', email);
+    // Close the form after submission
+    setIsSampleFormOpen(false);
+  };
   const [formData, setFormData] = useState({
     fullName: '',
     businessEmail: '',
@@ -449,21 +474,34 @@ export default function ReportDetailPage() {
             {/* Tab Navigation and Content - Connected */}
             <div className="mb-6 sm:mb-8">
               {/* Tab Navigation */}
-              <div className="flex flex-wrap gap-2 sm:gap-0 sm:space-x-0 w-full sm:w-fit">
-                {sections.map((section, index) => (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveTab(index)}
-                    className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors flex-1 sm:flex-none ${
-                      activeTab === index 
-                        ? 'bg-black text-white rounded-tl-lg rounded-br-lg' 
-                        : 'bg-gray-100 text-gray-600 border border-white rounded-tl-lg rounded-br-lg hover:text-gray-900'
-                    }`}
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    <span className="truncate">{section.section_name.toUpperCase()}</span>
-                  </button>
-                ))}
+              <div className="flex w-full overflow-x-auto no-scrollbar">
+                <div className="flex">
+                  {sections.map((section, index) => (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveTab(index)}
+                      className={`flex items-center justify-center transition-colors ${
+                        activeTab === index 
+                          ? 'bg-black text-white' 
+                          : 'bg-white text-gray-600 border border-[#7C7C7C] hover:bg-gray-50'
+                      }`}
+                      style={{
+                        fontFamily: 'Space Grotesk, sans-serif',
+                        width: '195px',
+                        height: '51px',
+                        borderTopLeftRadius: '8px',
+                        borderTopRightRadius: '8px',
+                        marginRight: index < sections.length - 1 ? '1px' : '0',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        lineHeight: '20px',
+                        letterSpacing: '0.1px'
+                      }}
+                    >
+                      <span className="truncate px-2">{section.section_name.toUpperCase()}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Tab Content - Connected to tabs */}
@@ -484,7 +522,8 @@ export default function ReportDetailPage() {
                     key={section.id} 
                     className={`${activeTab === index ? 'block' : 'hidden'}`}
                   >
-                  <div className="bg-gray-100 rounded-br-2xl rounded-bl-2xl border border-gray-200 border-t-0 p-4 sm:p-6 lg:p-8 -mt-px">
+                  <div className="bg-gray-100 rounded-br-2xl rounded-bl-2xl border border-gray-200 border-t-0 p-4 sm:p-6 lg:p-8 -mt-px relative">
+                    <div className="absolute top-0 left-0 right-0 h-px bg-black"></div>
                     <h2 
                       className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2 sm:mb-3"
                       style={{ fontFamily: 'Space Grotesk, sans-serif' }}
@@ -504,146 +543,109 @@ export default function ReportDetailPage() {
           </div>
 
           {/* Sidebar: always second in markup, first on desktop grid */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-32 flex flex-col gap-10">
-
+          <div className="lg:col-span-1 h-full">
+            <div className="sticky top-32 flex flex-col items-center gap-4" style={{ width: '322px', margin: '0 auto' }}>
               {/* One Time Cost */}
-              <div className="relative w-full max-w-xs mx-auto rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
-                <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-4 sm:p-6">
-                  <div>
+              <div className="w-[322px] h-[179px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+                <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-6">
+                  <div className="relative">
                     <h3 
-                      className="mb-2"
-                      style={{ 
-                        fontFamily: 'Space Grotesk, sans-serif',
-                        fontSize: '16px',
-                        lineHeight: '30px',
-                        letterSpacing: '0px',
-                        fontWeight: '400',
-                        color: '#595959'
-                      }}
+                      className="text-[#595959] text-base font-normal mb-2"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                     >
                       {report.one_time_section}
                     </h3>
-                    <div className="w-20 h-7.5 absolute top-4 right-4 bg-[#C7D8E5] text-[#1074C6] px-3 py-1 rounded-[25px] text-[14px] font-bold"style={{fontFamily: 'var(--font-space-grotesk), sans-serif'}}>
-                    20% off
-        </div>
-        <div className="mb-2">
-        <div className="flex items-baseline gap-2">
-          <span className="text-gray-900 line-through text-[16px]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-          {singleActualPriceStr}
-          </span>
-          <span className="text-[32px] font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-            {singleOfferPriceStr}
-          </span>
-        </div>
-        </div>
-                    
+                    <div className="absolute top-0 right-0 bg-[#C7D8E5] text-[#1074C6] px-3 py-1 rounded-full text-sm font-bold" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                      20% off
+                    </div>
+                    <div className="mt-6">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-gray-900 line-through text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                          {singleActualPriceStr}
+                        </span>
+                        <span className="text-[32px] font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                          {singleOfferPriceStr}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  {/* Add to Cart removed */}
-                  <Button
-                    className="w-full max-w-[297px] h-[50px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-sm sm:text-base"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    onClick={() => router.push(`/${params?.lang}/reports/${params?.id}/checkout`)}
-                    aria-label="Buy License Now"
-                  >
-                    <span className="truncate">Buy License Now</span>
-                    <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
-                  </Button>
+                  <div className="w-full flex justify-center">
+                    <Button
+                      className="h-[50px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
+                      style={{ 
+                        fontFamily: 'Space Mono, monospace',
+                        width: '297px'
+                      }}
+                      onClick={() => router.push(`/${params?.lang}/reports/${params?.id}/checkout`)}
+                      aria-label="Buy License Now"
+                    >
+                      <span className="truncate">Buy License Now</span>
+                      <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 
               {/* Free Sample */}
-              <div className="relative w-full max-w-xs mx-auto rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
-                <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-4 sm:p-6">
+              <div className="w-[322px] h-[239px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+                <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-6">
                   <div>
                     <h3 
-                      className="mb-2"
-                      style={{ 
-                        fontFamily: 'Space Mono, monospace',
-                        fontSize: '20px',
-                        lineHeight: '30px',
-                        letterSpacing: '0px',
-                        fontWeight: '400',
-                        color: '#000000'
-                      }}
+                      className="text-black text-xl font-normal mb-2"
+                      style={{ fontFamily: 'Space Mono, monospace' }}
                     >
                       {report.free_sample}
                     </h3>
                     <p 
-                      className="mb-4"
-                      style={{ 
-                        fontFamily: 'Space Grotesk, sans-serif',
-                        fontSize: '16px',
-                        lineHeight: '20px',
-                        letterSpacing: '0px',
-                        fontWeight: '400',
-                        color: '#595959'
-                      }}
+                      className="text-[#595959] text-base font-normal mb-4"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                     >
                       {report.free_sample_section}
                     </p>
                   </div>
-                  <Button
-                    className="w-full max-w-[286px] h-[45px] sm:h-[52px] bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-sm sm:text-base"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    <span className="truncate">{report.download_button}</span>
-                    <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
-                  </Button>
+                  <div className="w-full flex justify-center">
+                    <Button
+                      className="h-[50px] bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
+                      style={{ 
+                        fontFamily: 'Space Grotesk, sans-serif',
+                        width: '297px',
+                        
+                      }}
+                    >
+                      <span className="truncate" onClick={() => setIsSampleFormOpen(true)}>{report.download_button}</span>
+                      <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 
               {/* Custom Report */}
-              <div className="w-full max-w-xs mx-auto">
-                <div className="flex flex-col min-h-[255px]">
-                  <div className="flex-1">
+              <div className="w-full">
+                <div className="flex flex-col gap-6">
+                  <div>
                     <h3 
-                      className="mb-3"
-                      style={{ 
-                        fontFamily: 'Space Mono, monospace',
-                        fontSize: '20px',
-                        lineHeight: '30px',
-                        letterSpacing: '0px',
-                        fontWeight: '400',
-                        color: '#000000'
-                      }}
+                      className="text-black text-xl font-normal mb-1"
+                      style={{ fontFamily: 'Space Mono, monospace' }}
                     >
                       {report.need_custom_report}
                     </h3>
                     <p 
-                      className="mb-6"
-                      style={{ 
-                        fontFamily: 'Space Grotesk, sans-serif',
-                        fontSize: '16px',
-                        lineHeight: '20px',
-                        letterSpacing: '0px',
-                        fontWeight: '400',
-                        color: '#595959'
-                      }}
+                      className="text-[#595959] text-base font-normal"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                     >
                       {report.custom_report_description}
                     </p>
                   </div>
                   <Button
                     variant="outline"
-                    className="border-2 border-gray-800 text-gray-800 hover:bg-gray-50 font-bold rounded-lg relative bg-white"
-                    style={{ 
-                      fontFamily: 'Space Grotesk, sans-serif',
-                      width: '320px',
-                      height: '88px'
-                    }}
+                    className="w-full h-[50px] border-gray-800 text-black font-bold rounded-lg relative bg-white hover:bg-gray-50 text-[18px]"
+                    style={{ fontFamily: 'Space Grotesk, sans-serif'}}
                     onClick={openPopup}
                   >
-                    <span 
-                      className="absolute left-5 bottom-4 font-bold text-base"
-                      style={{ 
-                        fontFamily: 'Space Grotesk, sans-serif',
-                        fontWeight: '700'
-                      }}
-                    >
+                    <span className="absolute left-5 text-[20px] font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                       {report.custom_report_button}
                     </span>
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute right-4">
                       <img 
                         src="/barrow.svg" 
                         alt="Arrow" 
@@ -670,7 +672,9 @@ export default function ReportDetailPage() {
                   background: 'linear-gradient(to right, #1160C9, #08D2B8)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
+                  backgroundClip: 'text',
+                  lineHeight: '1.2',
+                  padding: '0.2em 0'  // Add vertical padding
                 }}
               >
                 {(() => {
@@ -679,8 +683,8 @@ export default function ReportDetailPage() {
                   if (words.length <= 3) return commonLayout.title;
                   return (
                     <>
-                      <div>{words.slice(0, 3).join(' ')}</div>
-                      <div>{words.slice(3).join(' ')}</div>
+                      <div style={{ lineHeight: '1.4' }}>{words.slice(0, 3).join(' ')}</div>
+                      <div style={{ lineHeight: '1.4' }}>{words.slice(3).join(' ')}</div>
                     </>
                   );
                 })()}
@@ -694,11 +698,11 @@ export default function ReportDetailPage() {
               />
 
               {/* Cards using API titles */}
-              <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="w-full overflow-x-auto">
-                  <div className="flex flex-row flex-nowrap gap-4 sm:gap-6 lg:gap-8 items-center" style={{ minWidth: '1440px' }}>
+              <div className="w-full">
+                <div className="flex justify-center">
+                  <div className="flex gap-6 lg:gap-8" style={{ width: 'fit-content' }}>
                     {/* Card 1 */}
-                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-none" style={{ width: '471px', height: '468px' }}>
+                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-shrink-0" style={{ width: '471px', height: '468px' }}>
                       <div 
                         className="flex items-center justify-center"
                         style={{ 
@@ -714,7 +718,7 @@ export default function ReportDetailPage() {
                     </div>
 
                     {/* Card 2 */}
-                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-none" style={{ width: '471px', height: '468px' }}>
+                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-shrink-0" style={{ width: '471px', height: '468px' }}>
                       <div 
                         className="flex items-center justify-center"
                         style={{ 
@@ -730,7 +734,7 @@ export default function ReportDetailPage() {
                     </div>
 
                     {/* Card 3 */}
-                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-none" style={{ width: '471px', height: '468px' }}>
+                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-shrink-0" style={{ width: '471px', height: '468px' }}>
                       <div 
                         className="flex items-center justify-center"
                         style={{ 
@@ -1033,6 +1037,209 @@ export default function ReportDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Request Sample PDF Form Modal */}
+      {isSampleFormOpen && (
+      <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
+        <div 
+          ref={formRef}
+          className="bg-white rounded-lg p-8 w-full max-w-md relative"
+          style={{
+            boxShadow: '0px 4px 20px 0px rgba(0, 0, 0, 0.15)'
+          }}
+        >
+          <button 
+            onClick={() => setIsSampleFormOpen(false)}
+            className="absolute top-6 right-6 text-gray-500 hover:text-gray-700"
+            aria-label="Close"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          
+          <h2 className="text-2xl font-bold text-[#0B1018] mb-2" style={{ 
+            fontFamily: 'Space Grotesk, sans-serif',
+            fontSize: '20px',
+            fontWeight: 700
+          }}>
+            Request Sample PDF
+          </h2>
+          
+          <p className="text-base text-[#000000] mb-6" style={{ 
+            fontFamily: 'Space Grotesk, sans-serif',
+            fontWeight: 400
+          }}>
+            Please enter your details
+          </p>
+          
+          <form onSubmit={handleSampleSubmit} className="space-y-4">
+            {/* Full Name */}
+            <div>
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name *
+              </label>
+              <input
+                type="text"
+                id="fullName"
+                name="fullName"
+                required
+                value={formData.fullName}
+                onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                style={{
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  fontSize: '14px',
+                  lineHeight: '20px'
+                }}
+                placeholder="Enter your full name"
+              />
+            </div>
+            
+            {/* Business Email */}
+            <div>
+              <label htmlFor="businessEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                Business Email *
+              </label>
+              <input
+                type="email"
+                id="businessEmail"
+                name="businessEmail"
+                required
+                value={formData.businessEmail}
+                onChange={(e) => setFormData({...formData, businessEmail: e.target.value})}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                style={{
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  fontSize: '14px',
+                  lineHeight: '20px'
+                }}
+                placeholder="Enter your business email"
+              />
+            </div>
+            
+            {/* Phone Number with Country Code */}
+            <div className="flex gap-2">
+              <div className="w-1/3">
+                <label htmlFor="countryCode" className="block text-sm font-medium text-gray-700 mb-1">
+                  Code *
+                </label>
+                <div className="relative">
+                  <select
+                    id="countryCode"
+                    name="countryCode"
+                    value={formData.countryCode}
+                    onChange={(e) => setFormData({...formData, countryCode: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none"
+                    style={{
+                      fontFamily: 'Space Grotesk, sans-serif',
+                      fontSize: '14px',
+                      lineHeight: '20px'
+                    }}
+                  >
+                    <option value="+1">+1 (US)</option>
+                    <option value="+44">+44 (UK)</option>
+                    <option value="+91">+91 (IN)</option>
+                    <option value="+61">+61 (AU)</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1">
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  required
+                  value={formData.phoneNumber}
+                  onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  style={{
+                    fontFamily: 'Space Grotesk, sans-serif',
+                    fontSize: '14px',
+                    lineHeight: '20px'
+                  }}
+                  placeholder="Enter phone number"
+                />
+              </div>
+            </div>
+            
+            {/* Country Dropdown */}
+            <div>
+              <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                Country *
+              </label>
+              <div className="relative">
+                <select
+                  id="country"
+                  name="country"
+                  required
+                  value={formData.country}
+                  onChange={(e) => setFormData({...formData, country: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none"
+                  style={{
+                    fontFamily: 'Space Grotesk, sans-serif',
+                    fontSize: '14px',
+                    lineHeight: '20px'
+                  }}
+                >
+                  <option value="">Select Country</option>
+                  <option value="US">United States</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="IN">India</option>
+                  <option value="AU">Australia</option>
+                  <option value="CA">Canada</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            {/* reCAPTCHA Placeholder */}
+            <div className="py-4">
+              <div className="flex items-center">
+                <div className="flex items-center h-5">
+                  <input
+                    id="captcha"
+                    name="captcha"
+                    type="checkbox"
+                    required
+                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </div>
+                <label htmlFor="captcha" className="ml-2 block text-sm text-gray-700">
+                  I'm not a robot
+                </label>
+              </div>
+            </div>
+            
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              style={{
+                fontFamily: 'Space Grotesk, sans-serif',
+                background: 'linear-gradient(90deg, #1160C9 0%, #08D2B8 100%)',
+                fontSize: '16px',
+                lineHeight: '24px'
+              }}
+            >
+              Submit Now
+            </button>
+          </form>
+        </div>
+        </div>
+      )}
     </div>
-  );
+  )
 }

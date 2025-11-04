@@ -72,8 +72,10 @@ const fetchReports = async (filters: Filters): Promise<ReportsResponse> => {
 
   const data = await response.json();
   
-  // Debug: Log the response
+  // Debug: Log the response with category information
   console.log(`[${callId}] API Response:`, data);
+  console.log(`[${callId}] Category Info - name: ${data.category_name}, description: ${data.category_desc}`);
+  console.log(`[${callId}] Response keys:`, Object.keys(data));
   console.log(`[${callId}] Number of reports in response:`, Array.isArray(data) ? data.length : data.reports?.length || data.data?.length || 0);
   
   // Helper function to deduplicate reports by ID
@@ -92,22 +94,28 @@ const fetchReports = async (filters: Filters): Promise<ReportsResponse> => {
   // Handle different response formats
   let formattedData: ReportsResponse;
   let reportsArray: any[] = [];
+  let categoryName = '';
+  let categoryDesc = '';
+  
+  // Extract category info if available
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    categoryName = data.category_name || '';
+    categoryDesc = data.category_desc || '';
+  }
   
   if (Array.isArray(data)) {
     // If API returns array directly
     reportsArray = data;
-  } else if (data.reports) {
-    // If API returns object with reports property
-    reportsArray = data.reports || [];
-  } else if (data.data && Array.isArray(data.data)) {
-    // If API returns object with data property containing reports array
-    reportsArray = data.data;
-  } else {
-    // Fallback - treat entire response as single report if it has required fields
-    if (data.id && data.title) {
+  } else if (data && typeof data === 'object') {
+    if (Array.isArray(data.reports)) {
+      // If API returns object with reports property
+      reportsArray = data.reports;
+    } else if (Array.isArray(data.data)) {
+      // If API returns object with data property containing reports array
+      reportsArray = data.data;
+    } else if (data.id && data.title) {
+      // Fallback - treat entire response as single report if it has required fields
       reportsArray = [data];
-    } else {
-      reportsArray = [];
     }
   }
 
@@ -127,11 +135,15 @@ const fetchReports = async (filters: Filters): Promise<ReportsResponse> => {
   const totalPages = Math.ceil(uniqueReports.length / filters.per_page);
   
   if (Array.isArray(data)) {
+    // For array responses, we can't get category info from the array
+    // So we'll use the category info we extracted earlier
     formattedData = {
       reports: paginatedReports,
       totalPages: totalPages,
       currentPage: filters.page,
       totalCount: uniqueReports.length,
+      category_name: categoryName,
+      category_desc: categoryDesc
     };
   } else if (data.reports) {
     formattedData = {
@@ -139,13 +151,17 @@ const fetchReports = async (filters: Filters): Promise<ReportsResponse> => {
       totalPages: data.totalPages || totalPages,
       currentPage: data.currentPage || filters.page,
       totalCount: data.totalCount || uniqueReports.length,
+      category_name: categoryName || (data as any).category_name,
+      category_desc: categoryDesc || (data as any).category_desc
     };
   } else if (data.data && Array.isArray(data.data)) {
     formattedData = {
       reports: paginatedReports,
-      totalPages: data.totalPages || totalPages,
-      currentPage: data.currentPage || filters.page,
-      totalCount: data.totalCount || uniqueReports.length,
+      totalPages: (data as any).totalPages || totalPages,
+      currentPage: (data as any).currentPage || filters.page,
+      totalCount: (data as any).totalCount || uniqueReports.length,
+      category_name: categoryName || (data as any).category_name,
+      category_desc: categoryDesc || (data as any).category_desc
     };
   } else {
     formattedData = {
@@ -153,6 +169,8 @@ const fetchReports = async (filters: Filters): Promise<ReportsResponse> => {
       totalPages: totalPages,
       currentPage: filters.page,
       totalCount: uniqueReports.length,
+      category_name: categoryName,
+      category_desc: categoryDesc
     };
   }
   

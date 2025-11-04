@@ -47,16 +47,19 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
   const [selectedOrderLicenseId, setSelectedOrderLicenseId] = useState(selectedLicense?.id || "single");
   const [selectedOrderCurrency, setSelectedOrderCurrency] = useState("USD");
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
-  const [activeStep, setActiveStep] = useState<"billing" | "payment">("billing");
-
-  // 1. State for offer code and its logic
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("ccavenue");
+  const [couponCode, setCouponCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [paypalStatus, setPaypalStatus] = useState<string>("");
+  const [paypalLoaded, setPaypalLoaded] = useState(false);
   const [showOfferField, setShowOfferField] = useState(false);
   const [offerCode, setOfferCode] = useState("");
   const [appliedOfferCode, setAppliedOfferCode] = useState("");
-  const [dynamicDiscount, setDynamicDiscount] = useState(0);
   const [discountError, setDiscountError] = useState("");
-  const [couponTotalStr, setCouponTotalStr] = useState<string>("");
+  const [couponTotalStr, setCouponTotalStr] = useState("");
+  const [dynamicDiscount, setDynamicDiscount] = useState(0);
+  const [activeStep, setActiveStep] = useState<"billing" | "payment">("billing");
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   // reset coupon when license/currency changes
   useEffect(() => {
@@ -137,37 +140,52 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   const discountAmount = calculatedActualPrice > 0 ? (calculatedActualPrice - offerPrice) : 0;
   const subtotal = offerPrice;
   const isINR = selectedOrderCurrency === 'INR';
+  
+  // Check if the selected state is Maharashtra (case-insensitive)
+  const isMaharashtra = formData.state?.toLowerCase() === 'maharashtra';
 
-  // Compute CGST/SGST amounts from API rate fields when available
+  // Compute tax rates based on state
   const getRate = (rateStr?: string): number => {
     if (!rateStr) return 0;
     const n = parseFloat(String(rateStr).replace(/[^0-9.]/g, ''));
     return isNaN(n) ? 0 : n / 100;
   };
 
+  // Initialize tax rates
   let cgstRate = 0;
   let sgstRate = 0;
+  let igstRate = 0;
+
   if (isINR) {
-    if (selectedOrderLicenseId === 'single') {
-      cgstRate = getRate(checkoutPage?.single_license_offer_price_in_INR_CGST_rate);
-      sgstRate = getRate(checkoutPage?.single_license_offer_price_in_INR_SGST_rate);
-    } else if (selectedOrderLicenseId === 'team') {
-      cgstRate = getRate(checkoutPage?.team_license_offer_price_in_INR_CGST_rate);
-      sgstRate = getRate(checkoutPage?.team_license_offer_price_in_INR_SGST_rate);
-    } else if (selectedOrderLicenseId === 'enterprise') {
-      cgstRate = getRate(checkoutPage?.enterprise_license_offer_price_in_INR_CGST_rate);
-      sgstRate = getRate(checkoutPage?.enterprise_license_offer_price_in_INR_SGST_rate);
-    }
-    // Fallback to 9% each if API missing
-    if (cgstRate === 0 && sgstRate === 0) {
-      cgstRate = 0.09;
-      sgstRate = 0.09;
+    // For Maharashtra, use IGST (18%)
+    if (isMaharashtra) {
+      igstRate = 0.18; // 18% IGST for Maharashtra
+    } else {
+      // For other states, use CGST+SGST (9% each)
+      if (selectedOrderLicenseId === 'single') {
+        cgstRate = getRate(checkoutPage?.single_license_offer_price_in_INR_CGST_rate);
+        sgstRate = getRate(checkoutPage?.single_license_offer_price_in_INR_SGST_rate);
+      } else if (selectedOrderLicenseId === 'team') {
+        cgstRate = getRate(checkoutPage?.team_license_offer_price_in_INR_CGST_rate);
+        sgstRate = getRate(checkoutPage?.team_license_offer_price_in_INR_SGST_rate);
+      } else if (selectedOrderLicenseId === 'enterprise') {
+        cgstRate = getRate(checkoutPage?.enterprise_license_offer_price_in_INR_CGST_rate);
+        sgstRate = getRate(checkoutPage?.enterprise_license_offer_price_in_INR_SGST_rate);
+      }
+      
+      // Fallback to 9% each if API missing
+      if (cgstRate === 0 && sgstRate === 0) {
+        cgstRate = 0.09;
+        sgstRate = 0.09;
+      }
     }
   }
 
-  const cgst = isINR ? +(subtotal * cgstRate).toFixed(2) : 0;
-  const sgst = isINR ? +(subtotal * sgstRate).toFixed(2) : 0;
-  const total = subtotal + cgst + sgst;
+  // Calculate tax amounts
+  const cgst = isINR && !isMaharashtra ? +(subtotal * cgstRate).toFixed(2) : 0;
+  const sgst = isINR && !isMaharashtra ? +(subtotal * sgstRate).toFixed(2) : 0;
+  const igst = isINR && isMaharashtra ? +(subtotal * igstRate).toFixed(2) : 0;
+  const total = subtotal + cgst + sgst + igst;
 
   // 2. Update order breakdown to use discount responsive to offer code
   const finalDiscountAmount = dynamicDiscount > 0 ? dynamicDiscount : discountAmount;
@@ -223,24 +241,48 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if(isFormComplete()) {
+    if (isFormComplete()) {
+      setFormSubmitted(true);
       setActiveStep("payment");
+      // Scroll to payment section
+      setTimeout(() => {
+        const paymentSection = document.getElementById('payment-section');
+        if (paymentSection) {
+          paymentSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     }
   };
 
   // Check if all required fields are filled
   const isFormComplete = () => {
-    return (
-      formData.firstName &&
-      formData.lastName &&
-      formData.email &&
-      formData.country &&
-      formData.phoneNumber &&
-      formData.address &&
-      formData.state &&
-      formData.city &&
+    // Basic required fields for all users
+    const baseFields = [
+      formData.firstName,
+      formData.lastName,
+      formData.email,
+      formData.country,
+      formData.phoneNumber
+    ];
+
+    // Check if all base fields are filled
+    const baseFieldsValid = baseFields.every(field => Boolean(field));
+    
+    // If not all base fields are filled, no need to check address fields
+    if (!baseFieldsValid) return false;
+    
+    // If country is not India, we don't need to check address fields
+    if (!isIndiaSelected) return true;
+    
+    // For Indian users, check all address fields
+    const addressFields = [
+      formData.address,
+      formData.state,
+      formData.city,
       formData.postalCode
-    );
+    ];
+    
+    return addressFields.every(field => Boolean(field));
   };
 
   const handlePaymentMethodChange = (method: string) => {
@@ -251,17 +293,20 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault && e.preventDefault();
     // Compose payload as required
-    const payload = {
+    const payload: any = {
       language_id: 1, // change to dynamic if needed
       first_name: formData.firstName,
       last_name: formData.lastName,
       email: formData.email,
       residence: formData.country,
       phone: `${formData.phoneCode}${formData.phoneNumber}`,
-      first_line_add: formData.address,
-      state_province: formData.state,
-      city: formData.city,
-      postal_zipcode: formData.postalCode,
+      // Only include address fields if country is India
+      ...(isIndiaSelected && {
+        first_line_add: formData.address,
+        state_province: formData.state,
+        city: formData.city,
+        postal_zipcode: formData.postalCode
+      }),
       add_company_details: formData.addCompanyDetails ? "Yes" : "No",
       ...(formData.addCompanyDetails ? {
         company_name: formData.companyName,
@@ -307,9 +352,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     if (igstStr) igstDiff = (parse(igstStr) - offer).toFixed(2);
   }
 
-  const [paypalLoaded, setPaypalLoaded] = useState(false);
   const [paypalScriptTag, setPaypalScriptTag] = useState<HTMLScriptElement|null>(null);
-  const [paypalStatus, setPaypalStatus] = useState("");
 
   // Dynamically load PayPal JS SDK if PayPal is selected
   useEffect(() => {
@@ -447,6 +490,38 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     }
   }, [selectedPaymentMethod, paypalLoaded, finalTotal, selectedOrderCurrency, reportData, selectedOrderLicenseId, onOrderSuccess, selectedLicense, formData.email, calculatedActualPrice, discountAmount, subtotal, couponTotalNumeric]);
 
+  // Check if the selected country is India
+  const isIndiaSelected = formData.country?.toLowerCase() === 'india';
+
+  // Force currency to INR if India is selected
+  useEffect(() => {
+    if (isIndiaSelected && selectedOrderCurrency !== 'INR') {
+      setSelectedOrderCurrency('INR');
+    }
+  }, [isIndiaSelected, selectedOrderCurrency]);
+
+  // Get country code from country name
+  const getCountryCode = (countryName: string) => {
+    const country = countries.find(c => c.name.common === countryName);
+    return country ? country.cca2 : '';
+  };
+
+  // Get states for the selected country
+  const getFilteredStates = () => {
+    if (!formData.country) return [];
+    const countryCode = getCountryCode(formData.country);
+    return states.filter(state => state.country_iso2 === countryCode);
+  };
+
+  // Handle country change to update states
+  const handleCountryChange = (countryName: string) => {
+    setFormData(prev => ({
+      ...prev,
+      country: countryName,
+      state: '' // Reset state when country changes
+    }));
+  };
+
   return (
     <div className="space-y-8">
       {/* Back Button */}
@@ -524,7 +599,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                  </Label>
                  <select 
                    value={formData.country} 
-                   onChange={(e) => handleInputChange("country", e.target.value)}
+                   onChange={(e) => handleCountryChange(e.target.value)}
                    className="mt-1 border border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] px-3 text-black appearance-none cursor-pointer focus:border-black focus:outline-none"
                    style={{ 
                      fontFamily: 'Space Grotesk, sans-serif',
@@ -585,27 +660,38 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   id="address"
                   value={formData.address}
                   onChange={(e) => handleInputChange("address", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] text-black"
+                  className="border border-[#DBDBDB] rounded-[10px] bg-white w-full h-[50px] text-black focus:border-black focus:ring-0"
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  required
+                  required={isIndiaSelected}
                 />
               </div>
               <div>
                 <Label htmlFor="state" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
                   {billingInformation?.state_province || 'State / Province'}*
                 </Label>
-                <select
-                  value={formData.state}
-                  onChange={(e) => handleInputChange("state", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] text-black"
-                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  required
-                >
-                  <option value="" disabled style={{ color: '#888888' }}>Please select a state/province</option>
-                  {states.map((s: any) => (
-                    <option key={s.name} value={s.name}>{s.name}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    id="state"
+                    value={formData.state}
+                    onChange={(e) => handleInputChange("state", e.target.value)}
+                    disabled={!formData.country}
+                    className={`w-full h-[50px] border border-[#DBDBDB] rounded-[10px] bg-white text-black appearance-none focus:border-black focus:ring-0 focus:outline-none pl-3 pr-8 ${!formData.country ? 'opacity-70' : ''}`}
+                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                    required={isIndiaSelected}
+                  >
+                    <option value="" disabled>Select State/Province</option>
+                    {getFilteredStates().map((s: any) => (
+                      <option key={`${s.country_iso2}-${s.state_code}`} value={s.name}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -613,27 +699,28 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
                 <Label htmlFor="city" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
-                  {billingInformation?.city || 'City'}*
+                  {billingInformation?.city || 'City'}{isIndiaSelected ? '*' : ''}
                 </Label>
                  <Input
+                   id="city"
                    value={formData.city} 
                    onChange={(e) => handleInputChange("city", e.target.value)}
                    className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] text-black"
                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                   required
+                   required={isIndiaSelected}
                  />
               </div>
               <div>
                 <Label htmlFor="postalCode" className="font-medium text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '16px', marginBottom: '12px' }}>
-                  {billingInformation?.postal_zipcode || 'ZIP Code'}*
+                  {billingInformation?.postal_zipcode || 'ZIP Code'}{isIndiaSelected ? '*' : ''}
                 </Label>
                 <Input
                   id="postalCode"
                   value={formData.postalCode}
                   onChange={(e) => handleInputChange("postalCode", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] text-black"
+                  className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full md:w-[353px] h-[50px] text-black"
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  required
+                  required={isIndiaSelected}
                 />
               </div>
             </div>
@@ -746,22 +833,32 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               <label className="block mb-1 text-xs text-gray-700 font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                 {billingInformation?.currency_options_text || 'Currency'}
               </label>
-              <select 
-                value={selectedOrderCurrency} 
-                onChange={e => setSelectedOrderCurrency(e.target.value)}
-                className="w-[93px] h-[38px] border border-black rounded-none px-3 text-black appearance-none cursor-pointer"
-                style={{ 
-                  fontFamily: 'Space Grotesk, sans-serif',
-                  backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
-                  backgroundPosition: 'right 8px center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundSize: '14px'
-                }}
-              >
-                <option value="USD">USD $</option>
-                <option value="INR">INR ₹</option>
-                <option value="EUR">EUR €</option>
-              </select>
+              <div className="relative">
+                <select 
+                  value={selectedOrderCurrency} 
+                  onChange={e => setSelectedOrderCurrency(e.target.value)}
+                  disabled={isIndiaSelected}
+                  className={`w-[93px] h-[38px] border ${isIndiaSelected ? 'border-gray-300 bg-gray-100' : 'border-black'} rounded-none px-3 text-black appearance-none ${isIndiaSelected ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                  style={{ 
+                    fontFamily: 'Space Grotesk, sans-serif',
+                    backgroundImage: isIndiaSelected ? 'none' : 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
+                    backgroundPosition: 'right 8px center',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: '14px',
+                    opacity: isIndiaSelected ? 0.7 : 1
+                  }}
+                >
+                  <option value="USD">USD $</option>
+                  <option value="INR">INR ₹</option>
+                  <option value="EUR">EUR €</option>
+                </select>
+                {isIndiaSelected && (
+                  <div 
+                    className="absolute inset-0 bg-transparent cursor-not-allowed" 
+                    title="INR is required for India"
+                  />
+                )}
+              </div>
             </div>
           </div>
 
@@ -793,43 +890,35 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 {offerPriceStr}
               </div>
             </div>
-            {isINR ? (
+            {isINR && isMaharashtra ? (
+              // Show only IGST for Maharashtra
+              <div className="flex justify-between items-center">
+                <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                  {billInfoOrderSummary?.IGST || 'IGST (18%)'}
+                </div>
+                <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                  ₹{igstDiff || '0.00'}
+                </div>
+              </div>
+            ) : isINR ? (
+              // Show CGST+SGST for other Indian states
               <>
                 <div className="flex justify-between items-center">
                   <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    {billInfoOrderSummary?.CGST || 'CGST'}
+                    {billInfoOrderSummary?.CGST || 'CGST (9%)'}
                   </div>
                   <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                  ₹{cgstDiff}
+                    ₹{cgstDiff || '0.00'}
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    {billInfoOrderSummary?.SGST || 'SGST'}
+                    {billInfoOrderSummary?.SGST || 'SGST (9%)'}
                   </div>
                   <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                  ₹{sgstDiff}
+                    ₹{sgstDiff || '0.00'}
                   </div>
                 </div>
-                {/* IGST (use API string) */}
-                {
-                  (() => {
-                    let igstStr = '';
-                    if (selectedOrderLicenseId === 'single') {
-                      igstStr = igstStr = checkoutPage?.single_license_offer_price_in_INR_with_IGST || '';
-                    } else if (selectedOrderLicenseId === 'team') {
-                      igstStr = igstStr = checkoutPage?.team_license_offer_price_in_INR_with_IGST || '';
-                    } else if (selectedOrderLicenseId === 'enterprise') {
-                      igstStr = igstStr = checkoutPage?.enterprise_license_offer_price_in_INR_with_IGST || '';
-                    }
-                    return igstStr ? (
-                      <div className="flex justify-between items-center">
-                        <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{billInfoOrderSummary?.IGST || 'IGST'}</div>
-                        <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>₹{igstDiff}</div>
-                      </div>
-                    ) : null;
-                  })()
-                }
               </>
             ) : (
             <div className="flex justify-between items-center">
@@ -909,8 +998,9 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
         </div>
       </div>
 
-       {/* Payment Method Section - Only show when form is complete */}
-       {isFormComplete() && (
+       {/* Payment Method Section - Only show after form submission */}
+       <div id="payment-section">
+       {formSubmitted && (
          <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-6 mt-8 w-full lg:w-[762px] h-auto">
            <h2 className="text-[24px] text-gray-900 mb-6" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700' }}>
              2. {billingInformation?.payment_method_text || 'Payment Method'}
@@ -986,16 +1076,37 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
              </div>
            </div>
 
-           {/* Payment Button */}
-           {selectedPaymentMethod === 'paypal' && (
-             <div className="py-8">
-               <div id="paypal-button-container"></div>
-               {paypalStatus && <div className="mt-4 text-blue-700 text-base">{paypalStatus}</div>}
-             </div>
-           )}
-           
-         </div>
-       )}
+            {/* Payment Button */}
+            {selectedPaymentMethod === 'paypal' && (
+              <div className="py-8">
+                <div id="paypal-button-container"></div>
+                {paypalStatus && <div className="mt-4 text-blue-700 text-base">{paypalStatus}</div>}
+              </div>
+            )}
+            
+            <div className="mt-6">
+              {isINR ? (
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-6 py-3 rounded-md w-full md:w-auto"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                >
+                  {billingInformation?.proceed_to_pay_text || 'Proceed to Pay'}
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-6 py-3 rounded-md w-full md:w-auto"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                  disabled={!(selectedPaymentMethod && selectedOrderLicenseId && selectedOrderCurrency)}
+                >
+                  {billingInformation?.proceed_to_pay_text || 'Proceed to Pay'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
