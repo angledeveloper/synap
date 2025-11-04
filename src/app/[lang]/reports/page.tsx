@@ -298,11 +298,12 @@ export default function ReportsPage() {
       <div className="bg-white" style={{ paddingTop: '7px', paddingBottom: '15px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="mb-6 bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent" style={{ 
-            fontFamily: 'Space Mono, monospace', 
+            fontFamily: 'Space Grotesk, sans-serif', 
             fontSize: '40px', 
-            lineHeight: '30px', 
+            lineHeight: '59px', 
             letterSpacing: '0px', 
-            fontWeight: '400'
+            fontWeight: '400',
+            overflow: 'visible',
           }}>
             {t.heading}
           </h1>
@@ -331,7 +332,7 @@ export default function ReportsPage() {
             <div className="bg-[#F0F0F0] pb-6" style={{ paddingTop: '61px', paddingLeft: '41px', paddingRight: '41px' }}>
               <div className="space-y-4">
                 {Array.from({ length: 12 }).map((_, index) => (
-                  <div key={index} className="bg-white rounded-lg shadow-sm border border-blue-200 p-6">
+                  <div key={index} className="bg-white  shadow-sm border border-blue-200 p-6" style={{ width: '471px', height: '468px' }}>
                     <div className="flex justify-between items-start">
                       <div className="flex-1 pr-6">
                         <Skeleton className="h-5 w-3/4 mb-3" />

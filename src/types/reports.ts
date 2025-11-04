@@ -53,6 +53,8 @@ export interface ReportDetail {
   custom_report_button: string;
   created_at: string;
   modify_at: string;
+  base_year?: string;
+  forecast_period?: string;
 }
 
 export interface ReportSection {

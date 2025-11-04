@@ -261,8 +261,8 @@ export default function ReportDetailPage() {
                   <Image
                     src={report.image}
                     alt={report.title}
-                    width={128}
-                    height={128}
+                    width={171}
+                    height={214}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -275,7 +275,7 @@ export default function ReportDetailPage() {
               {/* Report Title and Metadata */}
               <div className="flex-1 text-center sm:text-left">
                 <h1 
-                  className="text-blue-600 mb-3 sm:mb-4"
+                  className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent mb-3 sm:mb-4"
                   style={{ 
                     fontFamily: 'Space Grotesk, sans-serif',
                     fontSize: '24px',
@@ -310,7 +310,7 @@ export default function ReportDetailPage() {
                     </div>
                     <div className="flex items-center">
                       <span>{t.baseYear}:</span>
-                      <span className="ml-2">2024</span>
+                      <span className="ml-2">{report.base_year}</span>
                     </div>
                   </div>
 
@@ -318,14 +318,14 @@ export default function ReportDetailPage() {
                   <div className="flex flex-col">
                     <div className="flex items-center">
                       <span>{t.format}:</span>
-                      <span className="ml-2">{report.format.toUpperCase()}</span>
+                      <span className="ml-2">{report.format}</span>
                     </div>
                     <div className="flex items-center">
                       <span>{t.industry} - {categoryData?.name || 'Technology & Software'}</span>
                     </div>
                     <div className="flex items-center">
                       <span>{t.forecastPeriod}:</span>
-                      <span className="ml-2">2025-2032</span>
+                      <span className="ml-2">{report.forecast_period}</span>
                     </div>
                   </div>
 
@@ -348,10 +348,10 @@ export default function ReportDetailPage() {
             </div>
 
             {/* Introduction Section */}
-            <div className="mb-4 sm:mb-6">
+            <div className="mb-5 sm:mb-12 mt-10">
               <h2 
-                className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3"
-                style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                className=" sm:text-xl font-extrabold text-[#000000] mb-2 sm:mb-3"
+                style={{ fontFamily: 'Space Grotesk, sans-serif',fontSize:"24px",fontWeight:500 }}
               >
                 {report.introduction_section}
               </h2>
@@ -364,15 +364,15 @@ export default function ReportDetailPage() {
             </div>
 
             {/* Key Report Highlights */}
-            <div className="mb-4 sm:mb-6">
+            <div className="mb-5 sm:mb-12">
               <h2 
-                className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3"
-                style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                className="text-lg sm:text-xl font-bold text-[#000000] mb-2 sm:mb-3"
+                style={{ fontFamily: 'Space Grotesk, sans-serif',fontSize:"24px",fontWeight:500 }}
               >
                 {report.key_report_highlights}
               </h2>
               <p 
-                className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 sm:mb-4"
+                className="text-sm sm:text-base text-gray-700 leading-relaxed mb-5 sm:mb-8"
                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
               >
                 {report.key_report_description}

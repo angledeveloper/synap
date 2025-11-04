@@ -11,6 +11,7 @@ import ArrowIcon from "@/components/common/ArrowIcon";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
 import CustomReportForm from "@/components/common/CustomReportForm";
+import CaseStudiesSection from "@/components/common/CaseStudies";
 
 export default function Home() {
     const { HomePage, setHomePage } = useHomePageStore();
@@ -20,7 +21,7 @@ export default function Home() {
   const [isCustomReportFormOpen, setIsCustomReportFormOpen] = useState(false);
   
   const getReportsHref = (label: string | undefined) => {
-    if (!label) return "/";
+    if (!label) return `/${language}`;
     const l = label.trim().toLowerCase();
     return l.includes("explore") && l.includes("report") ? `/${language}/reports` : `/${language}`;
   };
@@ -69,9 +70,8 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [HomePage]);
 
-  useEffect(() => {
-    setHomePage(null);
-  }, [language]);
+  // Do not clear HomePage on mount; Navbar provider populates it.
+  // Keeping this empty avoids a race where the page clears store and never repopulates.
 
   if (!HomePage)
     return (
@@ -98,7 +98,7 @@ export default function Home() {
           </h1>
           <div className="flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
             <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
-              <Link href={getReportsHref(HomePage.home_section1?.first_button) || "/reports"}>
+              <Link href={getReportsHref(HomePage.home_section1?.first_button) || `/${language}/reports`}>
                 <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                   <span className="flex w-full justify-end">
                     <ArrowIcon variant="gradient" />
@@ -169,7 +169,7 @@ export default function Home() {
           <div className="text-[32px] font-medium max-md:text-center md:text-[40px]">
             {HomePage.home_section3?.tagline ?? ''}
           </div>
-          <Link href={getReportsHref(HomePage.home_section3?.button) || `/${language}/reports`}>
+          <Link href={`/${language}/reports`}>
             <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-black/5 p-4 text-[20px] font-bold backdrop-blur-[5px] transition-all duration-300 hover:border-white/40 hover:text-neutral-400 max-md:w-full">
               <span className="flex w-full justify-end">
                 <ArrowIcon variant="white" />
@@ -282,41 +282,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="relative z-10 flex w-full flex-col bg-black text-white">
-            <div className="md; flex flex-col gap-4 bg-[#06A591] pt-10 max-md:px-3 max-md:py-12 md:p-16 md:pt-16 md:before:absolute md:before:top-0 md:before:left-[90%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-[#06A591] md:before:content-['']">
-              <span className="text-[32px]">
-                {HomePage.home_section5?.first_box_title ?? ''}
-              </span>
-              <span className="text-[20px] font-light">
-                {HomePage.home_section5?.first_box_description ?? ''}
-              </span>
-              <Link
-                className="mt-12 text-[20px] font-medium underline"
-                href={`/${language}`}
-              >
-                {HomePage.home_section5?.first_box_link ?? ''}
-              </Link>
-            </div>
-            <div className="relative flex flex-col gap-4 max-md:px-3 max-md:py-12 md:p-16 md:pt-16 md:before:absolute md:before:top-[0%] md:before:left-[90%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-[#000] md:before:content-['']">
-              <span className="text-[32px]">
-                {HomePage.home_section5?.second_box_title ?? ''}
-              </span>
-              <span className="text-[20px] font-light">
-                {HomePage.home_section5?.second_box_description ?? ''}
-              </span>
-            <Link className="text-[20px] font-medium underline" href={`/${language}`}>
-                {HomePage.home_section5?.second_box_link ?? ''}
-              </Link>
-              <Link className="mt-12" href={`/${language}/reports`}>
-                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
-                  <span className="flex w-full justify-end">
-                    <ArrowIcon variant="white" />
-                  </span>
-                  <span> {HomePage.home_section5?.button ?? ''}</span>
-                </button>
-              </Link>
-            </div>
-          </div>
+          <CaseStudiesSection />
         </div>
       </section>
 
