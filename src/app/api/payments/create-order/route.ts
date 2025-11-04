@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = "nodejs";
+
+const { PAYPAL_CLIENT_ID, PAYPAL_SECRET, PAYPAL_BASE_URL } = process.env;
+
 export async function POST(req: NextRequest) {
+  if (!PAYPAL_CLIENT_ID || !PAYPAL_SECRET) {
+    return NextResponse.json({
+      error: "Missing PayPal environment variables",
+      debug: {
+        PAYPAL_CLIENT_ID: !!PAYPAL_CLIENT_ID,
+        PAYPAL_SECRET: !!PAYPAL_SECRET,
+        PAYPAL_BASE_URL,
+      }
+    }, { status: 500 });
+  }
+
   try {
     const body = await req.json();
     const { reportId, licenseType, currency, amount } = body;
     if (!reportId || !licenseType || !currency || !amount) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-    const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
     const baseURL = process.env.PAYPAL_BASE_URL || (process.env.NODE_ENV === 'production'
       ? 'https://api-m.paypal.com'
       : 'https://api-m.sandbox.paypal.com');
