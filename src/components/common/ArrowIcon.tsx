@@ -13,8 +13,8 @@ export default function ArrowIcon({ variant, className = "" }: ArrowIconProps) {
     <Image
       src={iconSrc}
       alt={altText}
-      width={32}
-      height={32}
+      width={32.18}
+      height={12.67}
       className={`w-8 h-8 ${className}`}
     />
   );

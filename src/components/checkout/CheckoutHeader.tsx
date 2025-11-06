@@ -10,7 +10,7 @@ interface CheckoutHeaderProps {
 export default function CheckoutHeader({ report }: CheckoutHeaderProps) {
   if (!report) {
     return (
-      <div className="w-full bg-[#f5f5f5] p-6">
+      <div className="w-full bg-[#f5f5f5] p-6 ">
         <div 
           className="w-full h-[284px] bg-white p-6"
           style={{
@@ -36,7 +36,7 @@ export default function CheckoutHeader({ report }: CheckoutHeaderProps) {
   }
 
   return (
-    <div className="w-full p-2">
+    <div className="w-full p-0">
       <div 
         className="w-338 h-71 bg-[#F8F8F8] p-6"
         style={{

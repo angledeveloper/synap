@@ -188,12 +188,9 @@ export default function Home() {
               onClick={() => handleReportClick(item.category_id || item.id || '1')}
               className="group relative h-full w-full bg-[#F2F1EF] hover:bg-[#2F2F2F] cursor-pointer"
             >
-              <img
-                src="/barrow.svg"
-                alt="Arrow"
-                className="absolute top-4 right-4"
-                style={{ width: '33px', height: '14px' }}
-              />
+              <div className="absolute top-4 right-4">
+                <ArrowIcon variant="gradient" className="w-[33px] h-[14px]" />
+              </div>
               <Image
                 src={item.image}
                 alt={item.title}

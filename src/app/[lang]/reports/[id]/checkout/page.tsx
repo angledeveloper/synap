@@ -243,11 +243,11 @@ export default function CheckoutPage() {
         </button>
 
         {/* Page Header */}
-        <div className="text-center pt-4 relative z-10">
+        <div className="text-center pt-4 relative z-10 w-full flex flex-col justify-center pl-32 pb-3">
           <h1 className="text-[40px] font-normal mb-6 text-black leading-tight" style={{ fontFamily: 'Orbitron, sans-serif' }}>
             {checkout_page.page_title}
           </h1>
-          <p className="text-[#484848] underline text-base font-normal pt-4 " style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+          <p className="text-[#484848] underline text-base font-normal pt-0 pb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             {checkout_page.selected_report_text}
           </p>
         </div>
