@@ -26,7 +26,7 @@ export default function GlobalNavbar() {
   const { language } = useLanguageStore();
   const { HomePage, setHomePage } = useHomePageStore();
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
-  const id = codeToId[language];
+  const id = codeToId[language as keyof typeof codeToId] || codeToId['en'];
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -45,7 +45,7 @@ export default function GlobalNavbar() {
   );
   
   // Get navbar-specific data
-  const { data: navbarData } = useNavbarData({ language });
+  // const { data: navbarData } = useNavbarData({ language }); // Removed
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["navbarData", language],
@@ -89,16 +89,30 @@ export default function GlobalNavbar() {
 
   // Handle search visibility based on hover and content
   useEffect(() => {
+    // Keep search expanded if there's text or user is hovering
     const shouldShowSearch = isHoveringSearch || searchValue.length > 0;
-    setShowSearch(shouldShowSearch);
-    // Only show search results when there's actual content or results
-    setShowSearchResults(shouldShowSearch && searchValue.length > 0);
+    
+    if (shouldShowSearch) {
+      setShowSearch(true);
+    } else {
+      // Collapse if no text and not hovering (even if focused)
+      setShowSearch(false);
+      setShowSearchResults(false);
+    }
+    
+    // Only show search results when there's actual content
+    if (searchValue.length > 0) {
+      setShowSearchResults(true);
+    } else {
+      setShowSearchResults(false);
+    }
   }, [isHoveringSearch, searchValue]);
 
   // Show search results when we have data
   useEffect(() => {
     if (searchResults && (searchResults as any).results && (searchResults as any).results.length > 0) {
       setShowSearchResults(true);
+      setShowSearch(true); // Keep search expanded when results are shown
     }
   }, [searchResults]);
 
@@ -168,30 +182,37 @@ export default function GlobalNavbar() {
     );
   }
 
+  if (!HomePage) return null; // or loading state if HomePage isn't ready yet
+
   return (
     <nav className="fixed top-0 left-0 z-50 w-full">
-      <div className="relative flex h-20 w-full items-center justify-between bg-black/90 px-6 lg:px-8">
-        <Link href={`/${language}`}>
-          <div className="h-[30px] w-auto">
-            <FullLogo />
-          </div>
-        </Link>
-        {/* Center Navigation */}
-        <div className="hidden items-center gap-8 text-sm text-white lg:flex">
-          <Link href={`/${language}/about`} className="hover:font-bold transition-all">
-            {HomePage?.navbar?.item_one_name ?? ''}
+      <div className="relative flex h-20 w-full items-center justify-center bg-[#212121]">
+        {/* Centered Container with 284px margins */}
+        <div className="hidden lg:flex items-center justify-between w-full" style={{ paddingLeft: '284px', paddingRight: '284px' }}>
+          {/* Logo */}
+          <Link href={`/${language}`} className="flex-shrink-0">
+            <div className="h-[30px] w-auto">
+              <FullLogo />
+            </div>
           </Link>
+          {/* Right Side - Navigation Links, Search, Language, Contact */}
+          <div className="flex items-center gap-8 text-sm">
+            {/* About Us */}
+            <Link href={`/${language}/about`} className="text-gray-300 hover:text-white transition-colors font-normal whitespace-nowrap">
+              {HomePage.navbar?.item_one_name ?? 'About Us'}
+            </Link>
+            {/* Reports Store Dropdown */}
           <div
   id="dropdown-button"
-  className="flex cursor-pointer items-center gap-1 hover:font-bold transition-all"
+              className="flex cursor-pointer items-center gap-1 text-gray-300 hover:text-white transition-colors font-normal whitespace-nowrap"
   onClick={() => setShowDropdown(!showDropdown)}
 >
-  <span className={`bg-clip-text text-white transition-all ${showDropdown ? 'font-bold' : 'font-normal'}`}>
-    {HomePage?.navbar?.item_two ?? ''}
+              <span className={`transition-all ${showDropdown ? 'text-white font-medium' : 'font-normal'}`}>
+                {HomePage.navbar?.item_two ?? 'Reports Store'}
   </span>
   <Icon icon="mdi:chevron-down" className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
   {showDropdown && (
-  <div id="dropdown-container" className="relative lg:absolute lg:top-[90px] lg:left-1/2 lg:-translate-x-1/2 w-full max-w-[1440px] h-auto max-h-[80vh] overflow-y-auto rounded-2xl bg-white shadow-sm px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+                <div id="dropdown-container" className="absolute lg:top-[90px] lg:left-1/2 lg:-translate-x-1/2 w-full max-w-[1440px] h-auto max-h-[80vh] overflow-y-auto rounded-2xl bg-white shadow-sm px-4 sm:px-6 lg:px-8 py-6 lg:py-8 z-50">
       <h2 className="text-left text-xl font-medium text-gray-900 mb-8" style={{ fontFamily: 'var(--font-geist-mono)' }}>
         {HomePage?.report_store_dropdown?.[0]?.title ?? ''}
       </h2>
@@ -231,7 +252,7 @@ export default function GlobalNavbar() {
            .filter((item: CategoryItem) => item.category_name !== 'All Industries')
            .slice(0, 3)  // Take 3 more to make it 4 in total with All Industries
            .map((item: CategoryItem, idx: number) => (
-           <Link href={`/${language}/reports?category=${item.id}`} key={idx} className="group">
+           <Link href={`/${language}/reports?category=${item.category_id}`} key={idx} className="group">
              <div className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                <div className="w-7 h-7 relative flex-shrink-0">
                  <Image
@@ -267,7 +288,7 @@ export default function GlobalNavbar() {
        }, []).map((row: any[], rowIdx: number) => (
          <div key={rowIdx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 sm:gap-y-4 gap-x-4 sm:gap-x-4 mt-4 w-full lg:max-w-[75%]">
            {row.map((item: CategoryItem, idx: number) => (
-             <Link href={`/${language}/reports?category=${item.id}`} key={item.originalIndex} className="group">
+             <Link href={`/${language}/reports?category=${item.category_id}`} key={item.originalIndex} className="group">
                <div className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                  <div className="w-7 h-7 relative flex-shrink-0">
                    <Image
@@ -293,71 +314,115 @@ export default function GlobalNavbar() {
        ))}
     </div>
   )}
-</div>
-          <Link href={`/${language}/contact`} className="hover:font-bold transition-all">
-            {HomePage?.navbar?.button_text ?? ''}
-          </Link>
         </div>
 
-        {/* Right Side Items */}
-        <div className="hidden items-center gap-4 text-sm text-white lg:flex">
-          {/* Expandable Search */}
+            {/* Expandable Search Bar */}
           <div 
             id="search-container"
             className="relative flex items-center"
             onMouseEnter={() => setIsHoveringSearch(true)}
-            onMouseLeave={() => setIsHoveringSearch(false)}
+              onMouseLeave={() => {
+                // Don't collapse if there's text, focus, or search results are showing
+                if (searchValue === '' && !showSearchResults && document.activeElement !== document.getElementById('search-input')) {
+                  setIsHoveringSearch(false);
+                  setShowSearch(false);
+                }
+              }}
           >
             <div 
-              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-all cursor-pointer"
-              onClick={() => {
+                className={`flex items-center transition-all duration-300 ease-in-out overflow-hidden flex-shrink-0 ${
+                  showSearch || searchValue.length > 0 || showSearchResults || isHoveringSearch
+                    ? 'bg-black border border-gray-400 rounded-lg w-64 px-3 py-2' 
+                    : 'w-auto h-auto p-0 justify-center bg-transparent border-0'
+                }`}
+                onClick={() => {
+                  if (!showSearch) {
                 setIsHoveringSearch(true);
                 setShowSearch(true);
-              }}
-            >
-              <Icon icon="mdi:magnify" className="text-xl text-white" />
-            </div>
-            
-            <div 
-              className={`absolute right-0 top-0 transition-all duration-300 ease-in-out ${
-                showSearch ? 'w-64 opacity-100' : 'w-0 opacity-0'
-              }`}
-            >
-              <div className="relative">
-                <div className="flex items-center bg-white/10 border border-white/20 rounded-lg px-3 py-2">
+                    // Focus the input after a brief delay to allow expansion
+                    setTimeout(() => {
+                      const input = document.getElementById('search-input') as HTMLInputElement;
+                      if (input) input.focus();
+                    }, 100);
+                  }
+                }}
+              >
+                <Icon 
+                  icon="mdi:magnify" 
+                  className={`text-gray-300 flex-shrink-0 transition-all duration-300 cursor-pointer text-lg ${
+                    showSearch || searchValue.length > 0 || showSearchResults || isHoveringSearch
+                      ? 'mr-2' 
+                      : 'm-0'
+                  }`} 
+                />
                   <input
+                  id="search-input"
                     type="search"
-                    placeholder={navbarData?.searchPlaceholder || "Let's find what you need!"}
-                    className="w-full bg-transparent text-white placeholder:text-white/70 focus:outline-none text-sm"
+                  placeholder={HomePage?.navbar?.searchPlaceholder || "Search"}
+                  className={`bg-transparent text-gray-300 placeholder:text-gray-400 focus:outline-none text-sm transition-all duration-300 ${
+                    showSearch || searchValue.length > 0 || showSearchResults
+                      ? 'w-full opacity-100' 
+                      : 'w-0 opacity-0'
+                  }`}
                     value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    onFocus={() => setIsHoveringSearch(true)}
-                    onBlur={() => {
-                      // Only close if search input is empty and not hovering
-                      if (searchValue === '' && !isHoveringSearch) {
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setSearchValue(newValue);
+                    
+                    // If text is cleared and not hovering, collapse immediately
+                    if (newValue === '' && !isHoveringSearch) {
+                      setShowSearch(false);
+                      setShowSearchResults(false);
+                    }
+                  }}
+                  onFocus={() => {
+                    setIsHoveringSearch(true);
+                    setShowSearch(true);
+                  }}
+                  onBlur={(e) => {
+                    // Don't collapse if we're clicking on search results
+                    const relatedTarget = e.relatedTarget as HTMLElement;
+                    const searchContainer = document.getElementById('search-container');
+                    if (relatedTarget && searchContainer?.contains(relatedTarget)) {
+                      return;
+                    }
+                    // Collapse if no text and not hovering
+                    if (searchValue === '' && !isHoveringSearch && !showSearchResults) {
+                      setShowSearch(false);
+                    }
+                  }}
+                />
+                {searchValue && (showSearch || searchValue.length > 0 || showSearchResults) && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSearchValue('');
+                      setShowSearchResults(false);
+                      // Collapse after clearing if not hovering
+                      if (!isHoveringSearch) {
                         setShowSearch(false);
                       }
                     }}
-                    autoFocus={showSearch}
-                  />
-                  {searchValue && (
-                    <button
-                      onClick={() => {
-                        setSearchValue('');
-                        setIsHoveringSearch(false);
-                      }}
-                      className="ml-2 text-white/70 hover:text-white transition-colors"
+                    className="ml-2 text-gray-400 hover:text-gray-300 transition-colors flex-shrink-0"
                     >
                       <Icon icon="mdi:close" className="text-sm" />
                     </button>
                   )}
-                </div>
-              </div>
             </div>
             
             {/* Search Results Dropdown */}
             {showSearchResults && (
-              <div className="absolute top-full right-0 w-64 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50">
+                <div 
+                  className="absolute top-full right-0 w-64 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50"
+                  onMouseEnter={() => setIsHoveringSearch(true)}
+                  onMouseLeave={() => {
+                    // Keep search expanded if there's text
+                    if (searchValue === '') {
+                      setIsHoveringSearch(false);
+                      setShowSearch(false);
+                    }
+                  }}
+                >
                     {isSearchLoading ? (
                       <div className="p-4 text-center text-gray-500">
                         <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
@@ -370,7 +435,7 @@ export default function GlobalNavbar() {
                     ) : searchResults && (searchResults as any).results && (searchResults as any).results.length > 0 ? (
                       <div className="py-2">
                         <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
-                          {(searchResults as any).total || (searchResults as any).results.length} {navbarData?.searchResultsCount || 'result'}{((searchResults as any).total || (searchResults as any).results.length) !== 1 ? 's' : ''} found
+                          {(searchResults as any).total || (searchResults as any).results.length} {HomePage?.navbar?.searchResultsCount || 'result'}{((searchResults as any).total || (searchResults as any).results.length) !== 1 ? 's' : ''} found
                         </div>
                         {(searchResults as any).results.slice(0, 5).map((result: any, index: number) => (
                           <div
@@ -380,8 +445,13 @@ export default function GlobalNavbar() {
                               setSearchValue('');
                               setShowSearchResults(false);
                               setIsHoveringSearch(false);
+                            setShowSearch(false);
                               window.location.href = `/${language}/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
                             }}
+                          onMouseDown={(e) => {
+                            // Prevent input blur when clicking results
+                            e.preventDefault();
+                          }}
                           >
                             <div className="flex items-start space-x-3">
                               <div className="flex-1 min-w-0">
@@ -403,8 +473,12 @@ export default function GlobalNavbar() {
                                 setSearchValue('');
                                 setShowSearchResults(false);
                                 setIsHoveringSearch(false);
+                              setShowSearch(false);
                                 window.location.href = `/${language}/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
                               }}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                            }}
                             >
                               View all {(searchResults as any).results.length} results
                             </div>
@@ -413,15 +487,19 @@ export default function GlobalNavbar() {
                       </div>
                     ) : debouncedSearchValue.trim().length > 0 ? (
                       <div className="p-4 text-center text-gray-500">
-                        <p className="text-sm">{navbarData?.searchNoResults || 'No results found'} for "{debouncedSearchValue}"</p>
+                        <p className="text-sm">{HomePage?.navbar?.searchNoResults || 'No results found'} for "{debouncedSearchValue}"</p>
                         <div
                           className="text-sm text-blue-600 hover:text-blue-800 font-medium mt-2 inline-block cursor-pointer"
                           onClick={() => {
                             setSearchValue('');
                             setShowSearchResults(false);
                             setIsHoveringSearch(false);
+                          setShowSearch(false);
                             window.location.href = `/${language}/reports?search=${encodeURIComponent(debouncedSearchValue)}`;
                           }}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                        }}
                         >
                           Search in reports
                         </div>
@@ -434,35 +512,43 @@ export default function GlobalNavbar() {
           {/* Language Switch */}
           <GlobalLanguageSwitch />
           
-          {/* Login removed */}
+            {/* Contact Us Button */}
+            <Link href={`/${language}/contact`} className="flex-shrink-0">
+              <Button className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] hover:opacity-90 text-white font-normal rounded-[7px] px-6 py-2 transition-opacity whitespace-nowrap">
+                {HomePage?.navbar?.button_text ?? 'Contact Us'}
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex h-[36px] items-center gap-6 text-2xl text-white lg:hidden">
+        <div className="flex h-[36px] items-center gap-6 text-2xl text-gray-300 lg:hidden">
           <Icon
             icon={showMenu ? "mdi:close" : "mdi:menu"}
             onClick={() => setShowMenu(!showMenu)}
-            className="cursor-pointer"
+            className="cursor-pointer hover:text-white transition-colors"
           />
           {showMenu && (
-            <div className="absolute top-[90px] left-0 m-auto max-h-[70vh] w-full overflow-scroll rounded-[20px] bg-black p-4 text-black">
-              <div className="flex flex-col gap-4 text-2xl text-white">
+            <div className="absolute top-[90px] left-0 m-auto max-h-[70vh] w-full overflow-scroll rounded-[20px] bg-[#212121] p-4">
+              <div className="flex flex-col gap-4 text-lg text-gray-300">
                 <div className="flex w-full flex-wrap gap-4">
                     <div className="relative w-full">
-                      <Icon icon="mdi:magnify" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                    <div className="flex items-center bg-black border border-gray-400 rounded-lg px-3 py-2">
+                      <Icon icon="mdi:magnify" className="text-gray-300 mr-2 flex-shrink-0" />
                       <input
                         type="search"
-                        placeholder={navbarData?.searchPlaceholder || "Let's find what you need!"}
-                        className="h-[36px] w-full rounded-[7px] border border-white/20 bg-white/10 px-10 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/30"
+                        placeholder={HomePage?.navbar?.searchPlaceholder || "Search"}
+                        className="h-[36px] w-full bg-transparent text-gray-300 placeholder:text-gray-400 focus:outline-none text-sm"
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                       />
                       {searchValue && (
                         <button
                           onClick={() => setSearchValue('')}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white transition-colors"
+                          className="ml-2 text-gray-400 hover:text-gray-300 transition-colors flex-shrink-0"
                         >
                           <Icon icon="mdi:close" className="text-sm" />
                         </button>
                       )}
+                    </div>
                       
                       {/* Mobile Search Results */}
                       {showSearchResults && (
@@ -479,7 +565,7 @@ export default function GlobalNavbar() {
                           ) : searchResults && (searchResults as any).results && (searchResults as any).results.length > 0 ? (
                             <div className="py-2">
                               <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
-                                {(searchResults as any).total || (searchResults as any).results.length} {navbarData?.searchResultsCount || 'result'}{((searchResults as any).total || (searchResults as any).results.length) !== 1 ? 's' : ''} found
+                                {(searchResults as any).total || (searchResults as any).results.length} {HomePage?.navbar?.searchResultsCount || 'result'}{((searchResults as any).total || (searchResults as any).results.length) !== 1 ? 's' : ''} found
                               </div>
                               {(searchResults as any).results.slice(0, 3).map((result: any, index: number) => (
                                 <div
@@ -522,7 +608,7 @@ export default function GlobalNavbar() {
                             </div>
                           ) : debouncedSearchValue.trim().length > 0 ? (
                             <div className="p-4 text-center text-gray-500">
-                              <p className="text-sm">{navbarData?.searchNoResults || 'No results found'} for "{debouncedSearchValue}"</p>
+                              <p className="text-sm">{HomePage?.navbar?.searchNoResults || 'No results found'} for "{debouncedSearchValue}"</p>
                               <div
                                 className="text-sm text-blue-600 hover:text-blue-800 font-medium mt-2 inline-block cursor-pointer"
                                 onClick={() => {
@@ -542,14 +628,14 @@ export default function GlobalNavbar() {
                   
                   <GlobalLanguageSwitch />
                 </div>
-                <Link href={`/${language}/about`} className="hover:font-bold transition-all">{HomePage?.navbar?.item_one_name ?? ''}</Link>
+                <Link href={`/${language}/about`} className="hover:text-white transition-colors">{HomePage?.navbar?.item_one_name ?? 'About Us'}</Link>
                 <div
-                  id="dropdown-button"
-                  className="flex cursor-pointer items-center gap-1 hover:font-bold transition-all"
+                  id="mobile-dropdown-button"
+                  className="flex cursor-pointer items-center gap-1 hover:text-white transition-colors"
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
-                  <span className={`text-white transition-all ${showDropdown ? 'font-bold' : 'font-normal'}`}>{HomePage?.navbar?.item_two ?? ''}</span>
-                  <Icon icon="mdi:chevron-down" className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
+                  <span className={`text-gray-300 transition-all ${showDropdown ? 'text-white font-medium' : 'font-normal'}`}>{HomePage?.navbar?.item_two ?? 'Reports Store'}</span>
+                  <Icon icon="mdi:chevron-down" className={`text-gray-300 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
                 </div>
                 {showDropdown && (
                   <div id="dropdown-container" className="relative w-full rounded-2xl bg-white text-black shadow-sm px-4 sm:px-6 py-8">
@@ -558,7 +644,7 @@ export default function GlobalNavbar() {
                     </h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-6 gap-x-6">
                       {HomePage.report_store_dropdown.slice(0, 4).map((item: any, idx: number) => (
-                        <Link href={`/${language}/reports?category=${item.id}`} key={`m-top-${idx}`} className="group">
+                        <Link href={`/${language}/reports?category=${item.category_id}`} key={`m-top-${idx}`} className="group">
                           <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                             <div className="w-6 h-6 relative flex-shrink-0">
                               <Image src={item.icon} alt={item.category_name} width={24} height={24} className="w-full h-full object-contain" />
@@ -583,7 +669,7 @@ export default function GlobalNavbar() {
                     }, []).map((row: any[], rowIdx: number) => (
                       <div key={`m-row-${rowIdx}`} className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6 mt-6">
                         {row.map((item: any) => (
-                          <Link href={`/${language}/reports?category=${item.id}`} key={`m-item-${item.originalIndex}`} className="group">
+                          <Link href={`/${language}/reports?category=${item.category_id}`} key={`m-item-${item.originalIndex}`} className="group">
                             <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                               <div className="w-6 h-6 relative flex-shrink-0">
                                 <Image src={item.icon} alt={item.category_name} width={24} height={24} className="w-full h-full object-contain" />
@@ -603,7 +689,11 @@ export default function GlobalNavbar() {
                     ))}
                   </div>
                 )}
-                <Link href={`/${language}/contact`} className="hover:font-bold transition-all">{HomePage?.navbar?.button_text ?? ''}</Link>
+                <Link href={`/${language}/contact`}>
+                  <Button className="w-full bg-gradient-to-r from-[#1160C9] to-[#08D2B8] hover:opacity-90 text-white font-normal rounded-lg px-6 py-2 transition-opacity">
+                    {HomePage?.navbar?.button_text ?? 'Contact Us'}
+                  </Button>
+                </Link>
               </div>
             </div>
           )}

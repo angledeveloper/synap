@@ -159,7 +159,7 @@ export default function OrderConfirmation(props: OrderConfirmationProps) {
 
           {/* Right Section - Order Summary */}
           <div className="lg:ml-8">
-            <Card className="p-6 border-l-4 border-blue-500 rounded-xl">
+            <Card className="p-6 border-l-2 border rounded-xl"style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
               <h2 className="text-xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                 {orderConfirmation?.order_summary_heading || 'Your Order ummary:'}
               </h2>

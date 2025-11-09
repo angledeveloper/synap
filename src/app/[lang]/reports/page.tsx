@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useLanguageStore } from "@/store";
+import { useLanguageStore, useHomePageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { useReportsPage } from "../../../hooks/useReportsPage";
@@ -16,8 +16,8 @@ import { Report, ReportsResponse } from "@/types/reports";
 
 // Default category data
 const defaultCategoryData = {
-  name: "Technology & Software",
-  description: "When preparing to launch a flagship device in Asia, the client lacked pricing clarity across tier-2 cities. SYNAPSea's consumer behavior modeling revealed untapped price thresholds, driving a 32% revenue increase in the first quarter post-launch.",
+  name: "All Reports",
+  description: "Browse our comprehensive collection of market research reports across various industries.",
 };
 
 export default function ReportsPage() {
@@ -144,16 +144,41 @@ export default function ReportsPage() {
 
   const { mutate: fetchReports, isPending } = useReportsPage();
 
+  const { HomePage } = useHomePageStore();
+
   // Keep filters in sync if ?category in URL changes (for SPA navigation from navbar)
   useEffect(() => {
     const categoryIdSanitized = rawCategoryFromUrl && rawCategoryFromUrl !== 'undefined' ? rawCategoryFromUrl : '1';
+    
+    // Find the category in the homepage data if available
+    const categoryFromHomePage = HomePage?.report_store_dropdown?.find(
+      (item: any) => String(item.category_id || item.id || '') === categoryIdSanitized
+    );
+
     setFilters(prev => {
+      // Only update if the category has changed or language has changed
       if (categoryIdSanitized !== prev.category_id || prev.language_id !== languageId) {
-        return { ...prev, category_id: categoryIdSanitized, language_id: languageId, page: 1 };
+        return { 
+          ...prev, 
+          category_id: categoryIdSanitized, 
+          language_id: languageId, 
+          page: 1 
+        };
       }
       return prev;
     });
-  }, [rawCategoryFromUrl, languageId]);
+
+    // Update category data if we found a match in the homepage data
+    if (categoryFromHomePage) {
+      setCategoryData({
+        name: categoryFromHomePage.category_name,
+        description: categoryFromHomePage.category_tagline
+      });
+    } else if (categoryIdSanitized === '1') {
+      // Reset to default if no category found and it's the default category
+      setCategoryData(defaultCategoryData);
+    }
+  }, [rawCategoryFromUrl, languageId, HomePage]);
 
   // Memoize the entire translation object to prevent unnecessary re-renders
   const memoizedTranslations = useMemo(() => t, [t]);

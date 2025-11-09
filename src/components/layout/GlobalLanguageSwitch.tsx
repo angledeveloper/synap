@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useLanguageStore } from "@/store";
 import { supportedLanguages } from "../../lib/utils";
@@ -20,30 +20,65 @@ export default function GlobalLanguageSwitch() {
     }
   }, [lang, setLanguage]);
 
+  const currentLang = supportedLanguages.find((l) => l.code === lang) || supportedLanguages[0];
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const dropdownContainer = document.getElementById('language-dropdown-container');
+      const languageButton = document.getElementById('language-button');
+      if (dropdownContainer && 
+          !dropdownContainer.contains(event.target as Node) &&
+          !languageButton?.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
+
   return (
-    <div className="flex h-[36px] w-full cursor-pointer items-center gap-0 rounded-[7px] border border-neutral-100 bg-black px-2 py-1 lg:w-fit">
-      <Icon icon="mdi:language" className="text-white" />
-      <select
-        className="cursor-pointer rounded px-2 py-1 text-sm outline-none"
-        value={lang}
-        onChange={(e) => {
-          // Replace the first segment (lang) with the new language
+    <div className="relative">
+      <div
+        id="language-button"
+        className="flex h-[36px] cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-gray-300 hover:text-white transition-colors"
+        onClick={() => setShowDropdown(!showDropdown)}
+      >
+        <Icon icon="mdi:earth" className="text-lg" />
+        <span className="text-sm font-normal">{currentLang.code.toUpperCase()}</span>
+        <Icon icon="mdi:chevron-down" className={`text-sm transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
+      </div>
+      
+      {showDropdown && (
+        <div
+          id="language-dropdown-container"
+          className="absolute right-0 top-full mt-2 w-48 rounded-lg bg-white shadow-lg border border-gray-200 py-2 z-50"
+        >
+          {supportedLanguages.map((l) => (
+            <button
+              key={l.code}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                l.code === lang ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'
+              }`}
+              onClick={() => {
           const segments = pathname.split("/");
-          segments[1] = e.target.value;
+                segments[1] = l.code;
           const newPath = segments.join("/");
           router.push(newPath);
-        }}
-      >
-        {supportedLanguages.map((l) => (
-          <option
-            className="text-black hover:bg-neutral-200"
-            key={l.code}
-            value={l.code}
+                setShowDropdown(false);
+              }}
           >
             {l.label}
-          </option>
+            </button>
         ))}
-      </select>
+        </div>
+      )}
     </div>
   );
 }

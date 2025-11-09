@@ -6,6 +6,9 @@ import QueryProvider from "@/components/common/QueryProvider";
 
 import GlobalNavbar from "@/components/layout/GlobalNavbar";
 import GlobalFooter from "@/components/layout/GlobalFooter";
+import HomepageHydrator from "@/components/common/HomepageHydrator";
+import { useEffect } from "react";
+import { codeToId } from "@/lib/utils";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -63,12 +66,17 @@ export default async function RootLayout({
 }) {
   const { lang } = (await params) || ({} as any);
   const langCode = lang || "en";
+  const languageId = codeToId[langCode as keyof typeof codeToId] || codeToId['en'];
+  // Fetch homepage server-side
+  const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
+  const homepageData = baseUrl ? await fetch(`${baseUrl}homepage/${languageId}`).then(res => res.json()) : null;
+
   return (
     <html lang={langCode}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable}  bg-black text-white antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable}  bg-black text-white antialiased`}>
         <QueryProvider>
+          {/* Hydrate Zustand store for HomePage on client */}
+          <HomepageHydrator homepageData={homepageData} />
           <GlobalNavbar />
           <main>{children}</main>
           <GlobalFooter />

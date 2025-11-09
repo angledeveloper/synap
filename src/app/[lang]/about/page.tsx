@@ -62,7 +62,7 @@ export default function About() {
   const { language } = useLanguageStore();
   const { AboutPage, setAboutPage } = useAboutPageStore();
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
-  const id = codeToId[language];
+  const id = codeToId[language as keyof typeof codeToId] || codeToId['en'];
   const [isCustomReportFormOpen, setIsCustomReportFormOpen] = useState(false);
 
   useEffect(() => {

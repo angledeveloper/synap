@@ -42,9 +42,7 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
 
   // Update search when debounced value changes
   useEffect(() => {
-    console.log('Debounced search changed:', debouncedSearch, 'Current filters.search:', filters.search);
     if (debouncedSearch !== filters.search) {
-      console.log('Triggering filter change with search:', debouncedSearch);
       onFilterChange({ search: debouncedSearch });
     }
   }, [debouncedSearch, filters.search, onFilterChange]);

@@ -26,40 +26,15 @@ export default function Home() {
     return l.includes("explore") && l.includes("report") ? `/${language}/reports` : `/${language}`;
   };
 
-  const handleReportClick = async (categoryId: string) => {
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
-      if (!baseUrl) {
-        console.error('NEXT_PUBLIC_DB_URL is not defined');
-        return;
-      }
-
-      const languageId = codeToId[language as keyof typeof codeToId] || "1";
-      
-      const formData = new FormData();
-      formData.append('category_id', categoryId);
-      formData.append('language_id', languageId);
-      formData.append('page', '1');
-      formData.append('per_page', '10');
-
-      const response = await fetch(`${baseUrl}reports_store_page`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        // Redirect to reports page with the category filter
-        router.push(`/${language}/reports?category=${categoryId}`);
-      } else {
-        console.error('Failed to fetch reports:', response.status);
-        // Fallback to general reports page
-        router.push(`/${language}/reports`);
-      }
-    } catch (error) {
-      console.error('Error fetching reports:', error);
-      // Fallback to general reports page
-      router.push(`/${language}/reports`);
+  const handleReportClick = (categoryId: string | number) => {
+    // Ensure categoryId is a non-empty string
+    const safeCategoryId = String(categoryId || '1').trim();
+    if (!safeCategoryId) {
+      console.error('Invalid category ID:', categoryId);
+      return;
     }
+    // Directly navigate to reports page with the category filter
+    router.push(`/${language}/reports?category=${safeCategoryId}`);
   };
 
   useEffect(() => {
@@ -98,7 +73,7 @@ export default function Home() {
           </h1>
           <div className="flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
             <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
-              <Link href={getReportsHref(HomePage.home_section1?.first_button) || `/${language}/reports`}>
+              <Link href={`/${language}/reports`}>
                 <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
                   <span className="flex w-full justify-end">
                     <ArrowIcon variant="gradient" />

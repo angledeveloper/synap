@@ -78,7 +78,7 @@ const fetchDeepSearch = async (query: string, languageId: number): Promise<DeepS
 
 export const useDeepSearch = (query: string, enabled: boolean = true) => {
   const { language } = useLanguageStore();
-  const languageId = codeToId[language];
+  const languageId = codeToId[language as keyof typeof codeToId] || codeToId['en'];
 
   return useQuery<DeepSearchResponse>({
     queryKey: ['deepSearch', query, languageId],
