@@ -316,83 +316,29 @@ export default function GlobalNavbar() {
   )}
         </div>
 
-            {/* Expandable Search Bar */}
-          <div 
-            id="search-container"
-            className="relative flex items-center"
-            onMouseEnter={() => setIsHoveringSearch(true)}
-              onMouseLeave={() => {
-                // Don't collapse if there's text, focus, or search results are showing
-                if (searchValue === '' && !showSearchResults && document.activeElement !== document.getElementById('search-input')) {
-                  setIsHoveringSearch(false);
-                  setShowSearch(false);
-                }
-              }}
-          >
-            <div 
-                className={`flex items-center transition-all duration-300 ease-in-out overflow-hidden flex-shrink-0 ${
-                  showSearch || searchValue.length > 0 || showSearchResults || isHoveringSearch
-                    ? 'bg-black border border-gray-400 rounded-lg w-64 px-3 py-2' 
-                    : 'w-auto h-auto p-0 justify-center bg-transparent border-0'
-                }`}
-                onClick={() => {
-                  if (!showSearch) {
-                setIsHoveringSearch(true);
-                setShowSearch(true);
-                    // Focus the input after a brief delay to allow expansion
-                    setTimeout(() => {
-                      const input = document.getElementById('search-input') as HTMLInputElement;
-                      if (input) input.focus();
-                    }, 100);
-                  }
-                }}
-              >
+            {/* Search Bar */}
+            <div id="search-container" className="relative flex items-center">
+              <div className="flex items-center bg-black border border-gray-400 rounded-lg w-48 md:w-56 px-3 py-2">
                 <Icon 
                   icon="mdi:magnify" 
-                  className={`text-gray-300 flex-shrink-0 transition-all duration-300 cursor-pointer text-lg ${
-                    showSearch || searchValue.length > 0 || showSearchResults || isHoveringSearch
-                      ? 'mr-2' 
-                      : 'm-0'
-                  }`} 
+                  className="text-gray-300 flex-shrink-0 text-lg mr-2"
                 />
-                  <input
+                <input
                   id="search-input"
-                    type="search"
+                  type="search"
                   placeholder={HomePage?.navbar?.searchPlaceholder || "Search"}
-                  className={`bg-transparent text-gray-300 placeholder:text-gray-400 focus:outline-none text-sm transition-all duration-300 ${
-                    showSearch || searchValue.length > 0 || showSearchResults
-                      ? 'w-full opacity-100' 
-                      : 'w-0 opacity-0'
-                  }`}
-                    value={searchValue}
+                  className="bg-transparent text-gray-300 placeholder:text-gray-400 focus:outline-none text-sm w-full"
+                  value={searchValue}
                   onChange={(e) => {
                     const newValue = e.target.value;
                     setSearchValue(newValue);
-                    
-                    // If text is cleared and not hovering, collapse immediately
-                    if (newValue === '' && !isHoveringSearch) {
-                      setShowSearch(false);
+                    if (newValue === '') {
                       setShowSearchResults(false);
                     }
                   }}
-                  onFocus={() => {
-                    setIsHoveringSearch(true);
-                    setShowSearch(true);
-                  }}
-                  onBlur={(e) => {
-                    // Don't collapse if we're clicking on search results
-                    const relatedTarget = e.relatedTarget as HTMLElement;
-                    const searchContainer = document.getElementById('search-container');
-                    if (relatedTarget && searchContainer?.contains(relatedTarget)) {
-                      return;
-                    }
-                    // Collapse if no text and not hovering
-                    if (searchValue === '' && !isHoveringSearch && !showSearchResults) {
-                      setShowSearch(false);
-                    }
-                  }}
+                  onFocus={() => setShowSearchResults(true)}
                 />
-                {searchValue && (showSearch || searchValue.length > 0 || showSearchResults) && (
+                {searchValue && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -551,7 +497,7 @@ export default function GlobalNavbar() {
                     </div>
                       
                       {/* Mobile Search Results */}
-                      {showSearchResults && (
+        {showSearchResults && (
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-64 overflow-y-auto z-50">
                           {isSearchLoading ? (
                             <div className="p-4 text-center text-gray-500">
@@ -670,7 +616,7 @@ export default function GlobalNavbar() {
                       <div key={`m-row-${rowIdx}`} className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6 mt-6">
                         {row.map((item: any) => (
                           <Link href={`/${language}/reports?category=${item.category_id}`} key={`m-item-${item.originalIndex}`} className="group">
-                            <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                              <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                               <div className="w-6 h-6 relative flex-shrink-0">
                                 <Image src={item.icon} alt={item.category_name} width={24} height={24} className="w-full h-full object-contain" />
                               </div>
