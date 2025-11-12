@@ -9,14 +9,24 @@ import { useCategory } from "@/hooks/useCategory";
 import { useTranslations } from "@/hooks/useTranslations";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@iconify/react";
 import ArrowIcon from "@/components/common/ArrowIcon";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import dynamic from 'next/dynamic';
+
+// Dynamically import form components with no SSR
+const SampleReportForm = dynamic(() => import('@/components/common/SampleReportForm'), {
+  ssr: false
+});
+
+const CustomReportForm = dynamic(() => import('@/components/common/CustomReportForm'), {
+  ssr: false
+});
 import useSWR from 'swr';
 
 
@@ -29,7 +39,7 @@ export default function ReportDetailPage() {
   const [isSampleFormOpen, setIsSampleFormOpen] = useState(false);
   const [email, setEmail] = useState('');
   const formRef = useRef<HTMLDivElement>(null);
-
+  
   // Close form when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -756,490 +766,30 @@ export default function ReportDetailPage() {
         )}
 
         {/* Custom Report Request Popup */}
-        {isPopupOpen && (
-          <div 
-            className="fixed inset-0 backdrop-blur-md bg-white bg-opacity-10 flex items-center justify-center z-50 p-4"
-            onClick={closePopup}
-            style={{
-              background: 'rgba(0, 0, 0, 0.3)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)'
+        <CustomReportForm 
+          isOpen={isPopupOpen}
+          onClose={closePopup}
+        />
+
+        {/* Request Sample PDF Form Modal */}
+        {isSampleFormOpen && (
+          <SampleReportForm
+            onClose={() => setIsSampleFormOpen(false)}
+            onSubmit={(data: {
+              fullName: string;
+              businessEmail: string;
+              countryCode: string;
+              phoneNumber: string;
+              country: string;
+            }) => {
+              // Handle form submission
+              console.log('Sample form submitted:', data);
+              // You can add your submission logic here
+              setIsSampleFormOpen(false);
             }}
-          >
-            <div 
-              className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6">
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6">
-                  <h2 
-                    className="text-xl font-bold text-gray-900"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    Request Custom Report
-                  </h2>
-                  <button
-                    onClick={closePopup}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <Icon icon="mdi:close" className="text-2xl" />
-                  </button>
-                </div>
-
-                <p 
-                  className="text-gray-600 mb-6"
-                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                >
-                  Please provide your requirements for a customized report. Our team will get back to you with a tailored solution.
-                </p>
-
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Full Name */}
-                  <div>
-                    <Label 
-                      htmlFor="fullName" 
-                      className="text-sm font-medium text-gray-700"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      Full Name*
-                    </Label>
-                    <Input
-                      id="fullName"
-                      type="text"
-                      placeholder="Full Name*"
-                      value={formData.fullName}
-                      onChange={(e) => handleInputChange('fullName', e.target.value)}
-                      className="mt-1 text-gray-900 placeholder-gray-500"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                      required
-                    />
-                  </div>
-
-                  {/* Business Email */}
-                  <div>
-                    <Label 
-                      htmlFor="businessEmail" 
-                      className="text-sm font-medium text-gray-700"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      Business Email*
-                    </Label>
-                    <Input
-                      id="businessEmail"
-                      type="email"
-                      placeholder="Business Email*"
-                      value={formData.businessEmail}
-                      onChange={(e) => handleInputChange('businessEmail', e.target.value)}
-                      className="mt-1 text-gray-900 placeholder-gray-500"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                      required
-                    />
-                  </div>
-
-                  {/* Phone Number */}
-                  <div>
-                    <Label 
-                      htmlFor="phoneNumber" 
-                      className="text-sm font-medium text-gray-700"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      Phone Number
-                    </Label>
-                    <div className="flex gap-2 mt-1">
-                      <Select 
-                        value={formData.countryCode} 
-                        onValueChange={(value) => handleInputChange('countryCode', value)}
-                      >
-                        <SelectTrigger className="w-20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="+91">+91</SelectItem>
-                          <SelectItem value="+1">+1</SelectItem>
-                          <SelectItem value="+44">+44</SelectItem>
-                          <SelectItem value="+33">+33</SelectItem>
-                          <SelectItem value="+49">+49</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        id="phoneNumber"
-                        type="tel"
-                        placeholder="Phone Number"
-                        value={formData.phoneNumber}
-                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                        className="flex-1 text-gray-900 placeholder-gray-500"
-                        style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Country */}
-                  <div>
-                    <Label 
-                      htmlFor="country" 
-                      className="text-sm font-medium text-gray-700"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      Country
-                    </Label>
-                    <Select 
-                      value={formData.country} 
-                      onValueChange={(value) => handleInputChange('country', value)}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="US">United States</SelectItem>
-                        <SelectItem value="IN">India</SelectItem>
-                        <SelectItem value="GB">United Kingdom</SelectItem>
-                        <SelectItem value="CA">Canada</SelectItem>
-                        <SelectItem value="AU">Australia</SelectItem>
-                        <SelectItem value="DE">Germany</SelectItem>
-                        <SelectItem value="FR">France</SelectItem>
-                        <SelectItem value="JP">Japan</SelectItem>
-                        <SelectItem value="CN">China</SelectItem>
-                        <SelectItem value="BR">Brazil</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Report Requirements */}
-                  <div>
-                    <Label 
-                      htmlFor="reportRequirements" 
-                      className="text-sm font-medium text-gray-700"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      Report Requirements*
-                    </Label>
-                    <textarea
-                      id="reportRequirements"
-                      placeholder="Please describe your specific requirements for the custom report..."
-                      value={formData.reportRequirements || ''}
-                      onChange={(e) => handleInputChange('reportRequirements', e.target.value)}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 resize-none"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                      rows={4}
-                      required
-                    />
-                  </div>
-
-                  {/* Industry Focus */}
-                  <div>
-                    <Label 
-                      htmlFor="industryFocus" 
-                      className="text-sm font-medium text-gray-700"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      Industry Focus
-                    </Label>
-                    <Select 
-                      value={formData.industryFocus || ''} 
-                      onValueChange={(value) => handleInputChange('industryFocus', value)}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select industry focus" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="technology">Technology & Software</SelectItem>
-                        <SelectItem value="healthcare">Healthcare & Life Sciences</SelectItem>
-                        <SelectItem value="energy">Energy & Power</SelectItem>
-                        <SelectItem value="automotive">Automotive & Transportation</SelectItem>
-                        <SelectItem value="consumer">Consumer Goods & Retail</SelectItem>
-                        <SelectItem value="manufacturing">Manufacturing & Industrial</SelectItem>
-                        <SelectItem value="financial">Financial Services</SelectItem>
-                        <SelectItem value="telecommunications">Telecommunications</SelectItem>
-                        <SelectItem value="aerospace">Aerospace & Defense</SelectItem>
-                        <SelectItem value="chemicals">Chemicals & Materials</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Timeline */}
-                  <div>
-                    <Label 
-                      htmlFor="timeline" 
-                      className="text-sm font-medium text-gray-700"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      Preferred Timeline
-                    </Label>
-                    <Select 
-                      value={formData.timeline || ''} 
-                      onValueChange={(value) => handleInputChange('timeline', value)}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select timeline" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="urgent">Urgent (1-2 weeks)</SelectItem>
-                        <SelectItem value="standard">Standard (3-4 weeks)</SelectItem>
-                        <SelectItem value="flexible">Flexible (1-2 months)</SelectItem>
-                        <SelectItem value="long-term">Long-term (2+ months)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* reCAPTCHA */}
-                  <div className="py-4">
-                    <div className="flex items-start space-x-2">
-                      <input
-                        type="checkbox"
-                        id="recaptcha"
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mt-0.5 flex-shrink-0"
-                      />
-                      <div className="text-sm text-gray-600 leading-relaxed" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                        <div className="mb-2">
-                          I agree to the{" "}
-                          <a href={`/${language}/privacy`} className="text-blue-600 hover:underline">
-                            Privacy Policy
-                          </a>{" "}
-                          and{" "}
-                          <a href={`/${language}/terms`} className="text-blue-600 hover:underline">
-                            Terms of Service
-                          </a>
-                          .
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          This site is protected by reCAPTCHA and the Google{" "}
-                          <a href="https://policies.google.com/privacy" className="text-blue-600 hover:underline">
-                            Privacy Policy
-                          </a>{" "}
-                          and{" "}
-                          <a href="https://policies.google.com/terms" className="text-blue-600 hover:underline">
-                            Terms of Service
-                          </a>{" "}
-                          apply.
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  <Button
-                    type="submit"
-                    className="w-full py-3 text-white font-semibold rounded-lg"
-                    style={{ 
-                      fontFamily: 'Space Grotesk, sans-serif',
-                      background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                      border: 'none'
-                    }}
-                  >
-                    Request Custom Report
-                  </Button>
-                </form>
-              </div>
-            </div>
-          </div>
+          />
         )}
       </div>
-
-      {/* Request Sample PDF Form Modal */}
-      {isSampleFormOpen && (
-      <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
-        <div 
-          ref={formRef}
-          className="bg-white rounded-lg p-8 w-full max-w-md relative"
-          style={{
-            boxShadow: '0px 4px 20px 0px rgba(0, 0, 0, 0.15)'
-          }}
-        >
-          <button 
-            onClick={() => setIsSampleFormOpen(false)}
-            className="absolute top-6 right-6 text-gray-500 hover:text-gray-700"
-            aria-label="Close"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          
-          <h2 className="text-2xl font-bold text-[#0B1018] mb-2" style={{ 
-            fontFamily: 'Space Grotesk, sans-serif',
-            fontSize: '20px',
-            fontWeight: 700
-          }}>
-            Request Sample PDF
-          </h2>
-          
-          <p className="text-base text-[#000000] mb-6" style={{ 
-            fontFamily: 'Space Grotesk, sans-serif',
-            fontWeight: 400
-          }}>
-            Please enter your details
-          </p>
-          
-          <form onSubmit={handleSampleSubmit} className="space-y-4">
-            {/* Full Name */}
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name *
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                name="fullName"
-                required
-                value={formData.fullName}
-                onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                style={{
-                  fontFamily: 'Space Grotesk, sans-serif',
-                  fontSize: '14px',
-                  lineHeight: '20px'
-                }}
-                placeholder="Enter your full name"
-              />
-            </div>
-            
-            {/* Business Email */}
-            <div>
-              <label htmlFor="businessEmail" className="block text-sm font-medium text-gray-700 mb-1">
-                Business Email *
-              </label>
-              <input
-                type="email"
-                id="businessEmail"
-                name="businessEmail"
-                required
-                value={formData.businessEmail}
-                onChange={(e) => setFormData({...formData, businessEmail: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                style={{
-                  fontFamily: 'Space Grotesk, sans-serif',
-                  fontSize: '14px',
-                  lineHeight: '20px'
-                }}
-                placeholder="Enter your business email"
-              />
-            </div>
-            
-            {/* Phone Number with Country Code */}
-            <div className="flex gap-2">
-              <div className="w-1/3">
-                <label htmlFor="countryCode" className="block text-sm font-medium text-gray-700 mb-1">
-                  Code *
-                </label>
-                <div className="relative">
-                  <select
-                    id="countryCode"
-                    name="countryCode"
-                    value={formData.countryCode}
-                    onChange={(e) => setFormData({...formData, countryCode: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none"
-                    style={{
-                      fontFamily: 'Space Grotesk, sans-serif',
-                      fontSize: '14px',
-                      lineHeight: '20px'
-                    }}
-                  >
-                    <option value="+1">+1 (US)</option>
-                    <option value="+44">+44 (UK)</option>
-                    <option value="+91">+91 (IN)</option>
-                    <option value="+61">+61 (AU)</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1">
-                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  required
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  style={{
-                    fontFamily: 'Space Grotesk, sans-serif',
-                    fontSize: '14px',
-                    lineHeight: '20px'
-                  }}
-                  placeholder="Enter phone number"
-                />
-              </div>
-            </div>
-            
-            {/* Country Dropdown */}
-            <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
-                Country *
-              </label>
-              <div className="relative">
-                <select
-                  id="country"
-                  name="country"
-                  required
-                  value={formData.country}
-                  onChange={(e) => setFormData({...formData, country: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none"
-                  style={{
-                    fontFamily: 'Space Grotesk, sans-serif',
-                    fontSize: '14px',
-                    lineHeight: '20px'
-                  }}
-                >
-                  <option value="">Select Country</option>
-                  <option value="US">United States</option>
-                  <option value="GB">United Kingdom</option>
-                  <option value="IN">India</option>
-                  <option value="AU">Australia</option>
-                  <option value="CA">Canada</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            
-            {/* reCAPTCHA Placeholder */}
-            <div className="py-4">
-              <div className="flex items-center">
-                <div className="flex items-center h-5">
-                  <input
-                    id="captcha"
-                    name="captcha"
-                    type="checkbox"
-                    required
-                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </div>
-                <label htmlFor="captcha" className="ml-2 block text-sm text-gray-700">
-                  I'm not a robot
-                </label>
-              </div>
-            </div>
-            
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              style={{
-                fontFamily: 'Space Grotesk, sans-serif',
-                background: 'linear-gradient(90deg, #1160C9 0%, #08D2B8 100%)',
-                fontSize: '16px',
-                lineHeight: '24px'
-              }}
-            >
-              Submit Now
-            </button>
-          </form>
-        </div>
-        </div>
-      )}
     </div>
   )
 }
