@@ -50,7 +50,6 @@ export function useFilterOptions({ language }: UseFilterOptionsParams) {
 
       // Fallback data if API endpoint is not available
       const fallbackIndustries: FilterOption[] = [
-        { value: "all", label: "All Industries" },
         { value: "1", label: "Technology & Software" },
         { value: "2", label: "Energy & Utilities" },
         { value: "3", label: "Food & Beverages" },

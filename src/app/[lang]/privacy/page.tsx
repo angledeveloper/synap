@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { useLanguageStore } from '../../../store';
-import { codeToId } from '../../../lib/utils';
+import { useLanguageStore } from '@/store';
+import { codeToId } from '@/lib/utils';
 import PrivacyPolicyContent from '@/components/common/PrivacyPolicyContent';
+import CallToAction from '@/components/common/CallToAction';
 
 interface PrivacyTab {
   id: number;
@@ -143,24 +144,10 @@ export default function PrivacyPage() {
         )}
       </div>
       
-      {/* Call to Action Section - Full Width */}
-      <div className="mt-16 bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-12">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between gap-6">
-            <h2 className="text-4xl font-bold text-white leading-tight text-left m-0">
-              Ready to Transform Your Market Strategy?
-            </h2>
-            <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-black p-4 text-[20px] outline-white hover:opacity-85 hover:outline-2 max-md:w-full">
-              <span className="flex w-full justify-end">
-                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" className="text-white">
-                  <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m13 6l6 6l-6 6M5 6l6 6l-6 6" />
-                </svg>
-              </span>
-              <span className="text-white">Check our Research</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <CallToAction 
+        title="Ready to Transform Your Market Strategy?"
+        buttonText="Check our Research"
+      />
     </div>
   );
 }

@@ -14,12 +14,6 @@ import { Icon } from "@iconify/react";
 import { Report, ReportsResponse } from "@/types/reports";
 
 
-// Default category data
-const defaultCategoryData = {
-  name: "All Reports",
-  description: "Browse our comprehensive collection of market research reports across various industries.",
-};
-
 export default function ReportsPage() {
   const { language } = useLanguageStore();
   const searchParams = useSearchParams();
@@ -40,7 +34,7 @@ export default function ReportsPage() {
   });
   
   const [reports, setReports] = useState<Report[]>([]);
-  const [categoryData, setCategoryData] = useState(defaultCategoryData);
+  const [categoryData, setCategoryData] = useState({ name: '', description: '' });
   
   // Memoize the category data to prevent unnecessary re-renders
   const memoizedCategoryData = useMemo(() => categoryData, [categoryData]);
@@ -174,9 +168,6 @@ export default function ReportsPage() {
         name: categoryFromHomePage.category_name,
         description: categoryFromHomePage.category_tagline
       });
-    } else if (categoryIdSanitized === '1') {
-      // Reset to default if no category found and it's the default category
-      setCategoryData(defaultCategoryData);
     }
   }, [rawCategoryFromUrl, languageId, HomePage]);
 

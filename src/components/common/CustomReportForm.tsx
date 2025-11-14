@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLanguageStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ReCAPTCHA from 'react-google-recaptcha';
 
 interface CustomReportFormProps {
   isOpen: boolean;
@@ -13,6 +14,8 @@ interface CustomReportFormProps {
 
 export default function CustomReportForm({ isOpen, onClose }: CustomReportFormProps) {
   const { language } = useLanguageStore();
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     businessEmail: '',
@@ -30,23 +33,57 @@ export default function CustomReportForm({ isOpen, onClose }: CustomReportFormPr
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!formData.agreeTerms) {
       alert('Please agree to the terms and conditions');
       return;
     }
-    console.log('Custom Report Form submitted:', formData);
-    onClose();
-    setFormData({
-      fullName: '',
-      businessEmail: '',
-      phoneNumber: '',
-      countryCode: '+1',
-      requirements: '',
-      timeline: '',
-      agreeTerms: false
-    });
+
+    if (!recaptchaToken) {
+      alert('Please verify you are not a robot');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Verify reCAPTCHA token with your backend
+      const verificationResponse = await fetch('/api/verify-recaptcha', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: recaptchaToken }),
+      });
+
+      const verificationResult = await verificationResponse.json();
+
+      if (!verificationResult.success) {
+        throw new Error('reCAPTCHA verification failed');
+      }
+
+      console.log('Custom Report Form submitted:', formData);
+      onClose();
+      
+      // Reset form
+      setFormData({
+        fullName: '',
+        businessEmail: '',
+        phoneNumber: '',
+        countryCode: '+1',
+        requirements: '',
+        timeline: '',
+        agreeTerms: false
+      });
+      setRecaptchaToken(null);
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('There was an error submitting the form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -171,17 +208,26 @@ export default function CustomReportForm({ isOpen, onClose }: CustomReportFormPr
               </div>
             </div>
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              className="w-full h-[50px] text-white font-medium rounded-lg text-base mt-4"
-              style={{
-                background: 'linear-gradient(to right, #1160C9 0%, #08D2B8 100%)',
-                border: 'none'
-              }}
-            >
-              Submit
-            </Button>
+            <div className="mt-4">
+              <ReCAPTCHA
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''}
+                onChange={(token) => setRecaptchaToken(token)}
+                onExpired={() => setRecaptchaToken(null)}
+                className="mb-4"
+              />
+              <Button
+                type="submit"
+                className="w-full py-3 text-white font-semibold rounded-lg"
+                style={{ 
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  background: 'linear-gradient(to right, #1160C9, #08D2B8)',
+                  border: 'none'
+                }}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Request Custom Report'}
+              </Button>
+            </div>
           </form>
         </div>
       </div>

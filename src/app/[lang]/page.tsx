@@ -13,6 +13,41 @@ import Head from "next/head";
 import CustomReportForm from "@/components/common/CustomReportForm";
 import CaseStudiesSection from "@/components/common/CaseStudies";
 
+// Function to get the correct category image based on the category name
+const getCategoryImage = (categoryName: string): string => {
+  // Create a mapping of category names to their corresponding image filenames
+  const categoryImageMap: Record<string, string> = {
+    'technology': 'technology&software.jpg',
+    'software': 'technology&software.jpg',
+    'energy': 'energy&utilities.jpg',
+    'utilities': 'energy&utilities.jpg',
+    'food': 'food&beverages.jpg',
+    'beverages': 'food&beverages.jpg',
+    'consumer': 'consumergoods&retail.jpg',
+    'retail': 'consumergoods&retail.jpg',
+    'automotive': 'automotive&transportation.jpg',
+    'transportation': 'automotive&transportation.jpg',
+    'chemicals': 'chemicals&materials.jpg',
+    'materials': 'chemicals&materials.jpg',
+    'financial': 'financialservices.jpg',
+    'healthcare': 'healthcare&pharmaceuticals.jpg',
+    'pharmaceuticals': 'healthcare&pharmaceuticals.jpg',
+    'construction': 'manufacturing&industrial.jpg',
+    'industrial': 'manufacturing&industrial.jpg',
+  };
+
+  // Convert the category name to lowercase for case-insensitive matching
+  const lowerCategory = categoryName.toLowerCase();
+  
+  // Find the matching category key
+  const matchedKey = Object.keys(categoryImageMap).find(key => 
+    lowerCategory.includes(key)
+  );
+
+  // Return the corresponding image path or a default image
+  return matchedKey ? `/category/${categoryImageMap[matchedKey]}` : '/category/technology&software.jpg';
+};
+
 export default function Home() {
     const { HomePage, setHomePage } = useHomePageStore();
   const { language } = useLanguageStore();
@@ -66,7 +101,7 @@ export default function Home() {
           alt={HomePage.home_section1?.title ?? ''}
           fill
           className="bg-no-repeat object-cover"
-        />
+        / >
         <div className="relative flex h-screen min-h-[500px] w-full flex-col items-center justify-end p-4">
           <h1 className="mb-20 max-w-[900px] text-center text-[32px] uppercase md:text-[64px]">
             {HomePage.home_section1?.title ?? ''}
@@ -167,7 +202,7 @@ export default function Home() {
                 <ArrowIcon variant="gradient" className="w-[33px] h-[14px]" />
               </div>
               <Image
-                src={item.image}
+                src={getCategoryImage(item.title)}
                 alt={item.title}
                 width={1000}
                 height={1000}
@@ -254,7 +289,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <CaseStudiesSection />
+          {HomePage.case_studies && <CaseStudiesSection caseStudies={HomePage.case_studies} />}
         </div>
       </section>
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import ReCAPTCHA from 'react-google-recaptcha';
 
 interface SampleReportFormProps {
   onClose: () => void;
@@ -22,6 +23,8 @@ interface SampleReportFormProps {
 }
 
 export default function SampleReportForm({ onClose, onSubmit, initialData = {} }: SampleReportFormProps) {
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     fullName: initialData.fullName || '',
     businessEmail: initialData.businessEmail || '',
@@ -30,9 +33,39 @@ export default function SampleReportForm({ onClose, onSubmit, initialData = {} }
     country: initialData.country || '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+
+    if (!recaptchaToken) {
+      alert('Please verify you are not a robot');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Verify reCAPTCHA token with your backend
+      const verificationResponse = await fetch('/api/verify-recaptcha', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: recaptchaToken }),
+      });
+
+      const verificationResult = await verificationResponse.json();
+
+      if (!verificationResult.success) {
+        throw new Error('reCAPTCHA verification failed');
+      }
+
+      onSubmit(formData);
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('There was an error submitting the form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -228,20 +261,6 @@ export default function SampleReportForm({ onClose, onSubmit, initialData = {} }
               </label>
             </div>
           </div>
-          
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            style={{
-              fontFamily: 'Space Grotesk, sans-serif',
-              background: 'linear-gradient(90deg, #1160C9 0%, #08D2B8 100%)',
-              fontSize: '16px',
-              lineHeight: '24px'
-            }}
-          >
-            Submit Now
-          </button>
         </form>
       </div>
     </div>
