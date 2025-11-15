@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useLanguageStore, useHomePageStore } from "@/store";
 import { useQuery } from "@tanstack/react-query";
 import { codeToId } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CategoryItem {
   category_id: string | number;
@@ -25,11 +26,13 @@ import { useNavbarData } from "@/hooks/useNavbarData";
 export default function GlobalNavbar() {
   const { language } = useLanguageStore();
   const { HomePage, setHomePage } = useHomePageStore();
+  const { user, logout } = useAuth();
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
   const id = codeToId[language as keyof typeof codeToId] || codeToId['en'];
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   // cart/login removed
   const [searchValue, setSearchValue] = useState("");
   const [isHoveringSearch, setIsHoveringSearch] = useState(false);
@@ -138,6 +141,19 @@ export default function GlobalNavbar() {
     };
   }, [showSearch, searchValue, isHoveringSearch]);
 
+  // Handle clicking outside user menu to close it
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const userMenu = document.getElementById('user-menu');
+      if (userMenu && !userMenu.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Handle clicking outside dropdown to close it
   useEffect(() => {
     const handleDropdownClickOutside = (event: MouseEvent) => {
@@ -186,7 +202,7 @@ export default function GlobalNavbar() {
 
   return (
     <nav className="fixed top-0 left-0 z-50 w-full">
-      <div className="relative flex h-20 w-full items-center justify-center bg-[#212121]">
+      <div className="relative flex h-20 w-full items-center justify-center bg-[#060606]/90">
         {/* Centered Container with 284px margins */}
         <div className="hidden lg:flex items-center justify-between w-full" style={{ paddingLeft: '284px', paddingRight: '284px' }}>
           {/* Logo */}
@@ -458,6 +474,41 @@ export default function GlobalNavbar() {
           {/* Language Switch */}
           <GlobalLanguageSwitch />
           
+          {/* User Menu */}
+          <div className="relative" id="user-menu">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+            >
+              <div className="w-8 h-8 bg-gradient-to-r from-[#1160C9] to-[#08D2B8] rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">
+                  {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+              <Icon icon="mdi:chevron-down" className={`text-gray-300 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-lg z-50">
+                <div className="px-4 py-3 border-b border-gray-800">
+                  <p className="text-white text-sm font-medium">{user?.name || 'User'}</p>
+                  <p className="text-gray-400 text-xs">{user?.email}</p>
+                </div>
+                <div className="py-2">
+                  <button
+                    onClick={() => {
+                      logout();
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-gray-300 hover:text-white hover:bg-gray-800 transition-colors text-sm"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
             {/* Contact Us Button */}
             <Link href={`/${language}/contact`} className="flex-shrink-0">
               <Button className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] hover:opacity-90 text-white font-normal rounded-[7px] px-6 py-2 transition-opacity whitespace-nowrap">
@@ -635,6 +686,33 @@ export default function GlobalNavbar() {
                     ))}
                   </div>
                 )}
+                  
+                  {/* Mobile User Menu */}
+                  {user && (
+                    <div className="border-t border-gray-800 pt-4 mt-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 bg-gradient-to-r from-[#1160C9] to-[#08D2B8] rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">
+                            {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-white text-sm font-medium">{user?.name || 'User'}</p>
+                          <p className="text-gray-400 text-xs">{user?.email}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          logout();
+                          setShowMenu(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-gray-300 hover:text-white hover:bg-gray-800 transition-colors text-sm rounded-lg border border-gray-700"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                  
                 <Link href={`/${language}/contact`}>
                   <Button className="w-full bg-gradient-to-r from-[#1160C9] to-[#08D2B8] hover:opacity-90 text-white font-normal rounded-lg px-6 py-2 transition-opacity">
                     {HomePage?.navbar?.button_text ?? 'Contact Us'}

@@ -171,38 +171,39 @@ export default function ContactPage() {
   if (!contactData) return null;
 
   return (
-    <div className="">
-      {/* Background Image */}
-      <div className="inset-0 -z-10">
+    <>
+      <section className="relative text-white">
         <Image
           src="/contact-hero.jpg"
           alt="Contact Background"
           fill
-          className="object-cover"
+          className="bg-no-repeat object-cover object-center md:object-left-top"
           priority
           sizes="100vw"
+          style={{
+            objectPosition: 'center center',
+          }}
         />
-      </div>
-      
-      {/* Main Content */}
-      <div className="relative">
-        <div className="container mx-auto px-4 md:px-8 py-12 min-h-screen">
-          <div className="flex items-start pt-16">
+        {/* Mobile overlay for better readability */}
+        <div className="md:hidden absolute inset-0 "></div>
+        
+        <div className="relative m-auto mt-12 flex w-full max-w-[1440px] flex-col justify-center py-16 md:py-24 p-4 md:p-8">
+          <div className="flex flex-col md:flex-row items-start justify-center gap-8 md:gap-36">
             {/* Left Side - Content */}
-            <div className="w-full max-w-[500px] text-white">
-              <h1 className="mb-12 text-[40px] font-bold leading-tight md:text-5xl">
+            <div className="w-full md:w-full max-w-[500px] text-white order-1 md:order-1">
+              <h1 className="mb-6 md:mb-12 text-[32px] md:text-[40px] font-bold leading-tight">
                 {contactData.heading}
               </h1>
-              <p className="text-[20px] text-gray-200">
+              <p className="text-[18px] md:text-[23px] text-gray-200">
                 {contactData.have_question}
               </p>
-              <p className="mt-6 text-[14px] text-gray-200">
+              <p className="mt-6 text-[14px] md:text-[14px] text-gray-200 max-w-[388px] break-words">
                 {contactData.our_team}
               </p>
             </div>
             
             {/* Right Side - Form */}
-            <div className="ml-auto w-[332px]">
+            <div className="w-full md:w-[332px] order-2 md:order-2">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <input
@@ -212,7 +213,7 @@ export default function ContactPage() {
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder={`${contactData.full_name} *`}
-                    className="w-full rounded-md bg-[#242424] px-4 py-3 text-white placeholder-[#969696] focus:border-white focus:outline-none focus:ring-1 focus:ring-white text-lg"
+                    className="w-full rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white placeholder-[#969696] focus:border-white focus:outline-none focus:ring-1 focus:ring-white text-base md:text-lg"
                     required
                   />
                 </div>
@@ -225,7 +226,7 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder={`${contactData.business_email} *`}
-                    className="w-full rounded-md bg-[#242424] px-4 py-3 text-white placeholder-[#969696] focus:border-white focus:outline-none focus:ring-1 focus:ring-white text-lg"
+                    className="w-full rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white placeholder-[#969696] focus:border-white focus:outline-none focus:ring-1 focus:ring-white text-base md:text-lg"
                     required
                   />
                 </div>
@@ -236,7 +237,7 @@ export default function ContactPage() {
                       name="phoneCode"
                       value={formData.phoneCode}
                       onChange={handleChange}
-                      className="w-full rounded-md bg-[#242424] px-3 py-3 text-white text-sm focus:outline-none appearance-none"
+                      className="w-full rounded-md bg-[#242424] px-2 md:px-3 py-3 text-white text-xs md:text-sm focus:outline-none appearance-none"
                     >
                       <option value="+1">+1</option>
                       <option value="+44">+44</option>
@@ -251,7 +252,7 @@ export default function ContactPage() {
                       value={formData.phoneNumber}
                       onChange={handleChange}
                       placeholder={contactData.phone_no}
-                      className="w-full rounded-md bg-[#242424] px-4 py-3 text-white placeholder-[#969696] focus:outline-none text-lg"
+                      className="w-full rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white placeholder-[#969696] focus:outline-none text-base md:text-lg"
                     />
                   </div>
                 </div>
@@ -263,7 +264,7 @@ export default function ContactPage() {
                       name="jobTitle"
                       value={formData.jobTitle || ''}
                       onChange={handleChange}
-                      className="w-full appearance-none rounded-md bg-[#242424] px-4 py-3 text-white text-sm focus:outline-none"
+                      className="w-full appearance-none rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white text-xs md:text-sm focus:outline-none"
                     >
                       <option value="" disabled>{contactData.job_title}</option>
                       <option value="ceo">CEO</option>
@@ -277,7 +278,7 @@ export default function ContactPage() {
                       name="country"
                       value={formData.country || ''}
                       onChange={handleChange}
-                      className="w-full appearance-none rounded-md bg-[#242424] px-4 py-3 text-white text-sm focus:outline-none"
+                      className="w-full appearance-none rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white text-xs md:text-sm focus:outline-none"
                     >
                       <option value="" disabled>{contactData.country}</option>
                       <option value="US">US</option>
@@ -294,7 +295,7 @@ export default function ContactPage() {
                     name="inquiryType"
                     value={formData.inquiryType || ''}
                     onChange={handleChange}
-                    className="w-full appearance-none rounded-md bg-[#242424] px-4 py-3 text-white text-sm mb-2 focus:outline-none"
+                    className="w-full appearance-none rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white text-xs md:text-sm mb-2 focus:outline-none"
                   >
                     <option value="" disabled>Select Enquiry Type</option>
                     <option value="general">General Inquiry</option>
@@ -315,7 +316,7 @@ export default function ContactPage() {
                     value={formData.message}
                     onChange={handleChange}
                     placeholder={`${contactData.description} *`}
-                    className="w-full h-[158px] resize-none rounded-md bg-[#242424] px-4 py-3 text-white placeholder-[#969696] focus:outline-none text-sm"
+                    className="w-full h-[120px] md:h-[158px] resize-none rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white placeholder-[#969696] focus:outline-none text-xs md:text-sm"
                     required
                   />
                 </div>
@@ -324,7 +325,7 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full rounded-md bg-white px-6 py-3 font-medium focus:outline-none disabled:opacity-50 min-w-0"
+                    className="w-full rounded-md bg-white px-4 md:px-6 py-3 font-medium focus:outline-none disabled:opacity-50 min-w-0 text-sm md:text-base"
                   >
                     <span className="bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent">
                       {isSubmitting ? 'Submitting...' : contactData.btn_text}
@@ -335,12 +336,12 @@ export default function ContactPage() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <CallToAction 
         title="Ready to Transform Your Market Strategy?"
         buttonText="Check our Research"
       />
-    </div>
+    </>
   );
 }

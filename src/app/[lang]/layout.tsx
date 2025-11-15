@@ -7,6 +7,8 @@ import QueryProvider from "@/components/common/QueryProvider";
 import GlobalNavbar from "@/components/layout/GlobalNavbar";
 import GlobalFooter from "@/components/layout/GlobalFooter";
 import HomepageHydrator from "@/components/common/HomepageHydrator";
+import { AuthProvider } from "@/contexts/AuthContext";
+import LoginWall from "@/components/auth/LoginWall";
 import { useEffect } from "react";
 import { codeToId } from "@/lib/utils";
 
@@ -74,13 +76,17 @@ export default async function RootLayout({
   return (
     <html lang={langCode}>
       <body className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable}  bg-black text-white antialiased`}>
-        <QueryProvider>
-          {/* Hydrate Zustand store for HomePage on client */}
-          <HomepageHydrator homepageData={homepageData} />
-          <GlobalNavbar />
-          <main>{children}</main>
-          <GlobalFooter />
-        </QueryProvider>
+        <AuthProvider>
+          <LoginWall>
+            <QueryProvider>
+              {/* Hydrate Zustand store for HomePage on client */}
+              <HomepageHydrator homepageData={homepageData} />
+              <GlobalNavbar />
+              <main>{children}</main>
+              <GlobalFooter />
+            </QueryProvider>
+          </LoginWall>
+        </AuthProvider>
       </body>
     </html>
   );
