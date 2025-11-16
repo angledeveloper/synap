@@ -20,6 +20,7 @@ export interface Report {
   regional_dynamics?: string;
   image_url?: string;
   category?: string;
+  share_at?: string;
 }
 
 export interface ReportDetail {
@@ -55,6 +56,7 @@ export interface ReportDetail {
   modify_at: string;
   base_year?: string;
   forecast_period?: string;
+  share_at?: string;
 }
 
 export interface ReportSection {
@@ -68,6 +70,7 @@ export interface ReportSection {
 
 export interface ReportDetailResponse {
   success: boolean;
+  share_at?: string;
   data: {
     report: ReportDetail;
     sections: ReportSection[];

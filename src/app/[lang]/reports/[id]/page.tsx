@@ -253,27 +253,27 @@ export default function ReportDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex" aria-label="Breadcrumb">
             <ol 
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 justify-start sm:justify-center min-w-0"
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
-              <li>
-                <a href={`/${language}`} className="text-gray-500 hover:text-gray-700 font-normal">
+              <li className="flex-shrink-0">
+                <a href={`/${language}`} className="text-gray-500 hover:text-gray-700 font-normal text-sm">
                   {t.breadcrumbHome}
                 </a>
               </li>
-              <li>
-                <Icon icon="mdi:chevron-right" className="text-gray-500" />
+              <li className="flex-shrink-0">
+                <Icon icon="mdi:chevron-right" className="text-gray-500 text-sm" />
               </li>
-              <li>
-                <a href={`/${language}/reports`} className="text-gray-500 hover:text-gray-700 whitespace-nowrap font-normal">
+              <li className="flex-shrink-0">
+                <a href={`/${language}/reports`} className="text-gray-500 hover:text-gray-700 whitespace-nowrap font-normal text-sm">
                   {t.breadcrumbCategory}
                 </a>
               </li>
-              <li>
-                <Icon icon="mdi:chevron-right" className="text-gray-500" />
+              <li className="flex-shrink-0">
+                <Icon icon="mdi:chevron-right" className="text-gray-500 text-sm" />
               </li>
-              <li>
-                <span className="text-gray-500 font-normal line-clamp-1">
+              <li className="min-w-0 flex-1">
+                <span className="text-gray-500 font-normal text-sm truncate block">
                   {report.title}
                 </span>
               </li>
@@ -284,14 +284,14 @@ export default function ReportDetailPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4 sm:py-6 lg:py-8">
-        {/* Content and Sidebar: mobile stack, desktop grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-          {/* Main Content Area: always comes first for stacking */}
-          <div className="lg:col-span-2">
+        {/* Content and Sidebar: mobile full width, desktop grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 relative">
+          {/* Main Content Area: full width on mobile, 2/3 on desktop */}
+          <div className="col-span-1 lg:col-span-2">
             {/* Report Header */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
-              {/* Report Image */}
-              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg flex-shrink-0 overflow-hidden mx-auto sm:mx-0">
+              {/* Report Image - Left aligned on mobile, left on desktop */}
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg flex-shrink-0 overflow-hidden mx-0">
                 {report.image ? (
                   <Image
                     src={report.image}
@@ -307,8 +307,8 @@ export default function ReportDetailPage() {
                 )}
               </div>
               
-              {/* Report Title and Metadata */}
-              <div className="flex-1 text-center sm:text-left">
+              {/* Report Title and Metadata - Left aligned on mobile, right side on desktop */}
+              <div className="flex-1 text-left sm:text-left">
                 <h1 
                   className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent mb-3 sm:mb-4"
                   style={{ 
@@ -322,7 +322,7 @@ export default function ReportDetailPage() {
                   {report.title}
                 </h1>
                 
-                {/* Report Metadata Grid */}
+                {/* Report Metadata Grid - Left aligned on mobile, normal on desktop */}
                 <div 
                   className="flex flex-col sm:flex-row sm:justify-between space-y-2 sm:space-y-0"
                   style={{ 
@@ -382,6 +382,154 @@ export default function ReportDetailPage() {
               </div>
             </div>
 
+            {/* Mobile Sidebar - Show only on mobile, after metadata */}
+            <div className="lg:hidden flex flex-col items-center gap-4 mb-6" style={{ width: '320px', margin: '0 auto' }}>
+              {/* One Time Cost */}
+              <div className="w-[300px] h-[68px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+                <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                  <Button
+                    className="h-[40px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
+                    style={{ 
+                      fontFamily: 'Space Mono, monospace',
+                      width: '274px'
+                    }}
+                    onClick={() => router.push(`/${params?.lang}/reports/${params?.id}/checkout`)}
+                    aria-label="Buy License Now"
+                  >
+                    <span className="truncate">Buy License Now</span>
+                    <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Free Sample */}
+              <div className="w-[300px] h-[99px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+                <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-4">
+                  <div>
+                    <h3 
+                      className="text-black text-[14px] font-normal mb-3"
+                      style={{ fontFamily: 'Space Mono, monospace' }}
+                    >
+                      {report.free_sample}
+                    </h3>
+                    <p 
+                      className="hidden sm:block text-[#595959] text-base font-normal mb-4"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                    >
+                      {report.free_sample_section}
+                    </p>
+                  </div>
+                  <div className="w-full flex justify-center">
+                    <Button
+                      className="h-[40px] bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
+                      style={{ 
+                        fontFamily: 'Space Grotesk, sans-serif',
+                        width: '274px',
+                        
+                      }}
+                    >
+                      <span className="truncate" onClick={() => setIsSampleFormOpen(true)}>{report.download_button}</span>
+                      <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Custom Report */}
+              <div className="w-full">
+                <div className="flex flex-col gap-3 pl-2  ">
+                  <div>
+                    <h3 
+                      className="text-black text-[14px] font-normal mb-0 mt-2"
+                      style={{ fontFamily: 'Space Mono, monospace' }}
+                    >
+                      {report.need_custom_report}
+                    </h3>
+                    <p 
+                      className="hidden sm:block text-[#595959] text-base font-normal"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                    >
+                      {report.custom_report_description}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-[300px] h-[50px] border-[#000000] text-black font-bold rounded-[10px] relative bg-white hover:bg-gray-50 text-[14px] mt-0"
+                    style={{ fontFamily: 'Space Grotesk, sans-serif'}}
+                    onClick={openPopup}
+                  >
+                    <span className="absolute left-5 text-[14px] font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                      {report.custom_report_button}
+                    </span>
+                    <div className="absolute right-4">
+                      <img 
+                        src="/barrow.svg" 
+                        alt="Arrow" 
+                        className="w-[32px] h-[12.67px]"
+                      />
+                    </div>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Social Media Sharing */}
+              <div className="w-full p-2">
+                <div className="flex items-center justify-between">
+                  <h3 
+                    className="text-black text-[14px] font-normal whitespace-nowrap"
+                    style={{ fontFamily: 'Space Mono, monospace' }}
+                  >
+                    {data?.share_at || 'Share this report:'}
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    {/* X (Twitter) */}
+                    <button
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:bg-gray-800 transition-colors"
+                      onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this report: ${report.title}`)}&url=${encodeURIComponent(window.location.href)}`, '_blank')}
+                      aria-label="Share on X"
+                    >
+                      <img src="/x.svg" alt="X" className="w-9 h-9" />
+                    </button>
+                    {/* Facebook */}
+                    <button
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:bg-blue-700 transition-colors"
+                      onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
+                      aria-label="Share on Facebook"
+                    >
+                      <img src="/facebook.svg" alt="Facebook" className="w-9 h-9" />
+                    </button>
+                    {/* Instagram */}
+                    <button
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+                      onClick={() => window.open(`https://www.instagram.com/`, '_blank')}
+                      aria-label="Share on Instagram"
+                    >
+                      <img src="/instagram.svg" alt="Instagram" className="w-9 h-9" />
+                    </button>
+                    {/* WhatsApp */}
+                    <button
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:bg-green-600 transition-colors"
+                      onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out this report: ${report.title} ${window.location.href}`)}`, '_blank')}
+                      aria-label="Share on WhatsApp"
+                    >
+                      <img src="/whatsapp.svg" alt="WhatsApp" className="w-9 h-9" />
+                    </button>
+                    {/* Copy Link */}
+                    <button
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:bg-gray-600 transition-colors"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        alert('Link copied to clipboard!');
+                      }}
+                      aria-label="Copy link"
+                    >
+                      <img src="/share.svg" alt="Copy Link" className="w-9 h-9" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Introduction Section */}
             <div className="mb-5 sm:mb-12 mt-10">
               <h2 
@@ -414,9 +562,10 @@ export default function ReportDetailPage() {
               </p>
               
               {/* 4-Quadrant Highlights Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 h-auto sm:h-80 gap-4 sm:gap-0">
-                {/* Top Left - #1D1F54 Background */}
-                <div className="bg-black text-white p-4 sm:p-6 flex flex-col justify-start min-h-[120px] sm:min-h-0">
+              <div className="relative">
+                <div className="grid grid-cols-1 sm:grid-cols-2 h-auto sm:h-80 w-screen sm:w-full gap-0 sm:gap-0 -mx-4 sm:mx-0">
+                  {/* Top Left - #1D1F54 Background */}
+                  <div className="bg-black text-white p-4 sm:p-6 flex flex-col justify-start min-h-[120px] sm:min-h-0">
                   <h3 
                     className="font-bold text-base sm:text-lg mb-2 sm:mb-3 text-left"
                     style={{ fontFamily: 'Space Grotesk, sans-serif' }}
@@ -480,11 +629,28 @@ export default function ReportDetailPage() {
                 </div>
               </div>
             </div>
+            </div>
 
             {/* Tab Navigation and Content - Connected */}
             <div className="mb-6 sm:mb-8">
-              {/* Tab Navigation */}
-              <div className="flex w-full overflow-x-auto no-scrollbar">
+              {/* Mobile Dropdown */}
+              <div className="sm:hidden mb-4">
+                <select
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(parseInt(e.target.value))}
+                  className="w-full p-3 border border-gray-300 rounded-lg bg-white text-[#000000] text-[14px] font-medium focus:outline-none focus:ring-1.5 focus:ring-[#1160C9]"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                >
+                  {sections.map((section, index) => (
+                    <option key={section.id} value={index} className="text-[#000000] text-[14px] font-medium">
+                      {section.section_name.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Desktop Tab Navigation */}
+              <div className="hidden sm:flex w-full overflow-x-auto no-scrollbar">
                 <div className="flex">
                   {sections.map((section, index) => (
                     <button
@@ -533,7 +699,7 @@ export default function ReportDetailPage() {
                     className={`${activeTab === index ? 'block' : 'hidden'}`}
                   >
                   <div className="bg-gray-100 rounded-br-2xl rounded-bl-2xl border border-gray-200 border-t-0 p-4 sm:p-6 lg:p-8 -mt-px relative">
-                    <div className="absolute top-0 left-0 right-0 h-px bg-black"></div>
+                    <div className="absolute top-0 left-0 right-0 h-px bg-black hidden sm:block"></div>
                     <h2 
                       className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2 sm:mb-3"
                       style={{ fontFamily: 'Space Grotesk, sans-serif' }}
@@ -552,47 +718,25 @@ export default function ReportDetailPage() {
             </div>
           </div>
 
-          {/* Sidebar: always second in markup, first on desktop grid */}
-          <div className="lg:col-span-1 h-full">
-            <div className="sticky top-32 flex flex-col items-center gap-4" style={{ width: '322px', margin: '0 auto' }}>
+          {/* Sidebar: desktop only */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-32">
+              <div className="flex flex-col items-center gap-4" style={{ width: '322px', margin: '0 auto' }}>
               {/* One Time Cost */}
-              <div className="w-[322px] h-[179px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
-                <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-6">
-                  <div className="relative">
-                    <h3 
-                      className="text-[#595959] text-base font-normal mb-2"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      {report.one_time_section}
-                    </h3>
-                    <div className="absolute top-0 right-0 bg-[#C7D8E5] text-[#1074C6] px-3 py-1 rounded-full text-sm font-bold" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                      20% off
-                    </div>
-                    <div className="mt-6">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-gray-900 line-through text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                          {singleActualPriceStr}
-                        </span>
-                        <span className="text-[32px] font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                          {singleOfferPriceStr}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-full flex justify-center">
-                    <Button
-                      className="h-[50px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
-                      style={{ 
-                        fontFamily: 'Space Mono, monospace',
-                        width: '297px'
-                      }}
-                      onClick={() => router.push(`/${params?.lang}/reports/${params?.id}/checkout`)}
-                      aria-label="Buy License Now"
-                    >
-                      <span className="truncate">Buy License Now</span>
-                      <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
-                    </Button>
-                  </div>
+              <div className="w-[322px] h-[85px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+                <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                  <Button
+                    className="h-[50px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
+                    style={{ 
+                      fontFamily: 'Space Mono, monospace',
+                      width: '297px'
+                    }}
+                    onClick={() => router.push(`/${params?.lang}/reports/${params?.id}/checkout`)}
+                    aria-label="Buy License Now"
+                  >
+                    <span className="truncate">Buy License Now</span>
+                    <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                  </Button>
                 </div>
               </div>
 
@@ -666,9 +810,67 @@ export default function ReportDetailPage() {
                 </div>
               </div>
 
+              {/* Social Media Sharing */}
+              <div className="w-full p-2">
+                <div className="flex items-center justify-between gap-1 ">
+                  <h3 
+                    className="text-black text-[18px] font-normal whitespace-nowrap"
+                    style={{ fontFamily: 'Space Mono, monospace' }}
+                  >
+                    {data?.share_at || 'Share this report:'}
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    {/* X (Twitter) */}
+                    <button
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center transition-colors"
+                      onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this report: ${report.title}`)}&url=${encodeURIComponent(window.location.href)}`, '_blank')}
+                      aria-label="Share on X"
+                    >
+                      <img src="/x.svg" alt="X" className="w-9 h-9" />
+                    </button>
+                    {/* Facebook */}
+                    <button
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center transition-colors"
+                      onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
+                      aria-label="Share on Facebook"
+                    >
+                      <img src="/facebook.svg" alt="Facebook" className="w-9 h-9" />
+                    </button>
+                    {/* Instagram */}
+                    <button
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+                      onClick={() => window.open(`https://www.instagram.com/`, '_blank')}
+                      aria-label="Share on Instagram"
+                    >
+                      <img src="/instagram.svg" alt="Instagram" className="w-9 h-9" />
+                    </button>
+                    {/* WhatsApp */}
+                    <button
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center transition-colors"
+                      onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out this report: ${report.title} ${window.location.href}`)}`, '_blank')}
+                      aria-label="Share on WhatsApp"
+                    >
+                      <img src="/whatsapp.svg" alt="WhatsApp" className="w-9 h-9" />
+                    </button>
+                    {/* Copy Link */}
+                    <button
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-bold  transition-colors"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        alert('Link copied to clipboard!');
+                      }}
+                      aria-label="Copy link"
+                    >
+                      <img src="/share.svg" alt="Copy Link" className="w-9 h-9" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
+      </div>
 
         {/* Common Layout Section */}
         {commonLayout && (
@@ -709,15 +911,14 @@ export default function ReportDetailPage() {
 
               {/* Cards using API titles */}
               <div className="w-full">
-                <div className="flex justify-center">
-                  <div className="flex gap-6 lg:gap-8" style={{ width: 'fit-content' }}>
-                    {/* Card 1 */}
-                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-shrink-0" style={{ width: '471px', height: '468px' }}>
+                <div className="flex flex-col sm:flex-row justify-center items-center sm:items-start gap-6 sm:gap-8">
+                  {/* Card 1 */}
+                  <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
                       <div 
                         className="flex items-center justify-center"
                         style={{ 
                           background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                          width: '100%', height: '83px'
+                          width: '100%', height: '39px'
                         }}
                       >
                         <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
@@ -728,12 +929,12 @@ export default function ReportDetailPage() {
                     </div>
 
                     {/* Card 2 */}
-                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-shrink-0" style={{ width: '471px', height: '468px' }}>
+                    <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
                       <div 
                         className="flex items-center justify-center"
                         style={{ 
                           background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                          width: '100%', height: '83px'
+                          width: '100%', height: '39px'
                         }}
                       >
                         <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
@@ -744,12 +945,12 @@ export default function ReportDetailPage() {
                     </div>
 
                     {/* Card 3 */}
-                    <div className="bg-white overflow-hidden shadow-lg border border-gray-200 flex-shrink-0" style={{ width: '471px', height: '468px' }}>
+                    <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
                       <div 
                         className="flex items-center justify-center"
                         style={{ 
                           background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                          width: '100%', height: '83px'
+                          width: '100%', height: '39px'
                         }}
                       >
                         <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
@@ -758,7 +959,6 @@ export default function ReportDetailPage() {
                       </div>
                       <div className="bg-gray-900 flex-1" />
                     </div>
-                  </div>
                 </div>
               </div>
             </div>

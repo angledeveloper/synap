@@ -296,7 +296,7 @@ export default function ReportsPage() {
           onClick={() => handlePageChange(i)}
           className={`px-4 py-2 text-sm font-medium border-r border-gray-300 last:border-r-0 ${
             i === currentPage
-              ? "bg-gray-600 text-white"
+              ? "bg-[#313131] text-white"
               : "bg-white text-gray-600 hover:bg-gray-50"
           }`}
         >
@@ -322,9 +322,38 @@ export default function ReportsPage() {
     };
 
     return (
-      <div className="flex items-center justify-between mt-12">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-12 gap-4">
+        {/* Pagination Controls */}
+       <div className="w-full flex justify-center sm:order-1 md:ml-50">
+  <div className="inline-flex bg-gray-100 border border-gray-300 overflow-hidden">
+    {/* Previous */}
+    <button
+      onClick={() => handlePageChange(currentPage - 1)}
+      disabled={currentPage === 1}
+      className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border-r border-gray-300 
+                 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {paginationLabels.previous}
+    </button>
+
+    {/* Page numbers (unchanged) */}
+    {pages}
+
+    {/* Next */}
+    <button
+      onClick={() => handlePageChange(currentPage + 1)}
+      disabled={currentPage === totalPages}
+      className="px-4 py-2 text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {paginationLabels.next}
+    </button>
+  </div>
+</div>
+
+
         {/* Report Limit Dropdown */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:order-2">
           <label className="text-sm text-gray-600" style={{ fontFamily: 'Noto Sans, sans-serif' }}>
             {reportLimit.label}
           </label>
@@ -341,25 +370,6 @@ export default function ReportsPage() {
               <SelectItem value="1-100" className="text-gray-900">{reportLimit.options["1-100"]}</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="bg-gray-100 border border-gray-300 rounded-lg overflow-hidden">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border-r border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {paginationLabels.previous}
-          </button>
-          {pages}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {paginationLabels.next}
-          </button>
         </div>
       </div>
     );

@@ -191,7 +191,7 @@ export default function Home() {
       </section>
       <GlobalAboveFooter />
       <section className="w-full bg-white text-black">
-        <div className="m-auto grid w-full max-w-[1440px] grid-cols-2 gap-4 p-3 pb-15 pt-10 md:grid-cols-3 md:gap-10 md:pt-20">
+        <div className="m-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 p-3 pb-15 pt-10 sm:grid-cols-1 md:grid-cols-2 md:gap-10 md:pt-20 lg:grid-cols-3">
           {HomePage.home_section4_reports?.map((item: any, index: number) => (
             <div
               key={index}
