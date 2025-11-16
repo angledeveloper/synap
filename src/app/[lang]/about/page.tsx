@@ -97,7 +97,7 @@ export default function About() {
           fill
           className="bg-no-repeat object-cover"
         />
-        <div className="relative m-auto flex h-[80vh] min-h-[500px] w-full max-w-[1440px] flex-col justify-end p-4 pb-10">
+        <div className="relative m-auto flex min-h-screen w-full max-w-[1440px] flex-col justify-start p-4 pt-24 lg:h-[80vh] lg:min-h-[500px] lg:justify-end lg:pt-4">
           <h1 className="mb-6 text-[32px] md:text-[64px]">
             {(() => {
               const titleParts = formatTitle(AboutPage.title);

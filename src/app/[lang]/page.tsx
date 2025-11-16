@@ -191,7 +191,7 @@ export default function Home() {
       </section>
       <GlobalAboveFooter />
       <section className="w-full bg-white text-black">
-        <div className="m-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 p-3 py-10 md:grid-cols-3 md:gap-10 md:py-20">
+        <div className="m-auto grid w-full max-w-[1440px] grid-cols-2 gap-4 p-3 pb-15 pt-10 md:grid-cols-3 md:gap-10 md:pt-20">
           {HomePage.home_section4_reports?.map((item: any, index: number) => (
             <div
               key={index}
@@ -222,7 +222,7 @@ export default function Home() {
       </section>
       <section className="w-full overflow-hidden bg-[#F5F5F5]">
         <div className="relative m-auto grid w-full max-w-[1440px] grid-cols-1 justify-center justify-items-end bg-white text-black md:grid-cols-2">
-          <div className="flex w-full flex-col bg-[#F5F5F5] p-3 pt-10 md:p-16 md:pt-16 ml-0 md:ml-[284px]">
+          <div className="flex w-full flex-col bg-[#F5F5F5] p-3 pt-10 md:pt-16 md:pl-16 md:pr-16 ml-0 md:ml-[284px]">
             <h4 className="text-[32px] font-bold md:text-[64px]" style={{ marginBottom: '136px' }}>
               {HomePage.home_section5?.title ?? ''}
             </h4>

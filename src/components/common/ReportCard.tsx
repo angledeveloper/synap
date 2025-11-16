@@ -45,7 +45,7 @@ export default function ReportCard({ report, viewReportLabel }: ReportCardProps)
 
   return (
     <Card
-      className="w-full h-[294px] bg-[#f8f8f8] shadow-sm hover:shadow-md transition-shadow duration-200"
+      className="w-full h-[294px] md:h-[250px] bg-[#f8f8f8] shadow-sm hover:shadow-md transition-shadow duration-200"
       style={{
         borderWidth: '1px',
         borderStyle: 'solid',
@@ -53,17 +53,17 @@ export default function ReportCard({ report, viewReportLabel }: ReportCardProps)
         borderRadius: '0px',
       }}
     >
-      <CardContent className="p-8 pt-2" >
+      <CardContent className="!p-4 !pt-2">
         <div className="flex flex-col h-full">
           {/* Title Text - Limited to 3 lines */}
           <div className="mb-4">
-            <p className="text-[#202020] text-base line-clamp-3" style={{ 
+            <p className="text-[#202020] text-base line-clamp-3 md:text-base" style={{ 
               fontFamily: 'Space Mono, monospace', 
               fontWeight: '400',
-              lineHeight: '30px',
+              lineHeight: '24px',
               letterSpacing: '0%',
               color: '#374151',
-              fontSize: '20px'
+              fontSize: '16px'
             }}>
               {truncateText(report.title, 3)}
             </p>
@@ -74,10 +74,10 @@ export default function ReportCard({ report, viewReportLabel }: ReportCardProps)
             <p className="text-[#555353] text-sm line-clamp-3" style={{ 
               fontFamily: 'Space Grotesk, sans-serif', 
               fontWeight: '300',
-              lineHeight: '20px',
+              lineHeight: '18px',
               letterSpacing: '0%',
               color: '#6B7280',
-              fontSize: '16px'
+              fontSize: '14px'
             }}>
               {truncateText(report.introduction_description, 3)}...
             </p>
@@ -90,9 +90,9 @@ export default function ReportCard({ report, viewReportLabel }: ReportCardProps)
               <span style={{ 
                 fontFamily: 'Space Grotesk, sans-serif', 
                 fontWeight: '400',
-                fontSize: '20px',
+                fontSize: '16px',
                 color: '#555353',
-                lineHeight: '26px',
+                lineHeight: '22px',
                 letterSpacing: '0%',
               }}>
                 {formatDate(report.report_date)}
@@ -106,8 +106,8 @@ export default function ReportCard({ report, viewReportLabel }: ReportCardProps)
                 style={{ 
                   fontFamily: 'Noto Sans, sans-serif', 
                   color: '#010912',
-                  fontSize: '20px',
-                  lineHeight: '27px',
+                  fontSize: '16px',
+                  lineHeight: '22px',
                 }}
               >
                 {viewReportLabel || 'View Report'}
