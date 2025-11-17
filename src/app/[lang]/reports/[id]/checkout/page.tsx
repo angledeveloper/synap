@@ -228,49 +228,54 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-white pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full max-w-[1352px] mx-auto px-4 sm:px-6 py-0">
         {/* Back Button */}
-        <button
-          onClick={handleBackClick}
-          className="mb-6 text-[#555353] hover:text-gray-700 transition-colors"
-          style={{ 
-            fontFamily: 'Space Grotesk, sans-serif',
-            fontSize: '16px',
-            fontWeight: '400'
-          }}
-        >
-          ← Back
-        </button>
+        <div className="w-full">
+          <button
+            onClick={handleBackClick}
+            className="mb-6 text-[#555353] hover:text-gray-700 transition-colors"
+            style={{ 
+              fontFamily: 'Space Grotesk, sans-serif',
+              fontSize: '16px',
+              fontWeight: '400'
+            }}
+          >
+            ← Back
+          </button>
+        </div>
 
-        {/* Page Header */}
-        <div className="text-center pt-4 relative z-10 w-full flex flex-col justify-center pl-32 pb-3">
-          <h1 className="text-[40px] font-normal mb-6 text-black leading-tight" style={{ fontFamily: 'Orbitron, sans-serif' }}>
-            {checkout_page.page_title}
-          </h1>
-          <p className="text-[#484848] underline text-base font-normal pt-0 pb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-            {checkout_page.selected_report_text}
-          </p>
+        {/* Page Header - Mobile Responsive */}
+        <div className="w-full">
+          <div className="text-center pt-4 relative z-10 w-full flex flex-col justify-center pb-3">
+            <h1 className="text-2xl sm:text-3xl lg:text-[40px] font-normal mb-4 lg:mb-6 text-black leading-tight" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+              {checkout_page.page_title}
+            </h1>
+            <p className="text-[#484848] underline text-sm sm:text-base font-normal pt-0 pb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              {checkout_page.selected_report_text}
+            </p>
+          </div>
         </div>
 
         {/* Checkout Header */}
-        <div className="flex justify-center">
+        <div className="w-full mt-6">
           <CheckoutHeader report={reportData} />
         </div>
 
-        {/* Step Indicator - above the grid */}
-        <div className="mt-8 flex justify-center">
-          <StepIndicator 
-            currentStep={successData ? 3 : showBilling ? 2 : 1}
-              choosePlanHeading={checkout_page?.choose_plan_heading ? `${checkout_page.choose_plan_heading}` : '1. Choose Your Pln'}
-            billingHeading={`${billing_information?.bill_info_heading || billing_information?.bill_info_heading || 'Your Billing Details'}`}
-            confirmationHeading={order_confirmation?.order_confirmation_heading ? `${order_confirmation.order_confirmation_heading}` : '3. Order Confirmation'}
-          />
-        </div>
+        {/* Main Content Container */}
+        <div className="w-full">
+          {/* Step Indicator */}
+          <div className="mt-8 w-full">
+            <StepIndicator 
+              currentStep={successData ? 3 : showBilling ? 2 : 1}
+              choosePlanHeading={checkout_page?.choose_plan_heading ? `${checkout_page.choose_plan_heading}` : '1. Choose Your Plan'}
+              billingHeading={`${billing_information?.bill_info_heading || 'Your Billing Details'}`}
+              confirmationHeading={order_confirmation?.order_confirmation_heading ? `${order_confirmation.order_confirmation_heading}` : '3. Order Confirmation'}
+            />
+          </div>
 
-        {/* Main Content Area */}
-        <div className="flex justify-center">
-          <div className="w-full">
-            <div className="bg-[#F4F4F4] w-338 px-6 pb-8 border-t-1 border-black">
+          {/* Main Content Area */}
+          <div className="w-full mt-0">
+            <div className="bg-[#F4F4F4] w-full pb-8 border-t border-black">
               {successData ? (
                 /* Order Confirmation - Step 3 */
                 <div className="pt-8">
@@ -299,7 +304,7 @@ export default function CheckoutPage() {
                 </div>
               ) : !showBilling ? (
                 /* License Grid - Step 1 */
-                <>
+                <div>
                   {/* Currency Selector - inside the grid */}
                   <div className="flex justify-center mt-10.5 mb-12">
                     <CurrencySelector 
@@ -321,8 +326,8 @@ export default function CheckoutPage() {
                   <div className="mt-8 text-center font-normal" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                     <Disclaimer disclaimer={checkout_page.common_license_discription} />
                   </div>
-                </>
-               ) : selectedLicense ? (
+                </div>
+              ) : selectedLicense ? (
                  /* Billing Form - Step 2 */
                  <BillingForm
                    selectedLicense={selectedLicense}
@@ -340,21 +345,21 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-      </div>
-
-      {/* Support Footer - full width, attached to global footer */}
-      <SupportFooter />
-
-      <PaymentModal
-        open={showPayment}
-        onClose={() => setShowPayment(false)}
-        onConfirm={handleConfirmPayment}
-        isLoading={isLoading}
-        license={selectedLicense}
-        report={reportData}
-      />
+        {/* Support Footer */}
+        <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw] mt-8">
+          <SupportFooter payment_common_layout={payment_common_layout} />
+        </div>
+               
+        <PaymentModal
+          open={showPayment}
+          onClose={() => setShowPayment(false)}
+          onConfirm={handleConfirmPayment}
+          isLoading={isLoading}
+          license={selectedLicense}
+          report={reportData}
+        />
+      
+    </div>
     </div>
   );
 }
-
-
