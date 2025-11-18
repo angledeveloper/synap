@@ -25,10 +25,10 @@ export default function GlobalFooter() {
         backgroundRepeat: "repeat",
         backgroundSize: "150px",
       }}
-      className="w-full bg-[#010912] px-3 pb-3 text-white"
+      className="w-full bg-[#010912] px-3 pb-3 pl-12 text-white"
     >
       <div className="m-auto flex w-full max-w-[1440px] flex-col gap-4 pt-18 md:flex-row">
-        <div className="flex w-full flex-col justify-between gap-4 md:flex-row">
+        <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
           <div className="w-full max-w-[500px]">
             <h6 className="mb-8 text-[32px] font-bold md:text-[48px]">
               {HomePage.footer.section?.title || ""}
@@ -45,12 +45,12 @@ export default function GlobalFooter() {
               </button>
             </Link>
           </div>
-          <div className="flex w-full flex-col gap-8 md:w-fit">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 w-full">
+          <div className="flex w-full flex-col gap-8 mt-25 md:w-fit">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-14 w-full">
 
   <div>
     <span className="text-[20px] underline">{HomePage.footer.section?.solutions ?? ''}</span>
-    <ul className="mt-6 flex flex-col gap-2 text-[16px]">
+    <ul className="mt-6 flex flex-col gap-2 text-[14px]">
       {HomePage.footer.menu.Solution?.map((link: any, index: number) => (
         <li key={index}><Link href={`/${language}`}>{link.menu_name}</Link></li>
       ))}
@@ -59,7 +59,7 @@ export default function GlobalFooter() {
 
   <div>
     <span className="text-[20px] underline">{HomePage.footer.section?.resources ?? ''}</span>
-    <ul className="mt-6 flex flex-col gap-2 text-[16px]">
+    <ul className="mt-6 flex flex-col gap-2 text-[14px]">
       {HomePage.footer.menu.Resources?.map((link: any, index: number) => (
         <li key={index}><Link href={`/${language}`}>{link.menu_name}</Link></li>
       ))}
@@ -68,7 +68,7 @@ export default function GlobalFooter() {
 
   <div>
     <span className="text-[20px] underline">{HomePage.footer.section?.company ?? ''}</span>
-    <ul className="mt-6 flex flex-col gap-2 text-[16px]">
+    <ul className="mt-6 flex flex-col gap-2 text-[14px]">
       {HomePage.footer.menu.Company?.map((link: any, index: number) => {
         const isPrivacy = (link.menu_name || "").toLowerCase().includes('privacy');
         return (
@@ -82,7 +82,7 @@ export default function GlobalFooter() {
 
   <div>
     <span className="text-[20px] underline">{HomePage.footer.section?.legal ?? ''}</span>
-    <ul className="mt-6 flex flex-col gap-2 text-[16px]">
+    <ul className="mt-6 flex flex-col gap-2 text-[14px]">
       {HomePage.footer.menu.Legal?.map((link: any, index: number) => {
         const isPrivacy = (link.menu_name || "").toLowerCase().includes('privacy');
         return (
@@ -97,11 +97,10 @@ export default function GlobalFooter() {
 </div>
 
 
-            <GlobalLanguageSwitch />
           </div>
         </div>
       </div>
-      <div className="m-auto my-10 w-full max-w-[1440px] text-[20px] text-[#808080]">
+      <div className="m-auto my-10 w-full max-w-[1440px] text-[14px] text-[#808080]">
         {HomePage.footer.section.description}
       </div>
       <div className="m-auto my-10 w-full max-w-[1440px] text-[20px]">
@@ -109,7 +108,7 @@ export default function GlobalFooter() {
           <FullLogo />
         </div>
       </div>
-      <div className="m-auto my-10 flex w-full max-w-[1440px] flex-col gap-4 text-[20px] text-[#808080] md:flex-row md:justify-between">
+      <div className="m-auto my-10 flex w-full max-w-[1440px] flex-col gap-4 text-[14px] text-[#808080] md:flex-row md:justify-between">
         <p className="w-full">{HomePage.footer.section.copyright_text}</p>
         <span className="w-[200px] text-sm">
           {HomePage.footer.section.credit_text}
