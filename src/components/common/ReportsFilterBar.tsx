@@ -37,7 +37,10 @@ export default function ReportsFilterBar({
   categories = [] 
 }: ReportsFilterBarProps) {
   const { language } = useLanguageStore();
-  const { data: filterOptions, isLoading: isFilterOptionsLoading } = useFilterOptions({ language });
+  const { data: filterOptions, isLoading: isFilterOptionsLoading } = useFilterOptions({ 
+    language,
+    category: filters.category_id || '' // Use the category_id from filters or fallback to empty string
+  });
   
   const t = translations || {
     searchPlaceholder: "Search By Title",
