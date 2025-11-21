@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useLanguageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
 import { useReportDetail } from "@/hooks/useReportDetail";
@@ -50,8 +50,17 @@ export interface LicenseOption {
 
 type SuccessData = any;
 
-const fetchCheckoutData = async () => {
-  const res = await fetch ('https://dashboard.synapseaglobal.com/api/checkout', {
+const fetchCheckoutData = async (lang: string) => {
+  // Map language code to ID (1-8)
+  const languageMap: Record<string, string> = {
+    'en': '1',
+    'es': '2',
+    // Add more language mappings as needed
+  };
+  
+  const languageId = languageMap[lang] || '1'; // Default to English (1) if language not found
+  
+  const res = await fetch(`https://dashboard.synapseaglobal.com/api/checkout/${languageId}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -87,7 +96,7 @@ export default function CheckoutPage() {
   } : null;
 
   // LIVE CHECKOUT API DATA
-  const { data: checkoutApi, error: checkoutApiError } = useSWR('checkout-api', fetchCheckoutData);
+  const { data: checkoutApi, error: checkoutApiError } = useSWR('checkout-api', () => fetchCheckoutData(params.lang as string));
   const { checkout_page, payment_common_layout, billing_information, bill_info_order_summary, order_confirmation } = checkoutApi || {};
 
   // All other state hooks:

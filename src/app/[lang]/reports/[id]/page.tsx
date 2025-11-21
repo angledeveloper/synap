@@ -123,12 +123,27 @@ export default function ReportDetailPage() {
   };
 
   // Fetch checkout page to read Single License pricing (for One Time Cost box)
-  const fetchCheckoutData = async () => {
-    const res = await fetch('https://dashboard.synapseaglobal.com/api/checkout');
+  const fetchCheckoutData = async (lang: string) => {
+    // Map language code to ID (1-8)
+    const languageMap: Record<string, string> = {
+      'en': '1',
+      'es': '2',
+      // Add more language mappings as needed
+    };
+    
+    const languageId = languageMap[lang] || '1'; // Default to English (1) if language not found
+    
+    const res = await fetch(`https://dashboard.synapseaglobal.com/api/checkout/${languageId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     if (!res.ok) throw new Error('Failed to fetch checkout data');
     return res.json();
   };
-  const { data: checkoutApi } = useSWR('checkout-api', fetchCheckoutData);
+  
+  const { data: checkoutApi } = useSWR('checkout-api', () => fetchCheckoutData(language));
   const checkout_page = checkoutApi?.checkout_page;
   // Pick a currency (first from dropdown) → derive suffix and symbol. Fallback USD
   let singleActualPriceStr: string = '';

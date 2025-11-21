@@ -259,18 +259,15 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <select
+                    <input
+                      type="text"
                       id="jobTitle"
                       name="jobTitle"
                       value={formData.jobTitle || ''}
                       onChange={handleChange}
-                      className="w-full appearance-none rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white text-xs md:text-sm focus:outline-none"
-                    >
-                      <option value="" disabled>{contactData.job_title}</option>
-                      <option value="ceo">CEO</option>
-                      <option value="manager">Manager</option>
-                      <option value="developer">Developer</option>
-                    </select>
+                      placeholder={contactData.job_title}
+                      className="w-full appearance-none ro  unded-md bg-[#242424] px-3 md:px-4 py-3 text-white text-xs md:text-sm focus:outline-none"
+                    />
                   </div>
                   <div>
                     <select
@@ -297,7 +294,7 @@ export default function ContactPage() {
                     onChange={handleChange}
                     className="w-full appearance-none rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white text-xs md:text-sm mb-2 focus:outline-none"
                   >
-                    <option value="" disabled>Select Enquiry Type</option>
+                    <option value="" disabled>{contactData.type}</option>
                     <option value="general">General Inquiry</option>
                     <option value="sales">Sales</option>
                     <option value="support">Support</option>
