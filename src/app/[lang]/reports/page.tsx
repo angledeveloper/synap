@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLanguageStore, useHomePageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useReportsPage } from "../../../hooks/useReportsPage";
 import { useTranslations } from "../../../hooks/useTranslations";
 import ReportCard from "@/components/common/ReportCard";
@@ -12,12 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Icon } from "@iconify/react";
 import { Report, ReportsResponse } from "@/types/reports";
-
+import { getCategoryIdForLanguage, getLanguageId, type Category } from "@/lib/categoryMappings";
 
 export default function ReportsPage() {
   const { language } = useLanguageStore();
   const searchParams = useSearchParams();
-  
+
   // Get category from URL parameters
   const rawCategoryFromUrl = searchParams.get('category');
   const categoryIdSanitized = rawCategoryFromUrl && rawCategoryFromUrl !== 'undefined' ? rawCategoryFromUrl : '1';
@@ -26,24 +26,24 @@ export default function ReportsPage() {
   const [filters, setFilters] = useState({
     search: "",
     category_id: categoryIdSanitized,
-    region: "all",
-    year: "all",
+    base_year: "all",
+    forecast_period: "all",
     page: 1,
     per_page: 10,
     language_id: languageId,
   });
-  
+
   const [reports, setReports] = useState<Report[]>([]);
   const [categoryData, setCategoryData] = useState({ name: '', description: '' });
-  
+
   // Memoize the category data to prevent unnecessary re-renders
   const memoizedCategoryData = useMemo(() => categoryData, [categoryData]);
-  
+
   const { data: translations, isLoading: isTranslationsLoading, error: translationsError } = useTranslations({ 
     language, 
     page: 'reports' 
   });
-  
+
   // Define the translation type to ensure type safety
   type TranslationType = {
     breadcrumbHome: string;
@@ -53,8 +53,8 @@ export default function ReportsPage() {
     searchPlaceholder: string;
     filters: {
       industry: string;
-      region: string;
-      year: string;
+      base_year: string;
+      forecast_period: string;
     };
     clearFilters: string;
     viewReport: string;
@@ -80,8 +80,8 @@ export default function ReportsPage() {
       searchPlaceholder: "Search By Title",
       filters: {
         industry: "INDUSTRY",
-        region: "REGION",
-        year: "YEAR",
+        base_year: "BASE YEAR",
+        forecast_period: "FORECAST PERIOD",
       },
       clearFilters: "Clear Filters",
       viewReport: "View Report",
@@ -127,49 +127,73 @@ export default function ReportsPage() {
       }
     };
   }, [translations, memoizedCategoryData]);
+
   const [pagination, setPagination] = useState({
     totalPages: 0,
     currentPage: 1,
     totalCount: 0,
   });
+
   const [isLoading, setIsLoading] = useState(true);
   const [lastRenderedReports, setLastRenderedReports] = useState<string>('');
-
 
   const { mutate: fetchReports, isPending } = useReportsPage();
 
   const { HomePage } = useHomePageStore();
 
-  // Keep filters in sync if ?category in URL changes (for SPA navigation from navbar)
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Get current language ID
+  const currentLanguageId = getLanguageId(language);
+
+  // Get categories for the current language from report_store_dropdown
+  const currentLangCategories = useMemo(() => {
+    if (!HomePage?.report_store_dropdown?.length) return [];
+    return (HomePage.report_store_dropdown as Category[]).filter(
+      cat => String(cat.language_id) === currentLanguageId
+    );
+  }, [HomePage?.report_store_dropdown, currentLanguageId]);
+
+  // Keep filters in sync with URL and language changes
   useEffect(() => {
-    const categoryIdSanitized = rawCategoryFromUrl && rawCategoryFromUrl !== 'undefined' ? rawCategoryFromUrl : '1';
-    
-    // Find the category in the homepage data if available
-    const categoryFromHomePage = HomePage?.report_store_dropdown?.find(
-      (item: any) => String(item.category_id || item.id || '') === categoryIdSanitized
+    if (!currentLangCategories.length) return;
+
+    // Get category from URL or default to first category in current language
+    let categoryId = rawCategoryFromUrl && rawCategoryFromUrl !== 'undefined'
+      ? rawCategoryFromUrl
+      : String(currentLangCategories[0]?.category_id);
+
+    // Find the selected category in current language
+    const selectedCategory = currentLangCategories.find(
+      cat => String(cat.category_id) === categoryId
     );
 
-    setFilters(prev => {
-      // Only update if the category has changed or language has changed
-      if (categoryIdSanitized !== prev.category_id || prev.language_id !== languageId) {
-        return { 
-          ...prev, 
-          category_id: categoryIdSanitized, 
-          language_id: languageId, 
-          page: 1 
-        };
-      }
-      return prev;
-    });
+    // If category not found in current language, use first category of current language
+    const targetCategory = selectedCategory || currentLangCategories[0];
+    const finalCategoryId = String(targetCategory.category_id);
 
-    // Update category data if we found a match in the homepage data
-    if (categoryFromHomePage) {
-      setCategoryData({
-        name: categoryFromHomePage.category_name,
-        description: categoryFromHomePage.category_tagline
-      });
+    // Update URL if needed
+    if (finalCategoryId !== categoryId) {
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.set('category', finalCategoryId);
+      router.replace(`${pathname}?${newSearchParams.toString()}`, { scroll: false });
     }
-  }, [rawCategoryFromUrl, languageId, HomePage]);
+
+    // Update filters with the correct category ID and language
+    setFilters(prev => ({
+      ...prev,
+      category_id: finalCategoryId,
+      language_id: currentLanguageId,
+      page: 1
+    }));
+
+    // Update category data
+    setCategoryData({
+      name: targetCategory.category_name,
+      description: targetCategory.title || targetCategory.category_tagline || ''
+    });
+  }, [rawCategoryFromUrl, language, HomePage, searchParams, pathname, router, currentLanguageId]);
 
   // Memoize the entire translation object to prevent unnecessary re-renders
   const memoizedTranslations = useMemo(() => t, [t]);
@@ -451,6 +475,11 @@ export default function ReportsPage() {
             onFilterChange={handleFilterChange}
             isLoading={isPending}
             translations={t}
+            categories={currentLangCategories.map(cat => ({
+              id: String(cat.category_id),
+              name: cat.category_name,
+              value: String(cat.category_id)
+            }))}
           />
         </div>
       </div>

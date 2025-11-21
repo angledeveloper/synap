@@ -99,8 +99,8 @@ export interface ReportsResponse {
 export interface Filters {
   search: string;
   category_id: string;
-  region: string;
-  year: string;
+  base_year: string;
+  forecast_period: string;
   page: number;
   per_page: number;
   language_id: string;

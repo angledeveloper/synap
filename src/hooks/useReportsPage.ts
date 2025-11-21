@@ -1,18 +1,41 @@
 import { useMutation } from '@tanstack/react-query';
 import { Filters, ReportsResponse } from '@/types/reports';
+import { useHomePageStore } from '@/store';
 
-const fetchReports = async (filters: Filters): Promise<ReportsResponse> => {
+const fetchReports = async (filters: Filters, allCategories: any[]): Promise<ReportsResponse> => {
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
   
   if (!baseUrl) {
     throw new Error('NEXT_PUBLIC_DB_URL is not defined');
   }
 
-  // Create FormData as required by the API
+  // Find the category in the dropdown data
+  const category = allCategories.find(
+    cat => String(cat.category_id) === String(filters.category_id) && 
+           String(cat.language_id) === String(filters.language_id)
+  );
+
+  if (!category) {
+    console.warn('Category not found in report_store_dropdown, using first available category');
+    const firstCategory = allCategories[0];
+    if (!firstCategory) {
+      throw new Error('No categories available in report_store_dropdown');
+    }
+    return {
+      reports: [],
+      totalPages: 0,
+      currentPage: 1,
+      totalCount: 0,
+      category_name: firstCategory.category_name,
+      category_desc: firstCategory.title || ''
+    };
+  }
+
+  // Create FormData with the validated category
   const formData = new FormData();
-  formData.append('category_id', filters.category_id === "all" ? "1" : filters.category_id);
-  formData.append('language_id', filters.language_id || "1");
-  
+  formData.append('category_id', String(category.category_id));
+  formData.append('language_id', String(category.language_id));
+
   // Add search parameter - try different parameter names
   if (filters.search && filters.search.trim()) {
     formData.append('search', filters.search.trim());
@@ -31,6 +54,10 @@ const fetchReports = async (filters: Filters): Promise<ReportsResponse> => {
     const searchFormData = new FormData();
     searchFormData.append('search', filters.search.trim());
     searchFormData.append('language_id', filters.language_id || "1");
+    // Include category_id in search to maintain context
+    if (filters.category_id && filters.category_id !== "all") {
+      searchFormData.append('category_id', filters.category_id);
+    }
     searchFormData.append('page', filters.page.toString());
     searchFormData.append('per_page', filters.per_page.toString());
     
@@ -95,8 +122,11 @@ const fetchReports = async (filters: Filters): Promise<ReportsResponse> => {
 };
 
 export const useReportsPage = () => {
+  const { HomePage } = useHomePageStore();
+  const allCategories = HomePage?.report_store_dropdown || [];
+
   return useMutation<ReportsResponse, Error, Filters>({
-    mutationFn: fetchReports,
+    mutationFn: (filters) => fetchReports(filters, allCategories),
     onError: (error) => {
       console.error('Reports fetch error:', error);
     },

@@ -5,19 +5,37 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Icon } from "@iconify/react";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useFilterOptions } from "@/hooks/useFilterOptions";
 import { useLanguageStore } from "@/store";
 import { Filters } from "@/types/reports";
+import { useFilterOptions } from "@/hooks/useFilterOptions";
+
+interface FilterOption {
+  value: string;
+  label: string;
+}
+
+interface CategoryOption {
+  id: string;
+  name: string;
+  value: string;
+}
 
 interface ReportsFilterBarProps {
   filters: Filters;
   onFilterChange: (filters: Partial<Filters>) => void;
   isLoading: boolean;
   translations?: any;
+  categories?: CategoryOption[];
 }
 
 
-export default function ReportsFilterBar({ filters, onFilterChange, isLoading, translations }: ReportsFilterBarProps) {
+export default function ReportsFilterBar({ 
+  filters, 
+  onFilterChange, 
+  isLoading, 
+  translations, 
+  categories = [] 
+}: ReportsFilterBarProps) {
   const { language } = useLanguageStore();
   const { data: filterOptions, isLoading: isFilterOptionsLoading } = useFilterOptions({ language });
   
@@ -25,8 +43,8 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
     searchPlaceholder: "Search By Title",
     filters: {
       industry: "INDUSTRY",
-      region: "REGION",
-      year: "YEAR",
+      base_year: "BASE YEAR",
+      forecast_period: "FORECAST PERIOD",
     },
     clearFilters: "Clear Filters",
   };
@@ -34,8 +52,8 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
   // Ensure filters object exists with fallbacks
   const filterLabels = t.filters || {
     industry: "INDUSTRY",
-    region: "REGION", 
-    year: "YEAR",
+    base_year: "BASE YEAR",
+    forecast_period: "FORECAST PERIOD",
   };
   const [searchValue, setSearchValue] = useState(filters.search);
   const debouncedSearch = useDebounce(searchValue, 300);
@@ -79,70 +97,84 @@ export default function ReportsFilterBar({ filters, onFilterChange, isLoading, t
         <Select
           value={filters.category_id}
           onValueChange={(value) => handleFilterChange("category_id", value)}
-          disabled={isLoading}
+          disabled={isLoading || !categories.length}
         >
           <SelectTrigger className="w-full h-12 border-gray-400 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
             <SelectValue placeholder={filterLabels.industry} />
           </SelectTrigger>
           <SelectContent className="text-gray-900">
-            {filterOptions?.industries?.map((option) => (
-              <SelectItem key={option.value} value={option.value} className="text-gray-900">
-                {option.label}
+            {categories.map((category) => (
+              <SelectItem 
+                key={category.id} 
+                value={category.value} 
+                className="text-gray-900"
+              >
+                {category.name}
               </SelectItem>
-            )) || []}
+            ))}
           </SelectContent>
         </Select>
 
 
-        {/* Region Filter */}
+        {/* Base Year Filter */}
         <Select
-          value={filters.region}
-          onValueChange={(value) => handleFilterChange("region", value)}
-          disabled={isLoading}
+          value={filters.base_year || "all"}
+          onValueChange={(value) => handleFilterChange("base_year", value)}
+          disabled={isLoading || isFilterOptionsLoading}
         >
           <SelectTrigger className="w-full h-12 border-gray-400 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
-            <SelectValue placeholder={filterLabels.region} />
+            <SelectValue placeholder={filterLabels.base_year} />
           </SelectTrigger>
           <SelectContent className="text-gray-900">
-            {filterOptions?.regions?.map((option) => (
+            <SelectItem value="all" className="text-gray-900">
+              All Years
+            </SelectItem>
+            {filterOptions?.baseYears?.map((option) => (
               <SelectItem key={option.value} value={option.value} className="text-gray-900">
                 {option.label}
               </SelectItem>
-            )) || []}
+            ))}
           </SelectContent>
         </Select>
 
-        {/* Year Filter */}
+        {/* Forecast Period Filter */}
         <Select
-          value={filters.year}
-          onValueChange={(value) => handleFilterChange("year", value)}
-          disabled={isLoading}
+          value={filters.forecast_period || "all"}
+          onValueChange={(value) => handleFilterChange("forecast_period", value)}
+          disabled={isLoading || isFilterOptionsLoading}
         >
           <SelectTrigger className="w-full h-12 border-gray-400 focus:border-blue-500 focus:ring-blue-500 text-gray-900">
-            <SelectValue placeholder={filterLabels.year} />
+            <SelectValue placeholder={filterLabels.forecast_period} />
           </SelectTrigger>
           <SelectContent className="text-gray-900">
-            {filterOptions?.years?.map((option) => (
+            <SelectItem value="all" className="text-gray-900">
+              All Periods
+            </SelectItem>
+            {filterOptions?.forecastPeriods?.map((option) => (
               <SelectItem key={option.value} value={option.value} className="text-gray-900">
                 {option.label}
               </SelectItem>
-            )) || []}
+            ))}
           </SelectContent>
         </Select>
       </div>
 
       {/* Clear Filters Button */}
-      {(searchValue || (filters.category_id && filters.category_id !== "all") || (filters.region && filters.region !== "all") || (filters.year && filters.year !== "all")) && (
+      {(searchValue || 
+        (filters.category_id && filters.category_id !== "all") || 
+        (filters.base_year && filters.base_year !== "all") || 
+        (filters.forecast_period && filters.forecast_period !== "all")) && (
         <div className="flex justify-end">
           <Button
             variant="outline"
             onClick={() => {
               setSearchValue("");
               onFilterChange({
+                ...filters,
                 search: "",
                 category_id: "all",
-                region: "all",
-                year: "all",
+                base_year: "all",
+                forecast_period: "all",
                 page: 1,
               });
             }}

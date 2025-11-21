@@ -215,7 +215,7 @@ export default function GlobalNavbar() {
     <nav className="fixed top-0 left-0 z-50 w-full">
       <div className="relative flex h-20 w-full items-center bg-[#060606]/90 lg:justify-center justify-between">
         {/* Centered Container with 284px margins */}
-        <div className="hidden lg:flex items-center justify-between w-full" style={{ paddingLeft: '284px', paddingRight: '284px' }}>
+        <div className="hidden lg:flex items-center justify-between w-full px-4 xl:px-8 2xl:px-[284px]">
           {/* Logo */}
           <Link href={`/${language}`} className="flex-shrink-0">
             <div className="h-[30px] w-auto">

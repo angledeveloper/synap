@@ -6,93 +6,118 @@ interface FilterOption {
   label: string;
 }
 
+// 1. Update the FilterOptions interface
 interface FilterOptions {
   industries: FilterOption[];
-  regions: FilterOption[];
-  years: FilterOption[];
+  baseYears: FilterOption[];
+  forecastPeriods: FilterOption[];
 }
 
 interface UseFilterOptionsParams {
   language: string;
+  category: string;
 }
-
-export function useFilterOptions({ language }: UseFilterOptionsParams) {
+// 2. Update the useFilterOptions hook to fetch and process the new filter options
+export function useFilterOptions({ language, category }: UseFilterOptionsParams) {
   const languageId = codeToId[language as keyof typeof codeToId] || 1;
+  const categoryId =  codeToId[category as keyof typeof codeToId] || 1;
   
   return useQuery({
-    queryKey: ["filter-options", languageId],
+    queryKey: ['filter-options', languageId],
     queryFn: async (): Promise<FilterOptions> => {
-      const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
-      if (!baseUrl) {
-        throw new Error("NEXT_PUBLIC_DB_URL is not defined");
-      }
-
       try {
-        // Try to fetch filter options from a dedicated endpoint
-        const response = await fetch(`${baseUrl}filter_options?language_id=${languageId}`, {
-          method: "GET",
+        const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
+        if (!baseUrl) {
+          throw new Error('NEXT_PUBLIC_DB_URL is not defined');
+        }
+
+        // Fetch reports data to extract filter options
+        const response = await fetch(`${baseUrl}reports_store_page`, {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            language_id: languageId,
+            category_id: categoryId,
+            // Add any other required parameters for the API
+          }),
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          return {
-            industries: data.industries || [],
-            regions: data.regions || [],
-            years: data.years || [],
-          };
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        const data = await response.json();
+        console.log("API Response:", data);
+
+        // Make sure data.data exists and is an array
+        const reports = Array.isArray(data.data) ? data.data : [];
+        console.log("Reports data:", reports);
+
+        // Extract unique base years and forecast periods
+        const baseYears = new Set<string>();
+        const forecastPeriods = new Set<string>();
+
+        reports.forEach((report: any) => {
+          if (report.base_year) {
+            baseYears.add(report.base_year.toString());
+          }
+          if (report.forecast_period) {
+            forecastPeriods.add(report.forecast_period.toString());
+          }
+        });
+
+        console.log("Extracted baseYears:", Array.from(baseYears));
+        console.log("Extracted forecastPeriods:", Array.from(forecastPeriods));
+
+        return {
+          industries: [], // This should be updated if you have industries data
+          baseYears: Array.from(baseYears).map(year => ({
+            value: year,
+            label: year
+          })),
+          forecastPeriods: Array.from(forecastPeriods).map(period => ({
+            value: period,
+            label: period
+          })),
+        };
       } catch (error) {
-        console.warn("Filter options endpoint not available, using fallback data");
+        console.error("Error fetching filter options:", error);
+        console.warn("Using fallback data due to error");
       }
 
       // Fallback data if API endpoint is not available
       const fallbackIndustries: FilterOption[] = [
-        { value: "1", label: "Technology & Software" },
-        { value: "2", label: "Energy & Utilities" },
-        { value: "3", label: "Food & Beverages" },
-        { value: "4", label: "Construction" },
-        { value: "5", label: "Healthcare & Pharmaceuticals" },
-        { value: "6", label: "Chemicals & Materials" },
-        { value: "7", label: "Telecommunications" },
-        { value: "8", label: "Automotive & Transportation" },
-        { value: "9", label: "Financial Services" },
-        { value: "10", label: "Aerospace & Defense" },
-        { value: "11", label: "Consumer Goods & Retail" },
-        { value: "12", label: "Manufacturing & Industrial" },
-        { value: "13", label: "Agriculture" },
+        { value: 'Technology & Software', label: 'Technology & Software' },
+        { value: 'Healthcare', label: 'Healthcare' },
+        { value: 'Finance', label: 'Finance' },
+        { value: 'Education', label: 'Education' },
+        { value: 'Retail', label: 'Retail' },
       ];
 
-      const fallbackRegions: FilterOption[] = [
-        { value: "all", label: "All Regions" },
-        { value: "global", label: "Global" },
-        { value: "north-america", label: "North America" },
-        { value: "europe", label: "Europe" },
-        { value: "asia-pacific", label: "Asia Pacific" },
-        { value: "latin-america", label: "Latin America" },
-        { value: "middle-east-africa", label: "Middle East & Africa" },
+      const fallbackBaseYears: FilterOption[] = [
+        { value: '2024', label: '2024' },
+        { value: '2025', label: '2025' },
+        { value: '2026', label: '2026' },
+        { value: '2027', label: '2027' },
+        { value: '2028', label: '2028' },
       ];
 
-      const fallbackYears: FilterOption[] = [
-        { value: "all", label: "All Years" },
-        { value: "2025", label: "2025" },
-        { value: "2024", label: "2024" },
-        { value: "2023", label: "2023" },
-        { value: "2022", label: "2022" },
-        { value: "2021", label: "2021" },
-        { value: "2020", label: "2020" },
+      const fallbackForecastPeriods: FilterOption[] = [
+        { value: '1', label: '1' },
+        { value: '2', label: '2' },
+        { value: '3', label: '3' },
+        { value: '4', label: '4' },
+        { value: '5', label: '5' },
       ];
 
       return {
         industries: fallbackIndustries,
-        regions: fallbackRegions,
-        years: fallbackYears,
+        baseYears: fallbackBaseYears,
+        forecastPeriods: fallbackForecastPeriods,
       };
     },
-    enabled: !!language,
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    retry: 1,
+    staleTime: 1000 * 60 * 60, // 1 hour
   });
 }

@@ -21,62 +21,43 @@ const createMarkup = (html: string) => {
   return { __html: cleanHtml };
 };
 
-function CaseStudyCard({
-  title,
-  description,
-  read_text,
-  id,
-}: CaseStudy) {
-  // Log the description for debugging
-  useEffect(() => {
-    console.log('Case study description:', { id, title, description });
-  }, [id, title, description]);
-  
+function CaseStudyCard({ title, description, read_text }: CaseStudy) {
   return (
-    <div className="flex flex-col gap-4 max-md:px-3 max-md:py-16 md:px-4 md:py-12 md:pt-16">
-      <h3 className="text-[28px] md:text-[32px] font-semibold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+    <div className="flex flex-col gap-4 p-8 md:p-14">
+      <h3 className="text-[24px] md:text-[28px] font-semibold " style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
         {title}
       </h3>
 
-      <div 
-        className="text-[20px] font-light space-y-3 prose max-w-none" 
-        style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+      <div
+        className="text-[20px] font-light space-y-3 prose max-w-none"
         dangerouslySetInnerHTML={createMarkup(description)}
       />
 
-      <Link href={`#`} className="underline text-[20px] font-medium w-fit">
-        {read_text || 'Read case study'}
+      <Link href="#" className="underline text-[20px] font-medium w-fit">
+        {read_text || "Read case study"}
       </Link>
     </div>
   );
 }
 
+
 export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
-  // Log the received case studies for debugging
-  useEffect(() => {
-    console.log('Received case studies:', caseStudies);
-  }, [caseStudies]);
-
-  if (!caseStudies || caseStudies.length === 0) {
-    console.log('No case studies provided or empty array');
-    return null;
-  }
-
   return (
-    <div className="relative z-10 flex w-full h-full flex-col text-white">
+    <div className="grid grid-cols-1 md:grid-cols-2 w-full text-white ">
+
       {caseStudies.map((cs, idx) => (
         <div
           key={`cs-${cs.id || idx}`}
           className={
             idx === 0
-              ? "relative bg-[#06A591] w-full md:before:absolute md:before:top-0 md:before:left-[90%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-[#06A591] md:before:content-['']"
-              : "relative bg-black w-full md:before:absolute md:before:top-0 md:before:left-[90%] md:before:-z-10 md:before:h-full md:before:w-screen md:before:bg-[#000] md:before:content-['']"
+              ? "bg-[#06A591] w-full"
+              : "bg-black w-full"
           }
         >
           <CaseStudyCard {...cs} />
         </div>
       ))}
+
     </div>
   );
 }
-

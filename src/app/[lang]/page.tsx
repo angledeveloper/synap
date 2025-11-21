@@ -101,15 +101,23 @@ export default function Home() {
           alt={HomePage.home_section1?.title ?? ''}
           fill
           className="bg-no-repeat object-cover"
-        / >
+        />
         <div className="relative flex h-screen min-h-[500px] w-full flex-col items-center justify-end p-4">
-          <h1 className="mb-20 max-w-[900px] text-center text-[32px] uppercase md:text-[64px]">
-            {HomePage.home_section1?.title ?? ''}
-          </h1>
-          <div className="flex w-full max-w-[1440px] flex-col justify-between gap-10 p-3 md:flex-row">
-            <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
-              <Link href={`/${language}/reports`}>
-                <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
+          {/* Mobile layout - shown only on mobile (below 768px) */}
+          <div className="block w-full flex-col items-center justify-center px-4 md:hidden">
+            <h1 className="mb-8 w-full text-center text-[32px] uppercase">
+              {HomePage.home_section1?.title ?? ''}
+            </h1>
+            <div className="mb-8 w-full text-center text-[16px]">
+              {HomePage.home_section1?.description?.split('\n').map((line: string, index: number) => (
+                <div key={`mobile-${index}`} className="mb-2">
+                  {line}
+                </div>
+              ))}
+            </div>
+            <div className="flex w-full flex-col items-center gap-4">
+              <Link href={`/${language}/reports`} className="w-full">
+                <button className="flex h-[80px] w-full cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[16px] font-bold hover:opacity-85">
                   <span className="flex w-full justify-end">
                     <ArrowIcon variant="gradient" />
                   </span>
@@ -118,29 +126,95 @@ export default function Home() {
               </Link>
               <button 
                 onClick={() => setIsCustomReportFormOpen(true)}
-                className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full"
+                className="w-full"
               >
-                <span className="flex w-full justify-end">
-                  <ArrowIcon variant="white" />
-                </span>
-                <span>{HomePage.home_section1?.second_button ?? ''}</span>
+                <div className="flex h-[80px] w-full cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[16px] font-bold hover:opacity-85">
+                  <span className="flex w-full justify-end">
+                    <ArrowIcon variant="white" />
+                  </span>
+                  <span>{HomePage.home_section1?.second_button ?? ''}</span>
+                </div>
               </button>
             </div>
-            <div className="w-full text-[20px] text-left">
+          </div>
+          
+          {/* Tablet layout - only at 834px */}
+          <div className="hidden w-full max-w-[834px] flex-col items-center justify-center px-4 [@media(width:834px)]:flex">
+            <h1 className="mb-8 w-full text-center text-[48px] uppercase">
+              {HomePage.home_section1?.title ?? ''}
+            </h1>
+            <div className="mb-8 w-full text-center text-[20px]">
               {HomePage.home_section1?.description?.split('\n').map((line: string, index: number) => (
-                <div key={index} className="mb-2">
+                <div key={`tablet-${index}`} className="mb-2">
                   {line}
                 </div>
               ))}
             </div>
+            <div className="flex w-full flex-wrap justify-center gap-4">
+              <Link href={`/${language}/reports`} className="w-full max-w-[300px]">
+                <button className="flex h-[105px] w-full cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85">
+                  <span className="flex w-full justify-end">
+                    <ArrowIcon variant="gradient" />
+                  </span>
+                  <span>{HomePage.home_section1?.first_button ?? ''}</span>
+                </button>
+              </Link>
+              <button 
+                onClick={() => setIsCustomReportFormOpen(true)}
+                className="w-full max-w-[300px]"
+              >
+                <div className="flex h-[105px] w-full cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85">
+                  <span className="flex w-full justify-end">
+                    <ArrowIcon variant="white" />
+                  </span>
+                  <span>{HomePage.home_section1?.second_button ?? ''}</span>
+                </div>
+              </button>
+            </div>
+          </div>
+          
+          {/* Desktop layout - for screens larger than 834px */}
+          <div className="hidden w-full max-w-[1440px] flex-col items-center justify-center [@media(width:834px)]:hidden md:flex">
+            <h1 className="mx-auto mb-20 max-w-[900px] text-center text-[32px] uppercase md:text-[64px] w-full">
+              {HomePage.home_section1?.title ?? ''}
+            </h1>
+            <div className="flex w-full flex-col justify-between gap-10 p-3 md:flex-row">
+              <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
+                <Link href={`/${language}/reports`}>
+                  <button className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
+                    <span className="flex w-full justify-end">
+                      <ArrowIcon variant="gradient" />
+                    </span>
+                    <span>{HomePage.home_section1?.first_button ?? ''}</span>
+                  </button>
+                </Link>
+                <button 
+                  onClick={() => setIsCustomReportFormOpen(true)}
+                  className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full"
+                >
+                  <span className="flex w-full justify-end">
+                    <ArrowIcon variant="white" />
+                  </span>
+                  <span>{HomePage.home_section1?.second_button ?? ''}</span>
+                </button>
+              </div>
+              <div className="w-full text-[20px] text-left">
+                {HomePage.home_section1?.description?.split('\n').map((line: string, index: number) => (
+                  <div key={`desktop-${index}`} className="mb-2">
+                    {line}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
-      <section className="flex w-full justify-center bg-[#000] p-3 py-20">
+      {/* Desktop layout for home_section2 - hidden on 834px */}
+      <section className="hidden w-full justify-center bg-[#000] p-3 py-20 md:flex [@media(width:834px)]:hidden">
         <div className="flex w-full max-w-[1440px] flex-col items-center justify-center gap-10 md:flex-row">
           {HomePage.home_section2?.map((section: any, index: number) => (
             <div
-              key={index}
+              key={`desktop-${index}`}
               style={{
                 backgroundColor: `${index === 1 ? "#0B7751" : index === 2 ? "#1895A3" : "#FFFFFF"}`,
                 color: `${index === 1 ? "#FFFFFF" : index === 2 ? "#FFFFFF" : "#000000"}`,
@@ -159,6 +233,36 @@ export default function Home() {
                   alt={section.title}
                   width={1000}
                   height={1000}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Tablet layout for home_section2 - only visible at 834px */}
+      <section className="hidden w-full justify-center bg-[#000] p-5 py-25 [@media(width:834px)]:flex">
+        <div className="grid w-full max-w-[834px] grid-cols-2 gap-6">
+          {HomePage.home_section2?.map((section: any, index: number) => (
+            <div
+              key={`tablet-${index}`}
+              className="flex h-full w-full flex-col items-center justify-between"
+              style={{
+                backgroundColor: `${index === 1 ? "#0B7751" : index === 2 ? "#1895A3" : "#FFFFFF"}`,
+                color: `${index === 1 ? "#FFFFFF" : index === 2 ? "#FFFFFF" : "#000000"}`,
+              }}
+            >
+              <div className="w-full p-4">
+                <span className="text-[18px] font-bold">{section.title}</span>
+                <p className="mt-2 text-[14px]">{section.description}</p>
+              </div>
+              <div className="relative h-0 w-full pt-[100%]">
+                <Image
+                  className="absolute inset-0 h-full w-full object-cover"
+                  src={section.image}
+                  alt={section.title}
+                  width={400}
+                  height={400}
                 />
               </div>
             </div>
@@ -198,9 +302,6 @@ export default function Home() {
               onClick={() => handleReportClick(item.category_id || item.id || '1')}
               className="group relative h-full w-full bg-[#F2F1EF] hover:bg-[#2F2F2F] cursor-pointer"
             >
-              <div className="absolute top-4 right-4">
-                <ArrowIcon variant="gradient" className="w-[33px] h-[14px]" />
-              </div>
               <Image
                 src={getCategoryImage(item.title)}
                 alt={item.title}
@@ -209,8 +310,9 @@ export default function Home() {
                 className="aspect-video w-full bg-neutral-200 object-cover"
               />
               <div className="flex flex-col gap-2 p-4 group-hover:bg-[#2F2F2F]">
-                <div className="block from-[#1160C9] to-[#08D2B8] font-mono text-[20px] leading-snug font-bold transition-all duration-200 group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:text-transparent">
+                <div className="flex items-center justify-between gap-2 from-[#1160C9] to-[#08D2B8] font-mono text-[20px] leading-snug font-bold transition-all duration-200 group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:text-transparent">
                   {item.title}
+                  <ArrowIcon variant="gradient" className="w-[33px] h-[14px]" />
                 </div>
                 <p className="text-[16px] group-hover:text-[#F2F1EF] line-clamp-3 multilingual-text">
                   {item.introduction_description}
@@ -220,78 +322,101 @@ export default function Home() {
           ))}
         </div>
       </section>
-      <section className="w-full overflow-hidden bg-[#F5F5F5]">
-        <div className="relative m-auto grid w-full max-w-[1440px] grid-cols-1 justify-center justify-items-end bg-white text-black md:grid-cols-2">
-          <div className="flex w-full flex-col bg-[#F5F5F5] p-3 pt-10 md:pt-16 md:pl-16 md:pr-16 ml-0 md:ml-[284px]">
-            <h4 className="text-[32px] font-bold md:text-[64px]" style={{ marginBottom: '136px' }}>
-              {HomePage.home_section5?.title ?? ''}
-            </h4>
-            <div className="relative min-h-[500px] w-full max-w-2xl testimonials-container">
-  {HomePage.testimonials.map((testimonial: any, index: number) => (
-    <div
-      key={index}
-      className={`absolute inset-0 transition-opacity duration-500 ${testimonialsIndex === index ? "z-10 opacity-100" : "z-0 opacity-0"}`}
-      style={{
-        pointerEvents:
-          testimonialsIndex === index ? "auto" : "none",
-      }}
-    >
-      <div className="mb-12 text-[22px] md:text-[36px] font-mono bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] bg-clip-text text-transparent multilingual-testimonial">
-        "{testimonial.feedback}"
+      <section className="w-full bg-[#F5F5F5]">
+  <div className="w-full bg-white">
+
+    <div className="w-full flex justify-center bg-[#F5F5F5] py-16">
+  <div className="w-full max-w-[900px] px-4 text-center">
+    
+    <h4 className="text-[32px] md:text-[64px] font-bold mb-16 text-[#242424]">
+      {HomePage.home_section5?.title ?? ''}
+    </h4>
+
+    {/* TESTIMONIAL CAROUSEL */}
+    <div className="relative w-full h-[380px] md:h-[420px]">
+      {HomePage.testimonials.map((testimonial: any, index: number) => (
+        <div
+          key={index}
+          className={`absolute inset-0 transition-opacity duration-500 ${
+            testimonialsIndex === index
+              ? "opacity-100 z-10"
+              : "opacity-0 z-0"
+          }`}
+          style={{
+            pointerEvents: testimonialsIndex === index ? "auto" : "none",
+          }}
+        >
+          <div className="mb-10 text-[22px] md:text-[32px] font-mono bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent">
+            "{testimonial.feedback}"
+          </div>
+
+          <div className="text-[26px] font-semibold text-black">
+            {testimonial.name}
+          </div>
+
+          <div className="text-[18px] text-[#888]">
+            {testimonial.title}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* NAV + INDICATORS */}
+    <div className="flex w-full items-center justify-center gap-4">
+      <div
+        onClick={() => {
+          setTestimonialsIndex(prev =>
+            prev === 0
+              ? HomePage.testimonials.length - 1
+              : prev - 1
+          );
+        }}
+        className="cursor-pointer text-2xl text-[#000] mt-6"
+      >
+        <Icon icon="iconoir:arrow-left" />
       </div>
-      <div className="mb-4 text-[28px] font-semibold text-black multilingual-name">
-        {testimonial.name}
+
+      <div
+        className="grid h-[5px] w-full max-w-[800px] mt-6"
+        style={{
+          gridTemplateColumns: `repeat(${HomePage.testimonials.length}, 1fr)`,
+        }}
+      >
+        {HomePage.testimonials.map((_: any, index: number) => (
+          <div
+            key={index}
+            className="h-[5px] transition-all duration-300"
+            style={{
+              backgroundColor:
+                testimonialsIndex === index ? "#000" : "#d1d5db",
+              transform: testimonialsIndex === index ? 'scale(1.1)' : 'scale(1)'
+            }}
+          />
+        ))}
       </div>
-      <div className="text-[20px] text-[#888] multilingual-title">
-        {testimonial.title}
+
+      <div
+        onClick={() => {
+          setTestimonialsIndex(prev =>
+            prev === HomePage.testimonials.length - 1 ? 0 : prev + 1
+          );
+        }}
+        className="cursor-pointer text-2xl text-[#000] mt-6"
+      >
+        <Icon icon="iconoir:arrow-right" />
       </div>
     </div>
-  ))}
+  </div>
 </div>
-            <div className="flex w-full max-w-md items-center justify-center gap-4 mt-8">
-              <div
-                onClick={() => {
-                  setTestimonialsIndex((prev) =>
-                    prev === 0 ? HomePage.testimonials.length - 1 : prev - 1,
-                  );
-                }}
-                className="flex cursor-pointer flex-col items-center justify-center text-2xl"
-              >
-                <Icon icon="iconoir:arrow-left" />
-              </div>
-              <div
-                style={{
-                  gridTemplateColumns: `repeat(${HomePage.testimonials.length}, 1fr)`,
-                }}
-                className="grid h-[5px] w-full"
-              >
-                {HomePage.testimonials.map(
-                  (testimonial: any, index: number) => (
-                    <div
-                      key={index}
-                      className="h-[5px] w-full bg-[#a0a0a0]"
-                      style={{
-                        backgroundColor: `${testimonialsIndex === index ? "#000" : "#a0a0a0"}`,
-                      }}
-                    ></div>
-                  ),
-                )}
-              </div>
-              <div
-                onClick={() => {
-                  setTestimonialsIndex((prev) =>
-                    prev === HomePage.testimonials.length - 1 ? 0 : prev + 1,
-                  );
-                }}
-                className="flex cursor-pointer flex-col items-center justify-center text-2xl"
-              >
-                <Icon icon="iconoir:arrow-right" />
-              </div>
-            </div>
-          </div>
-          {HomePage.case_studies && <CaseStudiesSection caseStudies={HomePage.case_studies} />}
-        </div>
-      </section>
+
+
+    {/* === CASE STUDIES SECTION BELOW === */}
+    <div className="w-full">
+      <CaseStudiesSection caseStudies={HomePage.case_studies} />
+    </div>
+
+  </div>
+</section>
 
       {/* Custom Report Form */}
       <CustomReportForm 
