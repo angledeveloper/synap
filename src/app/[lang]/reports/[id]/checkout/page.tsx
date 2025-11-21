@@ -51,7 +51,12 @@ export interface LicenseOption {
 type SuccessData = any;
 
 const fetchCheckoutData = async () => {
-  const res = await fetch('https://dashboard.synapseaglobal.com/api/checkout');
+  const res = await fetch ('https://dashboard.synapseaglobal.com/api/checkout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
   if (!res.ok) throw new Error('Failed to fetch checkout data');
   return res.json();
 };
