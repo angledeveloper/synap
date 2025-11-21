@@ -440,10 +440,10 @@ export default function ReportDetailPage() {
                       style={{ 
                         fontFamily: 'Space Grotesk, sans-serif',
                         width: '274px',
-                        
                       }}
+                      onClick={() => setIsSampleFormOpen(true)}
                     >
-                      <span className="truncate" onClick={() => setIsSampleFormOpen(true)}>{report.download_button}</span>
+                      <span className="truncate">{report.download_button}</span>
                       <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
                     </Button>
                   </div>
@@ -987,23 +987,10 @@ export default function ReportDetailPage() {
         />
 
         {/* Request Sample PDF Form Modal */}
-        {isSampleFormOpen && (
-          <SampleReportForm
-            onClose={() => setIsSampleFormOpen(false)}
-            onSubmit={(data: {
-              fullName: string;
-              businessEmail: string;
-              countryCode: string;
-              phoneNumber: string;
-              country: string;
-            }) => {
-              // Handle form submission
-              console.log('Sample form submitted:', data);
-              // You can add your submission logic here
-              setIsSampleFormOpen(false);
-            }}
-          />
-        )}
+        <SampleReportForm
+          isOpen={isSampleFormOpen}
+          onClose={() => setIsSampleFormOpen(false)}
+        />
       </div>
     </div>
   )

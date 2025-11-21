@@ -103,7 +103,7 @@ export default function CustomReportForm({ isOpen, onClose }: CustomReportFormPr
 
     try {
       // Submit form data to the backend
-      const submissionResponse = await fetch('https://dashboard.synapseaglobal.com/api/custom-report-form-entries/', {
+      const submissionResponse = await fetch('https://dashboard.synapseaglobal.com/api/custom-report-form-entries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
