@@ -1,3 +1,5 @@
+import { codeToId } from "@/lib/utils";
+
 export interface Category {
   language_id: number;
   category_id: number;
@@ -28,8 +30,8 @@ export function getCategoryIdForLanguage(
 
   // Find the current category to get its name
   const currentCategory = allCategories.find(
-    cat => String(cat.category_id) === String(currentCategoryId) && 
-           String(cat.language_id) === String(currentLanguageId)
+    cat => String(cat.category_id) === String(currentCategoryId) &&
+      String(cat.language_id) === String(currentLanguageId)
   );
 
   if (!currentCategory) {
@@ -42,8 +44,8 @@ export function getCategoryIdForLanguage(
 
   // Find the category with the same name in the target language
   const targetCategory = allCategories.find(
-    cat => cat.category_name === currentCategory.category_name && 
-           String(cat.language_id) === String(targetLanguageId)
+    cat => cat.category_name === currentCategory.category_name &&
+      String(cat.language_id) === String(targetLanguageId)
   );
 
   return targetCategory ? String(targetCategory.category_id) : String(currentCategoryId);
@@ -55,12 +57,5 @@ export function getCategoryIdForLanguage(
  * @returns The corresponding language ID as string
  */
 export function getLanguageId(language: string): string {
-  const languageMap: Record<string, string> = {
-    en: '1',
-    fr: '2',
-    es: '3',
-    de: '4',
-  };
-
-  return languageMap[language] || '1'; // Default to English
+  return codeToId[language] || '1'; // Default to English
 }

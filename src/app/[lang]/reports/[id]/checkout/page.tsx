@@ -51,15 +51,8 @@ export interface LicenseOption {
 type SuccessData = any;
 
 const fetchCheckoutData = async (lang: string) => {
-  // Map language code to ID (1-8)
-  const languageMap: Record<string, string> = {
-    'en': '1',
-    'es': '2',
-    // Add more language mappings as needed
-  };
-  
-  const languageId = languageMap[lang] || '1'; // Default to English (1) if language not found
-  
+  const languageId = codeToId[lang as keyof typeof codeToId] || '1'; // Default to English (1) if language not found
+
   const res = await fetch(`https://dashboard.synapseaglobal.com/api/checkout/${languageId}`, {
     method: 'POST',
     headers: {
@@ -141,7 +134,7 @@ export default function CheckoutPage() {
         price: price || '',
         actualPrice: actualPrice || '',
         currencySymbol: label.symbol,
-        discount: parseFloat((checkout_page[`${type}_license_discount_percent`]|| '').replace(/[^0-9.]/g, '') || '0'),
+        discount: parseFloat((checkout_page[`${type}_license_discount_percent`] || '').replace(/[^0-9.]/g, '') || '0'),
         features: checkout_page[`${type}_license_points`] || [],
         disclaimer: checkout_page[`${type}_license_disclaimer`],
         icon: checkout_page[`${type}_license_icon_image`],
@@ -248,7 +241,7 @@ export default function CheckoutPage() {
           <button
             onClick={handleBackClick}
             className="mb-6 text-[#555353] hover:text-gray-700 transition-colors"
-            style={{ 
+            style={{
               fontFamily: 'Space Grotesk, sans-serif',
               fontSize: '16px',
               fontWeight: '400'
@@ -279,7 +272,7 @@ export default function CheckoutPage() {
         <div className="w-full">
           {/* Step Indicator */}
           <div className="mt-8 w-full">
-            <StepIndicator 
+            <StepIndicator
               currentStep={successData ? 3 : showBilling ? 2 : 1}
               choosePlanHeading={checkout_page?.choose_plan_heading ? `${checkout_page.choose_plan_heading}` : '1. Choose Your Plan'}
               billingHeading={`${billing_information?.bill_info_heading || 'Your Billing Details'}`}
@@ -321,14 +314,14 @@ export default function CheckoutPage() {
                 <div>
                   {/* Currency Selector - inside the grid */}
                   <div className="flex justify-center mt-10.5 mb-12">
-                    <CurrencySelector 
+                    <CurrencySelector
                       currencyOptionsText={checkout_page.currency_options_text}
                       currencyDropdown={checkout_page.currency_dropdown}
                       value={selectedCurrency}
                       onChange={setSelectedCurrency}
                     />
                   </div>
-                  
+
                   {/* License Cards */}
                   <LicenseGrid
                     licenses={licenseOptions}
@@ -342,19 +335,19 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               ) : selectedLicense ? (
-                 /* Billing Form - Step 2 */
-                 <BillingForm
-                   selectedLicense={selectedLicense}
-                   reportData={reportData}
-                   onContinue={handleBillingContinue}
-                   onBack={handleBillingBack}
-                   billingInformation={billing_information}
-                   billInfoOrderSummary={bill_info_order_summary}
-                   licenseOptions={licenseOptions}
-                   checkoutPage={checkout_page}
-                   onOrderSuccess={handleOrderSuccess}
-                 />
-               ) : null}
+                /* Billing Form - Step 2 */
+                <BillingForm
+                  selectedLicense={selectedLicense}
+                  reportData={reportData}
+                  onContinue={handleBillingContinue}
+                  onBack={handleBillingBack}
+                  billingInformation={billing_information}
+                  billInfoOrderSummary={bill_info_order_summary}
+                  licenseOptions={licenseOptions}
+                  checkoutPage={checkout_page}
+                  onOrderSuccess={handleOrderSuccess}
+                />
+              ) : null}
             </div>
           </div>
         </div>
@@ -363,7 +356,7 @@ export default function CheckoutPage() {
         <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw] mt-8">
           <SupportFooter payment_common_layout={payment_common_layout} />
         </div>
-               
+
         <PaymentModal
           open={showPayment}
           onClose={() => setShowPayment(false)}
@@ -372,8 +365,8 @@ export default function CheckoutPage() {
           license={selectedLicense}
           report={reportData}
         />
-      
-    </div>
+
+      </div>
     </div>
   );
 }

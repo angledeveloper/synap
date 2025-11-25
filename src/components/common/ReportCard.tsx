@@ -8,9 +8,11 @@ import ArrowIcon from "@/components/common/ArrowIcon";
 interface ReportCardProps {
   report: Report;
   viewReportLabel?: string;
+  baseYearLabel?: string;
+  forecastPeriodLabel?: string;
 }
 
-export default function ReportCard({ report, viewReportLabel }: ReportCardProps) {
+export default function ReportCard({ report, viewReportLabel, baseYearLabel, forecastPeriodLabel }: ReportCardProps) {
   const { language } = useLanguageStore();
   const formatDate = (dateString: string) => {
     // Handle different date formats from API
@@ -35,11 +37,11 @@ export default function ReportCard({ report, viewReportLabel }: ReportCardProps)
     const words = text.split(' ');
     const wordsPerLine = 12; // Approximate words per line
     const maxWords = maxLines * wordsPerLine;
-    
+
     if (words.length <= maxWords) {
       return text;
     }
-    
+
     return words.slice(0, maxWords).join(' ') + '...';
   };
 
@@ -57,8 +59,8 @@ export default function ReportCard({ report, viewReportLabel }: ReportCardProps)
         <div className="flex flex-col h-full">
           {/* Title Text - Limited to 3 lines */}
           <div className="mb-4">
-            <p className="text-[#202020] text-base line-clamp-3 md:text-base" style={{ 
-              fontFamily: 'Space Mono, monospace', 
+            <p className="text-[#202020] text-base line-clamp-3 md:text-base" style={{
+              fontFamily: 'Space Mono, monospace',
               fontWeight: '400',
               lineHeight: '24px',
               letterSpacing: '0%',
@@ -71,8 +73,8 @@ export default function ReportCard({ report, viewReportLabel }: ReportCardProps)
 
           {/* Description Text - Limited to 3 lines */}
           <div className="mb-6">
-            <p className="text-[#555353] text-sm line-clamp-3" style={{ 
-              fontFamily: 'Space Grotesk, sans-serif', 
+            <p className="text-[#555353] text-sm line-clamp-3" style={{
+              fontFamily: 'Space Grotesk, sans-serif',
               fontWeight: '300',
               lineHeight: '18px',
               letterSpacing: '0%',
@@ -83,12 +85,28 @@ export default function ReportCard({ report, viewReportLabel }: ReportCardProps)
             </p>
           </div>
 
+          {/* Base Year and Forecast Period */}
+          {(report.base_year || report.forecast_period) && (
+            <div className="mb-4 flex gap-4 text-xs text-[#555353]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              {report.base_year && (
+                <div>
+                  <span className="font-semibold">{baseYearLabel || 'Base Year:'}</span> {report.base_year}
+                </div>
+              )}
+              {report.forecast_period && (
+                <div>
+                  <span className="font-semibold">{forecastPeriodLabel || 'Forecast Period:'}</span> {report.forecast_period}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Bottom Section with Date, Cost, and View Report Button */}
           <div className="flex justify-between items-center mt-4 mb-0">
             {/* Date and Cost */}
             <div className="flex items-center gap-4">
-              <span style={{ 
-                fontFamily: 'Space Grotesk, sans-serif', 
+              <span style={{
+                fontFamily: 'Space Grotesk, sans-serif',
                 fontWeight: '400',
                 fontSize: '16px',
                 color: '#555353',
@@ -101,10 +119,10 @@ export default function ReportCard({ report, viewReportLabel }: ReportCardProps)
 
             {/* View Report Button - Text with underline */}
             <Link href={`/${language}/reports/${report.id}`}>
-              <span 
+              <span
                 className="hover:text-gray-700 transition-colors duration-200 border-b-2 border-gray-900 hover:border-gray-700 font-medium"
-                style={{ 
-                  fontFamily: 'Noto Sans, sans-serif', 
+                style={{
+                  fontFamily: 'Noto Sans, sans-serif',
                   color: '#010912',
                   fontSize: '16px',
                   lineHeight: '22px',

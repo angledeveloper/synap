@@ -94,6 +94,8 @@ export interface ReportsResponse {
   totalCount: number;
   category_name?: string;
   category_desc?: string;
+  base_year?: string;
+  forecast_period?: string;
 }
 
 export interface Filters {

@@ -4,15 +4,15 @@ import { useHomePageStore } from '@/store';
 
 const fetchReports = async (filters: Filters, allCategories: any[]): Promise<ReportsResponse> => {
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
-  
+
   if (!baseUrl) {
     throw new Error('NEXT_PUBLIC_DB_URL is not defined');
   }
 
   // Find the category in the dropdown data
   const category = allCategories.find(
-    cat => String(cat.category_id) === String(filters.category_id) && 
-           String(cat.language_id) === String(filters.language_id)
+    cat => String(cat.category_id) === String(filters.category_id) &&
+      String(cat.language_id) === String(filters.language_id)
   );
 
   if (!category) {
@@ -42,35 +42,21 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
     formData.append('keyword', filters.search.trim());
     formData.append('query', filters.search.trim());
   }
-  
+
   // Add pagination parameters
   formData.append('page', filters.page.toString());
   formData.append('per_page', filters.per_page.toString());
 
-  // Try different approaches for search
-  let response;
-  
+  // Use reports_store_page for both search and regular fetching
+  // It supports search parameter
   if (filters.search && filters.search.trim()) {
-    const searchFormData = new FormData();
-    searchFormData.append('search', filters.search.trim());
-    searchFormData.append('language_id', filters.language_id || "1");
-    // Include category_id in search to maintain context
-    if (filters.category_id && filters.category_id !== "all") {
-      searchFormData.append('category_id', filters.category_id);
-    }
-    searchFormData.append('page', filters.page.toString());
-    searchFormData.append('per_page', filters.per_page.toString());
-    
-    response = await fetch(`${baseUrl}search_page`, {
-      method: 'POST',
-      body: searchFormData,
-    });
-  } else {
-    response = await fetch(`${baseUrl}reports_store_page`, {
-      method: 'POST',
-      body: formData,
-    });
+    formData.append('search', filters.search.trim());
   }
+
+  const response = await fetch(`${baseUrl}reports_store_page`, {
+    method: 'POST',
+    body: formData,
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -78,14 +64,16 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
   }
 
   const data = await response.json();
-  
+
   // Extract category info if available in the response
   const categoryName = (data as any).category_name;
   const categoryDesc = (data as any).category_desc;
-  
+  const baseYear = (data as any).base_year;
+  const forecastPeriod = (data as any).forecast_period;
+
   // Handle different response formats
   let reports = [];
-  
+
   if (Array.isArray(data)) {
     reports = data;
   } else if (data.reports) {
@@ -93,23 +81,23 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
   } else if (data.data && Array.isArray(data.data)) {
     reports = data.data;
   }
-  
+
   // Ensure reports is an array
   if (!Array.isArray(reports)) {
     reports = [];
   }
-  
+
   // Deduplicate reports by ID
   const uniqueReports = Array.from(new Map(reports.map(report => [report.id, report])).values());
-  
+
   // Apply client-side pagination as a fallback if not done by the server
   const startIndex = (filters.page - 1) * filters.per_page;
   const endIndex = startIndex + filters.per_page;
   const paginatedReports = uniqueReports.slice(startIndex, endIndex);
-  
+
   // Calculate total pages based on unique reports count
   const totalPages = Math.ceil(uniqueReports.length / filters.per_page);
-  
+
   // Create formatted response
   return {
     reports: paginatedReports,
@@ -117,7 +105,9 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
     currentPage: filters.page,
     totalCount: uniqueReports.length,
     category_name: categoryName,
-    category_desc: categoryDesc
+    category_desc: categoryDesc,
+    base_year: baseYear,
+    forecast_period: forecastPeriod
   };
 };
 

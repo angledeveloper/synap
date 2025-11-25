@@ -18,14 +18,14 @@ interface UseReportDetailParams {
   onCategoryChange?: (newCategoryId: string) => void;
 }
 
-export function useReportDetail({ 
-  reportId, 
-  categoryId, 
+export function useReportDetail({
+  reportId,
+  categoryId,
   languageId,
-  onCategoryChange 
+  onCategoryChange
 }: UseReportDetailParams) {
   const { HomePage } = useHomePageStore();
-  
+
   return useQuery({
     queryKey: ["report-detail", reportId, categoryId, languageId],
     queryFn: async (): Promise<ReportDetailResponse> => {
@@ -34,62 +34,43 @@ export function useReportDetail({
         throw new Error("NEXT_PUBLIC_DB_URL is not defined");
       }
 
-      // Get all categories from the homepage data
+      // 1. Try with the provided categoryId
+      let response = await fetchReport(baseUrl, categoryId, languageId, reportId);
+      if (isValidResponse(response)) return response!;
+
+      // 2. Try iterating through all categories in the current language
       const allCategories = (HomePage?.report_store_dropdown || []) as Category[];
-      
-      // Find the current category
-      const currentCategory = allCategories.find(
-        (cat: Category) => 
-          String(cat.category_id) === String(categoryId) && 
-          String(cat.language_id) === String(languageId)
+      const categoriesInLanguage = allCategories.filter(
+        (cat) => String(cat.language_id) === String(languageId)
       );
 
-      // If current category not found, find the equivalent in the new language
-      if (!currentCategory) {
-        // Find the original category (in any language) to get its name
-        const originalCategory = allCategories.find(
-          (cat: Category) => String(cat.category_id) === String(categoryId)
-        );
+      for (const cat of categoriesInLanguage) {
+        // Skip the one we already tried
+        if (String(cat.category_id) === String(categoryId)) continue;
 
-        if (originalCategory) {
-          // Find equivalent category in the target language
-          const equivalentCategory = allCategories.find(
-            (cat: Category) => 
-              cat.category_name === originalCategory.category_name &&
-              String(cat.language_id) === String(languageId)
-          );
+        console.log(`Trying category: ${cat.category_name} (${cat.category_id})`);
+        response = await fetchReport(baseUrl, String(cat.category_id), languageId, reportId);
 
-          if (equivalentCategory) {
-            // If we found an equivalent, notify the parent component to update the URL
-            if (onCategoryChange && String(equivalentCategory.category_id) !== categoryId) {
-              // Use setTimeout to avoid React state update during render
-              setTimeout(() => onCategoryChange(String(equivalentCategory.category_id)));
-            }
-            // Continue with the equivalent category
-            return fetchReport(baseUrl, String(equivalentCategory.category_id), languageId, reportId);
-          }
-        }
-
-        // If no equivalent found, find any category in the target language
-        const firstInLanguage = allCategories.find(
-          (cat: Category) => String(cat.language_id) === String(languageId)
-        );
-
-        if (firstInLanguage) {
+        if (isValidResponse(response)) {
+          // Found it! Update the category if needed
           if (onCategoryChange) {
-            setTimeout(() => onCategoryChange(String(firstInLanguage.category_id)));
+            // Use setTimeout to avoid React state update during render
+            setTimeout(() => onCategoryChange(String(cat.category_id)));
           }
-          return fetchReport(baseUrl, String(firstInLanguage.category_id), languageId, reportId);
+          return response!;
         }
       }
 
-      // If we have a valid category or couldn't find a better one, proceed with the current one
-      return fetchReport(baseUrl, categoryId, languageId, reportId);
+      throw new Error("Report not found in any category");
     },
     enabled: !!reportId && !!categoryId && !!languageId && !!HomePage?.report_store_dropdown,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
+    retry: false, // We handle retries manually
   });
+}
+
+function isValidResponse(response: ReportDetailResponse | null): boolean {
+  return !!response && !!response.data && !!response.data.report;
 }
 
 // Helper function to fetch the report
@@ -98,38 +79,35 @@ async function fetchReport(
   categoryId: string,
   languageId: string,
   reportId: string
-): Promise<ReportDetailResponse> {
-  const url = `${baseUrl}reports_store?category_id=${categoryId}&language_id=${languageId}&report_id=${reportId}`;
-  
-  console.log('Fetching report from:', {
-    url,
-    categoryId,
-    languageId,
-    reportId
-  });
+): Promise<ReportDetailResponse | null> {
+  const url = `${baseUrl}reports_store`;
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const formData = new FormData();
+  formData.append('category_id', categoryId);
+  formData.append('language_id', languageId);
+  formData.append('report_id', reportId);
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("API Error:", {
-      status: response.status,
-      statusText: response.statusText,
-      errorText,
-      url
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
     });
-    
-    if (response.status === 404) {
-      return null as any;
-    }
-    
-    throw new Error(`Failed to fetch report: ${response.status} ${response.statusText}`);
-  }
 
-  return await response.json();
+    if (!response.ok) {
+      // If 404 or other error, return null to trigger retry
+      return null;
+    }
+
+    const data = await response.json();
+
+    // Check if data actually contains the report
+    if (!data || !data.data || !data.data.report) {
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching report:", error);
+    return null;
+  }
 }

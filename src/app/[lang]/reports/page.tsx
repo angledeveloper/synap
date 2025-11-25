@@ -35,13 +35,14 @@ export default function ReportsPage() {
 
   const [reports, setReports] = useState<Report[]>([]);
   const [categoryData, setCategoryData] = useState({ name: '', description: '' });
+  const [dynamicLabels, setDynamicLabels] = useState({ base_year: '', forecast_period: '' });
 
   // Memoize the category data to prevent unnecessary re-renders
   const memoizedCategoryData = useMemo(() => categoryData, [categoryData]);
 
-  const { data: translations, isLoading: isTranslationsLoading, error: translationsError } = useTranslations({ 
-    language, 
-    page: 'reports' 
+  const { data: translations, isLoading: isTranslationsLoading, error: translationsError } = useTranslations({
+    language,
+    page: 'reports'
   });
 
   // Define the translation type to ensure type safety
@@ -93,7 +94,7 @@ export default function ReportsPage() {
         label: "Reports per page:",
         options: {
           "1-10": "1-10",
-          "1-50": "1-50", 
+          "1-50": "1-50",
           "1-100": "1-100"
         }
       },
@@ -201,15 +202,17 @@ export default function ReportsPage() {
   // Simple memoized reports rendering
   const memoizedReports = useMemo(() => {
     if (!reports || reports.length === 0) return null;
-    
+
     return reports.map((report) => (
-      <ReportCard 
-        key={report.id} 
-        report={report} 
-        viewReportLabel={memoizedTranslations.viewReport || 'View Report'} 
+      <ReportCard
+        key={report.id}
+        report={report}
+        viewReportLabel={memoizedTranslations.viewReport || 'View Report'}
+        baseYearLabel={dynamicLabels.base_year}
+        forecastPeriodLabel={dynamicLabels.forecast_period}
       />
     ));
-  }, [reports, memoizedTranslations]);
+  }, [reports, memoizedTranslations, dynamicLabels]);
 
   useEffect(() => {
     // Fetch reports when filters change
@@ -218,26 +221,26 @@ export default function ReportsPage() {
     fetchReports(filters, {
       onSuccess: (data: ReportsResponse) => {
         console.log('API Response Data:', data);
-        
+
         // Extract reports and update state
         const reportsToSet = data.reports || [];
         const reportsKey = reportsToSet.map(r => r.id).sort().join(',');
-        
+
         if (reportsKey !== lastRenderedReports) {
           setReports(reportsToSet);
           setLastRenderedReports(reportsKey);
         }
-        
+
         // Extract and update category data if available
         const apiCategoryName = (data as any).category_name;
         const apiCategoryDesc = (data as any).category_desc;
-        
+
         if (apiCategoryName || apiCategoryDesc) {
-          console.log('Updating category data:', { 
-            name: apiCategoryName, 
-            description: apiCategoryDesc 
+          console.log('Updating category data:', {
+            name: apiCategoryName,
+            description: apiCategoryDesc
           });
-          
+
           setCategoryData(prev => ({
             name: apiCategoryName || prev.name,
             description: apiCategoryDesc || prev.description
@@ -245,14 +248,22 @@ export default function ReportsPage() {
         } else {
           console.log('No category data in response, using existing data');
         }
-        
+
+        // Update dynamic labels
+        if (data.base_year || data.forecast_period) {
+          setDynamicLabels({
+            base_year: data.base_year || '',
+            forecast_period: data.forecast_period || ''
+          });
+        }
+
         // Update pagination
         setPagination({
           totalPages: data.totalPages || 0,
           currentPage: data.currentPage || 1,
           totalCount: data.totalCount || 0,
         });
-        
+
         setIsLoading(false);
       },
       onError: (error: Error) => {
@@ -308,21 +319,20 @@ export default function ReportsPage() {
   const renderPagination = () => {
     const { totalPages, currentPage } = pagination;
     const pages = [];
-    
+
     // Show up to 10 page numbers
     const startPage = Math.max(1, currentPage - 4);
     const endPage = Math.min(totalPages, startPage + 9);
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
         <button
           key={i}
           onClick={() => handlePageChange(i)}
-          className={`px-4 py-2 text-sm font-medium border-r border-gray-300 last:border-r-0 ${
-            i === currentPage
-              ? "bg-[#313131] text-white"
-              : "bg-white text-gray-600 hover:bg-gray-50"
-          }`}
+          className={`px-4 py-2 text-sm font-medium border-r border-gray-300 last:border-r-0 ${i === currentPage
+            ? "bg-[#313131] text-white"
+            : "bg-white text-gray-600 hover:bg-gray-50"
+            }`}
         >
           {i}
         </button>
@@ -348,32 +358,32 @@ export default function ReportsPage() {
     return (
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-12 gap-4">
         {/* Pagination Controls */}
-       <div className="w-full flex justify-center sm:order-1 md:ml-50">
-  <div className="inline-flex bg-gray-100 border border-gray-300 overflow-hidden">
-    {/* Previous */}
-    <button
-      onClick={() => handlePageChange(currentPage - 1)}
-      disabled={currentPage === 1}
-      className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border-r border-gray-300 
+        <div className="w-full flex justify-center sm:order-1 md:ml-50">
+          <div className="inline-flex bg-gray-100 border border-gray-300 overflow-hidden">
+            {/* Previous */}
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border-r border-gray-300 
                  hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {paginationLabels.previous}
-    </button>
+            >
+              {paginationLabels.previous}
+            </button>
 
-    {/* Page numbers (unchanged) */}
-    {pages}
+            {/* Page numbers (unchanged) */}
+            {pages}
 
-    {/* Next */}
-    <button
-      onClick={() => handlePageChange(currentPage + 1)}
-      disabled={currentPage === totalPages}
-      className="px-4 py-2 text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 
+            {/* Next */}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 
                  disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {paginationLabels.next}
-    </button>
-  </div>
-</div>
+            >
+              {paginationLabels.next}
+            </button>
+          </div>
+        </div>
 
 
         {/* Report Limit Dropdown */}
@@ -381,8 +391,8 @@ export default function ReportsPage() {
           <label className="text-sm text-gray-600" style={{ fontFamily: 'Noto Sans, sans-serif' }}>
             {reportLimit.label}
           </label>
-          <Select 
-            value={`1-${filters.per_page}`} 
+          <Select
+            value={`1-${filters.per_page}`}
             onValueChange={handlePerPageChange}
           >
             <SelectTrigger className="w-24 h-8 text-sm text-gray-900 bg-white border-gray-300">
@@ -407,13 +417,13 @@ export default function ReportsPage() {
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2">
               <li>
-                <a 
-                  href={`/${language}`} 
+                <a
+                  href={`/${language}`}
                   className="text-gray-500 hover:text-gray-700 font-normal"
-                  style={{ 
-                    fontSize: '14px', 
-                    lineHeight: '18px', 
-                    letterSpacing: '0px' 
+                  style={{
+                    fontSize: '14px',
+                    lineHeight: '18px',
+                    letterSpacing: '0px'
                   }}
                 >
                   {t.breadcrumbHome}
@@ -423,12 +433,12 @@ export default function ReportsPage() {
                 <Icon icon="mdi:chevron-right" className="text-gray-500" />
               </li>
               <li>
-                <span 
+                <span
                   className="text-gray-500 font-normal"
-                  style={{ 
-                    fontSize: '14px', 
-                    lineHeight: '18px', 
-                    letterSpacing: '0px' 
+                  style={{
+                    fontSize: '14px',
+                    lineHeight: '18px',
+                    letterSpacing: '0px'
                   }}
                 >
                   {t.breadcrumbCategory}
@@ -442,18 +452,18 @@ export default function ReportsPage() {
       {/* Page Header */}
       <div className="bg-white" style={{ paddingTop: '7px', paddingBottom: '15px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="mb-6 bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent" style={{ 
-            fontFamily: 'Space Grotesk, sans-serif', 
-            fontSize: '40px', 
-            lineHeight: '59px', 
-            letterSpacing: '0px', 
+          <h1 className="mb-6 bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent" style={{
+            fontFamily: 'Space Grotesk, sans-serif',
+            fontSize: '40px',
+            lineHeight: '59px',
+            letterSpacing: '0px',
             fontWeight: '400',
             overflow: 'visible',
           }}>
             {t.heading}
           </h1>
           <div className="w-full max-w-7xl">
-            <p className="text-lg text-left text-gray-800 leading-relaxed" style={{ 
+            <p className="text-lg text-left text-gray-800 leading-relaxed" style={{
               maxWidth: '100%',
               margin: '0.5rem 0',
               whiteSpace: 'pre-line',
@@ -480,6 +490,8 @@ export default function ReportsPage() {
               name: cat.category_name,
               value: String(cat.category_id)
             }))}
+            baseYearLabel={dynamicLabels.base_year}
+            forecastPeriodLabel={dynamicLabels.forecast_period}
           />
         </div>
       </div>

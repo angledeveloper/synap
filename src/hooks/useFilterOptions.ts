@@ -19,11 +19,12 @@ interface UseFilterOptionsParams {
 }
 // 2. Update the useFilterOptions hook to fetch and process the new filter options
 export function useFilterOptions({ language, category }: UseFilterOptionsParams) {
-  const languageId = codeToId[language as keyof typeof codeToId] || 1;
-  const categoryId =  codeToId[category as keyof typeof codeToId] || 1;
-  
+  const languageId = codeToId[language as keyof typeof codeToId] || '1';
+  // category is already the ID string or number, just ensure it's a string
+  const categoryId = category ? String(category) : '1';
+
   return useQuery({
-    queryKey: ['filter-options', languageId],
+    queryKey: ['filter-options', languageId, categoryId],
     queryFn: async (): Promise<FilterOptions> => {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
@@ -31,17 +32,18 @@ export function useFilterOptions({ language, category }: UseFilterOptionsParams)
           throw new Error('NEXT_PUBLIC_DB_URL is not defined');
         }
 
+        // Create FormData
+        const formData = new FormData();
+        formData.append('language_id', String(languageId));
+        formData.append('category_id', String(categoryId));
+        // Add default pagination to get enough data for filters
+        formData.append('page', '1');
+        formData.append('per_page', '100');
+
         // Fetch reports data to extract filter options
         const response = await fetch(`${baseUrl}reports_store_page`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            language_id: languageId,
-            category_id: categoryId,
-            // Add any other required parameters for the API
-          }),
+          body: formData,
         });
 
         if (!response.ok) {
@@ -49,11 +51,22 @@ export function useFilterOptions({ language, category }: UseFilterOptionsParams)
         }
 
         const data = await response.json();
-        console.log("API Response:", data);
+        // console.log("API Response for Options:", data);
 
-        // Make sure data.data exists and is an array
-        const reports = Array.isArray(data.data) ? data.data : [];
-        console.log("Reports data:", reports);
+        // Handle different response formats similar to useReportsPage
+        let reports = [];
+        if (Array.isArray(data)) {
+          reports = data;
+        } else if (data.reports) {
+          reports = data.reports;
+        } else if (data.data && Array.isArray(data.data)) {
+          reports = data.data;
+        }
+
+        // Ensure reports is an array
+        if (!Array.isArray(reports)) {
+          reports = [];
+        }
 
         // Extract unique base years and forecast periods
         const baseYears = new Set<string>();
@@ -68,16 +81,13 @@ export function useFilterOptions({ language, category }: UseFilterOptionsParams)
           }
         });
 
-        console.log("Extracted baseYears:", Array.from(baseYears));
-        console.log("Extracted forecastPeriods:", Array.from(forecastPeriods));
-
         return {
-          industries: [], // This should be updated if you have industries data
-          baseYears: Array.from(baseYears).map(year => ({
+          industries: [],
+          baseYears: Array.from(baseYears).sort().map(year => ({
             value: year,
             label: year
           })),
-          forecastPeriods: Array.from(forecastPeriods).map(period => ({
+          forecastPeriods: Array.from(forecastPeriods).sort().map(period => ({
             value: period,
             label: period
           })),
@@ -85,38 +95,14 @@ export function useFilterOptions({ language, category }: UseFilterOptionsParams)
       } catch (error) {
         console.error("Error fetching filter options:", error);
         console.warn("Using fallback data due to error");
+
+        // Fallback data
+        return {
+          industries: [],
+          baseYears: [],
+          forecastPeriods: [],
+        };
       }
-
-      // Fallback data if API endpoint is not available
-      const fallbackIndustries: FilterOption[] = [
-        { value: 'Technology & Software', label: 'Technology & Software' },
-        { value: 'Healthcare', label: 'Healthcare' },
-        { value: 'Finance', label: 'Finance' },
-        { value: 'Education', label: 'Education' },
-        { value: 'Retail', label: 'Retail' },
-      ];
-
-      const fallbackBaseYears: FilterOption[] = [
-        { value: '2024', label: '2024' },
-        { value: '2025', label: '2025' },
-        { value: '2026', label: '2026' },
-        { value: '2027', label: '2027' },
-        { value: '2028', label: '2028' },
-      ];
-
-      const fallbackForecastPeriods: FilterOption[] = [
-        { value: '1', label: '1' },
-        { value: '2', label: '2' },
-        { value: '3', label: '3' },
-        { value: '4', label: '4' },
-        { value: '5', label: '5' },
-      ];
-
-      return {
-        industries: fallbackIndustries,
-        baseYears: fallbackBaseYears,
-        forecastPeriods: fallbackForecastPeriods,
-      };
     },
     staleTime: 1000 * 60 * 60, // 1 hour
   });

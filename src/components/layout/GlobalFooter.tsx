@@ -6,6 +6,7 @@ import Link from "next/link";
 import ArrowIcon from "@/components/common/ArrowIcon";
 import GlobalLanguageSwitch from "./GlobalLanguageSwitch";
 import FullLogo from "./FullLogo";
+import { getRouteFromSlug } from "@/lib/routeMapping";
 
 export default function GlobalFooter() {
   const { HomePage } = useHomePageStore();
@@ -33,10 +34,10 @@ export default function GlobalFooter() {
             <h6 className="mb-8 text-[32px] font-bold md:text-[48px]">
               {HomePage.footer.section?.title || ""}
             </h6>
-            <p className="max-w-[425px] text-[20px]"> 
+            <p className="max-w-[425px] text-[20px]">
               {HomePage.footer.section?.tagline || ""}
             </p>
-            <Link href={`/${language}/reports`}>
+            <Link href={`/${language}/contact`}>
               <button className="mt-10 flex h-[105px] w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold border border-white hover:opacity-85 max-md:w-full">
                 <span className="flex w-full justify-end">
                   <ArrowIcon variant="white" />
@@ -46,55 +47,50 @@ export default function GlobalFooter() {
             </Link>
           </div>
           <div className="flex w-full flex-col gap-8 mt-25 md:w-fit">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-14 w-full">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-14 w-full">
 
-  <div>
-    <span className="text-[20px] underline">{HomePage.footer.section?.solutions ?? ''}</span>
-    <ul className="mt-6 flex flex-col gap-2 text-[14px]">
-      {HomePage.footer.menu.Solution?.map((link: any, index: number) => (
-        <li key={index}><Link href={`/${language}`}>{link.menu_name}</Link></li>
-      ))}
-    </ul>
-  </div>
+              <div>
+                <span className="text-[20px] underline">{HomePage.footer.section?.solutions ?? ''}</span>
+                <ul className="mt-6 flex flex-col gap-2 text-[14px]">
+                  {HomePage.footer.menu.Solution?.map((link: any, index: number) => (
+                    <li key={index}><Link href={`/${language}${getRouteFromSlug(link.slug)}`}>{link.menu_name}</Link></li>
+                  ))}
 
-  <div>
-    <span className="text-[20px] underline">{HomePage.footer.section?.resources ?? ''}</span>
-    <ul className="mt-6 flex flex-col gap-2 text-[14px]">
-      {HomePage.footer.menu.Resources?.map((link: any, index: number) => (
-        <li key={index}><Link href={`/${language}`}>{link.menu_name}</Link></li>
-      ))}
-    </ul>
-  </div>
+                </ul>
+              </div>
 
-  <div>
-    <span className="text-[20px] underline">{HomePage.footer.section?.company ?? ''}</span>
-    <ul className="mt-6 flex flex-col gap-2 text-[14px]">
-      {HomePage.footer.menu.Company?.map((link: any, index: number) => {
-        const isPrivacy = (link.menu_name || "").toLowerCase().includes('privacy');
-        return (
-          <li key={index}>
-            <Link href={isPrivacy ? `/${language}/privacy` : `/${language}`}>{link.menu_name}</Link>
-          </li>
-        );
-      })}
-    </ul>
-  </div>
+              <div>
+                <span className="text-[20px] underline">{HomePage.footer.section?.resources ?? ''}</span>
+                <ul className="mt-6 flex flex-col gap-2 text-[14px]">
+                  {HomePage.footer.menu.Resources?.map((link: any, index: number) => (
+                    <li key={index}><Link href={`/${language}${getRouteFromSlug(link.slug)}`}>{link.menu_name}</Link></li>
+                  ))}
+                </ul>
+              </div>
 
-  <div>
-    <span className="text-[20px] underline">{HomePage.footer.section?.legal ?? ''}</span>
-    <ul className="mt-6 flex flex-col gap-2 text-[14px]">
-      {HomePage.footer.menu.Legal?.map((link: any, index: number) => {
-        const isPrivacy = (link.menu_name || "").toLowerCase().includes('privacy');
-        return (
-          <li key={index}>
-            <Link href={isPrivacy ? `/${language}/privacy` : `/${language}`}>{link.menu_name}</Link>
-          </li>
-        );
-      })}
-    </ul>
-  </div>
+              <div>
+                <span className="text-[20px] underline">{HomePage.footer.section?.company ?? ''}</span>
+                <ul className="mt-6 flex flex-col gap-2 text-[14px]">
+                  {HomePage.footer.menu.Company?.map((link: any, index: number) => (
+                    <li key={index}>
+                      <Link href={`/${language}${getRouteFromSlug(link.slug)}`}>{link.menu_name}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-</div>
+              <div>
+                <span className="text-[20px] underline">{HomePage.footer.section?.legal ?? ''}</span>
+                <ul className="mt-6 flex flex-col gap-2 text-[14px]">
+                  {HomePage.footer.menu.Legal?.map((link: any, index: number) => (
+                    <li key={index}>
+                      <Link href={`/${language}${getRouteFromSlug(link.slug)}`}>{link.menu_name}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+            </div>
 
 
           </div>

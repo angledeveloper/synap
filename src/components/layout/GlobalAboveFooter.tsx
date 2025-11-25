@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useHomePageStore, useLanguageStore } from "@/store";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ArrowIcon from "@/components/common/ArrowIcon";
 
 // Ticker component for counting from 0 to 10
@@ -40,6 +41,7 @@ const TickerCounter = () => {
 export default function GlobalAboveFooter() {
   const { HomePage } = useHomePageStore();
   const { language } = useLanguageStore();
+  const router = useRouter();
 
   // Show loading state if HomePage data is not available
   if (!HomePage || !HomePage.common_layout_above_footer) {
@@ -56,19 +58,19 @@ export default function GlobalAboveFooter() {
             </p>
           </div>
           <div className="w-full bg-[#F5F5F5] p-3 py-12 text-black md:h-full md:p-16">
-          <div className="flex items-end gap-4">
-            <h5 className="flex flex-wrap items-end gap-2 text-[64px] text-left md:gap-10 md:text-[164px]" style={{ fontFamily: 'var(--font-orbitron)' }}>
-              <TickerCounter />
-            </h5>
-            <div className="font-space-grotesk text-left">
-              <div className="text-[24px] font-low text-[#1c1c1c] md:text-[40px]">
-                Major
-              </div>
-              <div className="text-[24px] font-low text-[#1c1c1c] md:text-[40px]">
-                Industries
+            <div className="flex items-end gap-4">
+              <h5 className="flex flex-wrap items-end gap-2 text-[64px] text-left md:gap-10 md:text-[164px]" style={{ fontFamily: 'var(--font-orbitron)' }}>
+                <TickerCounter />
+              </h5>
+              <div className="font-space-grotesk text-left">
+                <div className="text-[24px] font-low text-[#1c1c1c] md:text-[40px]">
+                  Major
+                </div>
+                <div className="text-[24px] font-low text-[#1c1c1c] md:text-[40px]">
+                  Industries
+                </div>
               </div>
             </div>
-          </div>
           </div>
         </div>
       </div>
@@ -108,12 +110,19 @@ export default function GlobalAboveFooter() {
               </div>
             </div>
           </div>
-          <Link href={`/${language}/reports`} className="mt-10 inline-flex h-[105px] min-w-[300px] w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] text-white font-bold hover:opacity-85 max-md:w-full border border-black">
+          <button
+            onClick={() => {
+              const categoryId = HomePage.home_section4_reports?.[0]?.category_id || HomePage.home_section4_reports?.[0]?.id || '1';
+              const safeCategoryId = String(categoryId).trim();
+              router.push(`/${language}/reports?category=${safeCategoryId}`);
+            }}
+            className="mt-10 inline-flex h-[105px] min-w-[300px] w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] text-white font-bold hover:opacity-85 max-md:w-full border border-black"
+          >
             <span className="flex w-full justify-end">
               <ArrowIcon variant="gradient" />
             </span>
             <span>{HomePage.common_layout_above_footer?.button ?? ''}</span>
-          </Link>
+          </button>
         </div>
       </div>
     </div>

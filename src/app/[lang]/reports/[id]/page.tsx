@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useLanguageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
 import { ReportDetail, ReportSection } from "@/types/reports";
@@ -34,12 +34,14 @@ export default function ReportDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { language } = useLanguageStore();
+  const searchParams = useSearchParams();
+  const highlight = searchParams?.get('highlight');
   const [activeTab, setActiveTab] = useState(0);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isSampleFormOpen, setIsSampleFormOpen] = useState(false);
   const [email, setEmail] = useState('');
   const formRef = useRef<HTMLDivElement>(null);
-  
+
   // Close form when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -71,10 +73,10 @@ export default function ReportDetailPage() {
     industryFocus: '',
     timeline: ''
   });
-  
+
   // Get language ID from the language store
   const languageId = codeToId[language as keyof typeof codeToId] || 1;
-  
+
   // Fetch report data from API
   const { data, isLoading, error } = useReportDetail({
     reportId: params.id as string,
@@ -85,13 +87,13 @@ export default function ReportDetailPage() {
   const report = data?.data?.report;
   const sections = data?.data?.sections || [];
   const commonLayout = data?.common_layout;
-  
+
   // Get category information using the report's category_id
   const { data: categoryData } = useCategory({
     categoryId: report?.category_id?.toString() || "1",
     languageId: languageId.toString(),
   });
-  
+
   // Get dynamic translations
   const { data: translations } = useTranslations({ language, page: 'reportDetail' });
   const t = translations || {
@@ -122,6 +124,48 @@ export default function ReportDetailPage() {
     shareAt: "SHARE AT:",
   };
 
+  // Helper function to highlight text
+  const highlightText = (text: string | undefined | null) => {
+    if (!text) return '';
+    if (!highlight) return text;
+
+    try {
+      // Escape special regex characters
+      const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escapedHighlight})`, 'gi');
+      return text.replace(regex, '<mark class="bg-yellow-300 text-black rounded-sm px-0.5">$1</mark>');
+    } catch (e) {
+      return text;
+    }
+  };
+
+  // Effect to handle auto-scrolling and tab switching for search results
+  useEffect(() => {
+    if (!highlight || !report || sections.length === 0) return;
+
+    const query = highlight.toLowerCase();
+
+    // Check if the query is in any specific section (tab)
+    const foundSectionIndex = sections.findIndex(s =>
+      s.section_description.toLowerCase().includes(query) ||
+      s.section_name.toLowerCase().includes(query)
+    );
+
+    if (foundSectionIndex !== -1) {
+      setActiveTab(foundSectionIndex);
+    }
+
+    // Scroll to the first highlighted element after a short delay to allow rendering
+    const timer = setTimeout(() => {
+      const marks = document.getElementsByTagName('mark');
+      if (marks.length > 0) {
+        marks[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [highlight, report, sections]);
+
   // Fetch checkout page to read Single License pricing (for One Time Cost box)
   const fetchCheckoutData = async (lang: string) => {
     // Map language code to ID (1-8)
@@ -130,9 +174,9 @@ export default function ReportDetailPage() {
       'es': '2',
       // Add more language mappings as needed
     };
-    
+
     const languageId = languageMap[lang] || '1'; // Default to English (1) if language not found
-    
+
     const res = await fetch(`https://dashboard.synapseaglobal.com/api/checkout/${languageId}`, {
       method: 'POST',
       headers: {
@@ -142,7 +186,7 @@ export default function ReportDetailPage() {
     if (!res.ok) throw new Error('Failed to fetch checkout data');
     return res.json();
   };
-  
+
   const { data: checkoutApi } = useSWR('checkout-api', () => fetchCheckoutData(language));
   const checkout_page = checkoutApi?.checkout_page;
   // Pick a currency (first from dropdown) → derive suffix and symbol. Fallback USD
@@ -223,13 +267,13 @@ export default function ReportDetailPage() {
     return (
       <div className="min-h-screen bg-white pt-20 flex items-center justify-center">
         <div className="text-center">
-          <h1 
+          <h1
             className="text-2xl font-bold text-gray-900 mb-4"
             style={{ fontFamily: 'Space Grotesk, sans-serif' }}
           >
             Error Loading Report
           </h1>
-          <p 
+          <p
             className="text-gray-600"
             style={{ fontFamily: 'Space Grotesk, sans-serif' }}
           >
@@ -244,13 +288,13 @@ export default function ReportDetailPage() {
     return (
       <div className="min-h-screen bg-white pt-20 flex items-center justify-center">
         <div className="text-center">
-          <h1 
+          <h1
             className="text-2xl font-bold text-gray-900 mb-4"
             style={{ fontFamily: 'Space Grotesk, sans-serif' }}
           >
             Report Not Found
           </h1>
-          <p 
+          <p
             className="text-gray-600"
             style={{ fontFamily: 'Space Grotesk, sans-serif' }}
           >
@@ -267,7 +311,7 @@ export default function ReportDetailPage() {
       <div className="pt-11 pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex" aria-label="Breadcrumb">
-            <ol 
+            <ol
               className="flex items-center space-x-2 justify-start sm:justify-center min-w-0"
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
@@ -321,12 +365,12 @@ export default function ReportDetailPage() {
                   </div>
                 )}
               </div>
-              
+
               {/* Report Title and Metadata - Left aligned on mobile, right side on desktop */}
               <div className="flex-1 text-left sm:text-left">
-                <h1 
+                <h1
                   className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent mb-3 sm:mb-4"
-                  style={{ 
+                  style={{
                     fontFamily: 'Space Grotesk, sans-serif',
                     fontSize: '24px',
                     lineHeight: '31px',
@@ -336,11 +380,11 @@ export default function ReportDetailPage() {
                 >
                   {report.title}
                 </h1>
-                
+
                 {/* Report Metadata Grid - Left aligned on mobile, normal on desktop */}
-                <div 
+                <div
                   className="flex flex-col sm:flex-row sm:justify-between space-y-2 sm:space-y-0"
-                  style={{ 
+                  style={{
                     fontFamily: 'Space Grotesk, sans-serif',
                     fontSize: '14px',
                     lineHeight: '18px',
@@ -404,7 +448,7 @@ export default function ReportDetailPage() {
                 <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
                   <Button
                     className="h-[40px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
-                    style={{ 
+                    style={{
                       fontFamily: 'Space Mono, monospace',
                       width: '274px'
                     }}
@@ -421,13 +465,13 @@ export default function ReportDetailPage() {
               <div className="w-[300px] h-[99px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
                 <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-4">
                   <div>
-                    <h3 
+                    <h3
                       className="text-black text-[14px] font-normal mb-3"
                       style={{ fontFamily: 'Space Mono, monospace' }}
                     >
                       {report.free_sample}
                     </h3>
-                    <p 
+                    <p
                       className="hidden sm:block text-[#595959] text-base font-normal mb-4"
                       style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                     >
@@ -437,7 +481,7 @@ export default function ReportDetailPage() {
                   <div className="w-full flex justify-center">
                     <Button
                       className="h-[40px] bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
-                      style={{ 
+                      style={{
                         fontFamily: 'Space Grotesk, sans-serif',
                         width: '274px',
                       }}
@@ -454,13 +498,13 @@ export default function ReportDetailPage() {
               <div className="w-full">
                 <div className="flex flex-col gap-3 pl-2  ">
                   <div>
-                    <h3 
+                    <h3
                       className="text-black text-[14px] font-normal mb-0 mt-2"
                       style={{ fontFamily: 'Space Mono, monospace' }}
                     >
                       {report.need_custom_report}
                     </h3>
-                    <p 
+                    <p
                       className="hidden sm:block text-[#595959] text-base font-normal"
                       style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                     >
@@ -470,16 +514,16 @@ export default function ReportDetailPage() {
                   <Button
                     variant="outline"
                     className="w-[300px] h-[50px] border-[#000000] text-black font-bold rounded-[10px] relative bg-white hover:bg-gray-50 text-[14px] mt-0"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif'}}
+                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                     onClick={openPopup}
                   >
                     <span className="absolute left-5 text-[14px] font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                       {report.custom_report_button}
                     </span>
                     <div className="absolute right-4">
-                      <img 
-                        src="/barrow.svg" 
-                        alt="Arrow" 
+                      <img
+                        src="/barrow.svg"
+                        alt="Arrow"
                         className="w-[32px] h-[12.67px]"
                       />
                     </div>
@@ -490,7 +534,7 @@ export default function ReportDetailPage() {
               {/* Social Media Sharing */}
               <div className="w-full p-2">
                 <div className="flex items-center justify-between">
-                  <h3 
+                  <h3
                     className="text-black text-[14px] font-normal whitespace-nowrap"
                     style={{ fontFamily: 'Space Mono, monospace' }}
                   >
@@ -547,103 +591,97 @@ export default function ReportDetailPage() {
 
             {/* Introduction Section */}
             <div className="mb-5 sm:mb-12 mt-10">
-              <h2 
+              <h2
                 className=" sm:text-xl font-extrabold text-[#000000] mb-2 sm:mb-3"
-                style={{ fontFamily: 'Space Grotesk, sans-serif',fontSize:"24px",fontWeight:500 }}
+                style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: "24px", fontWeight: 500 }}
               >
                 {report.introduction_section}
               </h2>
-              <p 
+              <p
                 className="text-sm sm:text-base text-gray-700 leading-relaxed"
                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-              >
-                {report.introduction_description}
-              </p>
+                dangerouslySetInnerHTML={{ __html: highlightText(report.introduction_description) }}
+              />
             </div>
 
             {/* Key Report Highlights */}
             <div className="mb-5 sm:mb-12">
-              <h2 
+              <h2
                 className="text-lg sm:text-xl font-bold text-[#000000] mb-2 sm:mb-3"
-                style={{ fontFamily: 'Space Grotesk, sans-serif',fontSize:"24px",fontWeight:500 }}
+                style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: "24px", fontWeight: 500 }}
               >
                 {report.key_report_highlights}
               </h2>
-              <p 
+              <p
                 className="text-sm sm:text-base text-gray-700 leading-relaxed mb-5 sm:mb-8"
                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-              >
-                {report.key_report_description}
-              </p>
-              
+                dangerouslySetInnerHTML={{ __html: highlightText(report.key_report_description) }}
+              />
+
               {/* 4-Quadrant Highlights Grid */}
               <div className="relative">
                 <div className="grid grid-cols-1 sm:grid-cols-2 h-auto sm:h-80 w-screen sm:w-full gap-0 sm:gap-0 -mx-4 sm:mx-0">
                   {/* Top Left - #1D1F54 Background */}
                   <div className="bg-black text-white p-4 sm:p-6 flex flex-col justify-start min-h-[120px] sm:min-h-0">
-                  <h3 
-                    className="font-bold text-base sm:text-lg mb-2 sm:mb-3 text-left"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    {report.dominant_section}
-                  </h3>
-                  <p 
-                    className="text-white text-xs sm:text-sm text-left leading-relaxed"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    {report.dominant_description}
-                  </p>
-                </div>
-                
-                {/* Top Right - #06A591 Background */}
-                <div className="bg-[#06A591] text-white p-4 sm:p-6 flex flex-col justify-start min-h-[120px] sm:min-h-0">
-                  <h3 
-                    className="font-bold text-base sm:text-lg mb-2 sm:mb-3 text-left"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    {report.competititve_section}
-                  </h3>
-                  <p 
-                    className="text-white text-xs sm:text-sm text-left leading-relaxed"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    {report.competititve_description}
-                  </p>
-                </div>
-                
-                {/* Bottom Left - #1553A5 Background */}
-                <div className="bg-[#1553A5] text-white p-4 sm:p-6 flex flex-col justify-start min-h-[120px] sm:min-h-0">
-                  <h3 
-                    className="font-bold text-base sm:text-lg mb-2 sm:mb-3 text-left"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    {report.strategic_section}
-                  </h3>
-                  <p 
-                    className="text-white text-xs sm:text-sm text-left leading-relaxed"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    {report.strategic_description}
-                  </p>
-                </div>
-                
-                {/* Bottom Right - #1D1F54 Background */}
-                <div className="bg-[#1D1F54] text-white p-4 sm:p-6 flex flex-col justify-start min-h-[120px] sm:min-h-0">
-                  <h3 
-                    className="font-bold text-base sm:text-lg mb-2 sm:mb-3 text-left"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    {report.regional_section}
-                  </h3>
-                  <p 
-                    className="text-white text-xs sm:text-sm text-left leading-relaxed"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                  >
-                    {report.regional_description}
-                  </p>
+                    <h3
+                      className="font-bold text-base sm:text-lg mb-2 sm:mb-3 text-left"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                    >
+                      {report.dominant_section}
+                    </h3>
+                    <p
+                      className="text-white text-xs sm:text-sm text-left leading-relaxed"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                      dangerouslySetInnerHTML={{ __html: highlightText(report.dominant_description) }}
+                    />
+                  </div>
+
+                  {/* Top Right - #06A591 Background */}
+                  <div className="bg-[#06A591] text-white p-4 sm:p-6 flex flex-col justify-start min-h-[120px] sm:min-h-0">
+                    <h3
+                      className="font-bold text-base sm:text-lg mb-2 sm:mb-3 text-left"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                    >
+                      {report.competititve_section}
+                    </h3>
+                    <p
+                      className="text-white text-xs sm:text-sm text-left leading-relaxed"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                      dangerouslySetInnerHTML={{ __html: highlightText(report.competititve_description) }}
+                    />
+                  </div>
+
+                  {/* Bottom Left - #1553A5 Background */}
+                  <div className="bg-[#1553A5] text-white p-4 sm:p-6 flex flex-col justify-start min-h-[120px] sm:min-h-0">
+                    <h3
+                      className="font-bold text-base sm:text-lg mb-2 sm:mb-3 text-left"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                    >
+                      {report.strategic_section}
+                    </h3>
+                    <p
+                      className="text-white text-xs sm:text-sm text-left leading-relaxed"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                      dangerouslySetInnerHTML={{ __html: highlightText(report.strategic_description) }}
+                    />
+                  </div>
+
+                  {/* Bottom Right - #1D1F54 Background */}
+                  <div className="bg-[#1D1F54] text-white p-4 sm:p-6 flex flex-col justify-start min-h-[120px] sm:min-h-0">
+                    <h3
+                      className="font-bold text-base sm:text-lg mb-2 sm:mb-3 text-left"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                    >
+                      {report.regional_section}
+                    </h3>
+                    <p
+                      className="text-white text-xs sm:text-sm text-left leading-relaxed"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                      dangerouslySetInnerHTML={{ __html: highlightText(report.regional_description) }}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
             </div>
 
             {/* Tab Navigation and Content - Connected */}
@@ -671,11 +709,10 @@ export default function ReportDetailPage() {
                     <button
                       key={section.id}
                       onClick={() => setActiveTab(index)}
-                      className={`flex items-center justify-center transition-colors ${
-                        activeTab === index 
-                          ? 'bg-black text-white' 
-                          : 'bg-white text-gray-600 border border-[#7C7C7C] hover:bg-gray-50'
-                      }`}
+                      className={`flex items-center justify-center transition-colors ${activeTab === index
+                        ? 'bg-black text-white'
+                        : 'bg-white text-gray-600 border border-[#7C7C7C] hover:bg-gray-50'
+                        }`}
                       style={{
                         fontFamily: 'Space Grotesk, sans-serif',
                         width: '195px',
@@ -699,32 +736,32 @@ export default function ReportDetailPage() {
               {sections.map((section, index) => {
                 // Find the TOC section to extract FAQs
                 const tocSection = sections.find(s => s.section_name === 'TOC');
-                const faqContent = tocSection?.section_description.includes('FAQs Section') 
-                  ? tocSection.section_description.split('<strong>FAQs Section</strong>')[1] 
+                const faqContent = tocSection?.section_description.includes('FAQs Section')
+                  ? tocSection.section_description.split('<strong>FAQs Section</strong>')[1]
                   : '';
-                
+
                 // Combine Why This Report content with FAQs
                 const combinedContent = section.section_name === 'Why This Report?' && faqContent
                   ? section.section_description + faqContent
                   : section.section_description;
 
                 return (
-                  <div 
-                    key={section.id} 
+                  <div
+                    key={section.id}
                     className={`${activeTab === index ? 'block' : 'hidden'}`}
                   >
-                  <div className="bg-gray-100 rounded-br-2xl rounded-bl-2xl border border-gray-200 border-t-0 p-4 sm:p-6 lg:p-8 -mt-px relative">
-                    <div className="absolute top-0 left-0 right-0 h-px bg-black hidden sm:block"></div>
-                    <h2 
-                      className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2 sm:mb-3"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      {section.section_name}
-                    </h2>
-                      <div 
+                    <div className="bg-gray-100 rounded-br-2xl rounded-bl-2xl border border-gray-200 border-t-0 p-4 sm:p-6 lg:p-8 -mt-px relative">
+                      <div className="absolute top-0 left-0 right-0 h-px bg-black hidden sm:block"></div>
+                      <h2
+                        className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2 sm:mb-3"
+                        style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                      >
+                        {section.section_name}
+                      </h2>
+                      <div
                         className="text-gray-700 leading-relaxed prose prose-sm max-w-none prose-headings:font-[Space_Grotesk] prose-p:font-[Space_Grotesk] prose-li:font-[Space_Grotesk] prose-strong:font-[Space_Grotesk] prose-em:font-[Space_Grotesk] prose-ul:font-[Space_Grotesk] prose-ol:font-[Space_Grotesk] prose-blockquote:font-[Space_Grotesk] prose-img:font-[Space_Grotesk] prose-table:font-[Space_Grotesk] prose-headings:my-2 prose-p:my-2 prose-img:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 [&_h1]:font-[Space_Grotesk] [&_h1]:my-2 [&_h2]:font-[Space_Grotesk] [&_h2]:my-2 [&_h3]:font-[Space_Grotesk] [&_h3]:my-2 [&_h4]:font-[Space_Grotesk] [&_h4]:my-2 [&_h5]:font-[Space_Grotesk] [&_h5]:my-2 [&_h6]:font-[Space_Grotesk] [&_h6]:my-2 [&_p]:font-[Space_Grotesk] [&_p]:my-2 [&_li]:font-[Space_Grotesk] [&_li]:my-1 [&_span]:font-[Space_Grotesk] [&_div]:font-[Space_Grotesk] [&_strong]:font-[Space_Grotesk] [&_b]:font-[Space_Grotesk] [&_em]:font-[Space_Grotesk] [&_i]:font-[Space_Grotesk] [&_ul]:font-[Space_Grotesk] [&_ol]:font-[Space_Grotesk] [&_blockquote]:font-[Space_Grotesk] [&_img]:font-[Space_Grotesk] [&_img]:my-2 [&_table]:font-[Space_Grotesk] [&_th]:font-[Space_Grotesk] [&_td]:font-[Space_Grotesk]"
                         style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                        dangerouslySetInnerHTML={{ __html: combinedContent }}
+                        dangerouslySetInnerHTML={{ __html: highlightText(combinedContent) }}
                       />
                     </div>
                   </div>
@@ -737,164 +774,164 @@ export default function ReportDetailPage() {
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-32">
               <div className="flex flex-col items-center gap-4" style={{ width: '322px', margin: '0 auto' }}>
-              {/* One Time Cost */}
-              <div className="w-[322px] h-[85px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
-                <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Button
-                    className="h-[50px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
-                    style={{ 
-                      fontFamily: 'Space Mono, monospace',
-                      width: '297px'
-                    }}
-                    onClick={() => router.push(`/${params?.lang}/reports/${params?.id}/checkout`)}
-                    aria-label="Buy License Now"
-                  >
-                    <span className="truncate">Buy License Now</span>
-                    <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Free Sample */}
-              <div className="w-[322px] h-[239px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
-                <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-6">
-                  <div>
-                    <h3 
-                      className="text-black text-xl font-normal mb-2"
-                      style={{ fontFamily: 'Space Mono, monospace' }}
-                    >
-                      {report.free_sample}
-                    </h3>
-                    <p 
-                      className="text-[#595959] text-base font-normal mb-4"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      {report.free_sample_section}
-                    </p>
-                  </div>
-                  <div className="w-full flex justify-center">
+                {/* One Time Cost */}
+                <div className="w-[322px] h-[85px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+                  <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
                     <Button
-                      className="h-[50px] bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
-                      style={{ 
-                        fontFamily: 'Space Grotesk, sans-serif',
-                        width: '297px',
-                        
+                      className="h-[50px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
+                      style={{
+                        fontFamily: 'Space Mono, monospace',
+                        width: '297px'
                       }}
+                      onClick={() => router.push(`/${params?.lang}/reports/${params?.id}/checkout`)}
+                      aria-label="Buy License Now"
                     >
-                      <span className="truncate" onClick={() => setIsSampleFormOpen(true)}>{report.download_button}</span>
+                      <span className="truncate">Buy License Now</span>
                       <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
                     </Button>
                   </div>
                 </div>
-              </div>
 
-              {/* Custom Report */}
-              <div className="w-full">
-                <div className="flex flex-col gap-6">
-                  <div>
-                    <h3 
-                      className="text-black text-xl font-normal mb-1"
+                {/* Free Sample */}
+                <div className="w-[322px] h-[239px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+                  <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-6">
+                    <div>
+                      <h3
+                        className="text-black text-xl font-normal mb-2"
+                        style={{ fontFamily: 'Space Mono, monospace' }}
+                      >
+                        {report.free_sample}
+                      </h3>
+                      <p
+                        className="text-[#595959] text-base font-normal mb-4"
+                        style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                      >
+                        {report.free_sample_section}
+                      </p>
+                    </div>
+                    <div className="w-full flex justify-center">
+                      <Button
+                        className="h-[50px] bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
+                        style={{
+                          fontFamily: 'Space Grotesk, sans-serif',
+                          width: '297px',
+
+                        }}
+                      >
+                        <span className="truncate" onClick={() => setIsSampleFormOpen(true)}>{report.download_button}</span>
+                        <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Custom Report */}
+                <div className="w-full">
+                  <div className="flex flex-col gap-6">
+                    <div>
+                      <h3
+                        className="text-black text-xl font-normal mb-1"
+                        style={{ fontFamily: 'Space Mono, monospace' }}
+                      >
+                        {report.need_custom_report}
+                      </h3>
+                      <p
+                        className="text-[#595959] text-base font-normal"
+                        style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                      >
+                        {report.custom_report_description}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full h-[50px] border-gray-800 text-black font-bold rounded-lg relative bg-white hover:bg-gray-50 text-[18px]"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                      onClick={openPopup}
+                    >
+                      <span className="absolute left-5 text-[20px] font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                        {report.custom_report_button}
+                      </span>
+                      <div className="absolute right-4">
+                        <img
+                          src="/barrow.svg"
+                          alt="Arrow"
+                          className="w-8 h-4"
+                        />
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Social Media Sharing */}
+                <div className="w-full p-2">
+                  <div className="flex items-center justify-between gap-1 ">
+                    <h3
+                      className="text-black text-[18px] font-normal whitespace-nowrap"
                       style={{ fontFamily: 'Space Mono, monospace' }}
                     >
-                      {report.need_custom_report}
+                      {data?.share_at || 'Share this report:'}
                     </h3>
-                    <p 
-                      className="text-[#595959] text-base font-normal"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                    >
-                      {report.custom_report_description}
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full h-[50px] border-gray-800 text-black font-bold rounded-lg relative bg-white hover:bg-gray-50 text-[18px]"
-                    style={{ fontFamily: 'Space Grotesk, sans-serif'}}
-                    onClick={openPopup}
-                  >
-                    <span className="absolute left-5 text-[20px] font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                      {report.custom_report_button}
-                    </span>
-                    <div className="absolute right-4">
-                      <img 
-                        src="/barrow.svg" 
-                        alt="Arrow" 
-                        className="w-8 h-4"
-                      />
+                    <div className="flex items-center gap-3">
+                      {/* X (Twitter) */}
+                      <button
+                        className="w-8 h-8 rounded-full text-white flex items-center justify-center transition-colors"
+                        onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this report: ${report.title}`)}&url=${encodeURIComponent(window.location.href)}`, '_blank')}
+                        aria-label="Share on X"
+                      >
+                        <img src="/x.svg" alt="X" className="w-9 h-9" />
+                      </button>
+                      {/* Facebook */}
+                      <button
+                        className="w-8 h-8 rounded-full text-white flex items-center justify-center transition-colors"
+                        onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
+                        aria-label="Share on Facebook"
+                      >
+                        <img src="/facebook.svg" alt="Facebook" className="w-9 h-9" />
+                      </button>
+                      {/* Instagram */}
+                      <button
+                        className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+                        onClick={() => window.open(`https://www.instagram.com/`, '_blank')}
+                        aria-label="Share on Instagram"
+                      >
+                        <img src="/instagram.svg" alt="Instagram" className="w-9 h-9" />
+                      </button>
+                      {/* WhatsApp */}
+                      <button
+                        className="w-8 h-8 rounded-full text-white flex items-center justify-center transition-colors"
+                        onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out this report: ${report.title} ${window.location.href}`)}`, '_blank')}
+                        aria-label="Share on WhatsApp"
+                      >
+                        <img src="/whatsapp.svg" alt="WhatsApp" className="w-9 h-9" />
+                      </button>
+                      {/* Copy Link */}
+                      <button
+                        className="w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-bold  transition-colors"
+                        onClick={() => {
+                          navigator.clipboard.writeText(window.location.href);
+                          alert('Link copied to clipboard!');
+                        }}
+                        aria-label="Copy link"
+                      >
+                        <img src="/share.svg" alt="Copy Link" className="w-9 h-9" />
+                      </button>
                     </div>
-                  </Button>
-                </div>
-              </div>
-
-              {/* Social Media Sharing */}
-              <div className="w-full p-2">
-                <div className="flex items-center justify-between gap-1 ">
-                  <h3 
-                    className="text-black text-[18px] font-normal whitespace-nowrap"
-                    style={{ fontFamily: 'Space Mono, monospace' }}
-                  >
-                    {data?.share_at || 'Share this report:'}
-                  </h3>
-                  <div className="flex items-center gap-3">
-                    {/* X (Twitter) */}
-                    <button
-                      className="w-8 h-8 rounded-full text-white flex items-center justify-center transition-colors"
-                      onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this report: ${report.title}`)}&url=${encodeURIComponent(window.location.href)}`, '_blank')}
-                      aria-label="Share on X"
-                    >
-                      <img src="/x.svg" alt="X" className="w-9 h-9" />
-                    </button>
-                    {/* Facebook */}
-                    <button
-                      className="w-8 h-8 rounded-full text-white flex items-center justify-center transition-colors"
-                      onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
-                      aria-label="Share on Facebook"
-                    >
-                      <img src="/facebook.svg" alt="Facebook" className="w-9 h-9" />
-                    </button>
-                    {/* Instagram */}
-                    <button
-                      className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:opacity-90 transition-opacity"
-                      onClick={() => window.open(`https://www.instagram.com/`, '_blank')}
-                      aria-label="Share on Instagram"
-                    >
-                      <img src="/instagram.svg" alt="Instagram" className="w-9 h-9" />
-                    </button>
-                    {/* WhatsApp */}
-                    <button
-                      className="w-8 h-8 rounded-full text-white flex items-center justify-center transition-colors"
-                      onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out this report: ${report.title} ${window.location.href}`)}`, '_blank')}
-                      aria-label="Share on WhatsApp"
-                    >
-                      <img src="/whatsapp.svg" alt="WhatsApp" className="w-9 h-9" />
-                    </button>
-                    {/* Copy Link */}
-                    <button
-                      className="w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-bold  transition-colors"
-                      onClick={() => {
-                        navigator.clipboard.writeText(window.location.href);
-                        alert('Link copied to clipboard!');
-                      }}
-                      aria-label="Copy link"
-                    >
-                      <img src="/share.svg" alt="Copy Link" className="w-9 h-9" />
-                    </button>
                   </div>
                 </div>
-              </div>
 
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
         {/* Common Layout Section */}
         {commonLayout && (
           <div className="bg-white py-12 sm:py-16 lg:py-20">
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
               {/* API-provided Heading, split to two lines at colon */}
-              <h2 
+              <h2
                 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8"
-                style={{ 
+                style={{
                   fontFamily: 'var(--font-orbitron)',
                   background: 'linear-gradient(to right, #1160C9, #08D2B8)',
                   WebkitBackgroundClip: 'text',
@@ -918,7 +955,7 @@ export default function ReportDetailPage() {
               </h2>
 
               {/* API-provided Conclusion Description, as HTML */}
-              <div 
+              <div
                 className="text-base sm:text-lg text-gray-700 text-center max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed"
                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                 dangerouslySetInnerHTML={{ __html: commonLayout.report_conclusion || '' }}
@@ -929,51 +966,51 @@ export default function ReportDetailPage() {
                 <div className="flex flex-col sm:flex-row justify-center items-center sm:items-start gap-6 sm:gap-8">
                   {/* Card 1 */}
                   <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
-                      <div 
-                        className="flex items-center justify-center"
-                        style={{ 
-                          background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                          width: '100%', height: '39px'
-                        }}
-                      >
-                        <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                          {commonLayout.card_one_title || null}
-                        </h3>
-                      </div>
-                      <div className="bg-gray-900 flex-1" />
+                    <div
+                      className="flex items-center justify-center"
+                      style={{
+                        background: 'linear-gradient(to right, #1160C9, #08D2B8)',
+                        width: '100%', height: '39px'
+                      }}
+                    >
+                      <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                        {commonLayout.card_one_title || null}
+                      </h3>
                     </div>
+                    <div className="bg-gray-900 flex-1" />
+                  </div>
 
-                    {/* Card 2 */}
-                    <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
-                      <div 
-                        className="flex items-center justify-center"
-                        style={{ 
-                          background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                          width: '100%', height: '39px'
-                        }}
-                      >
-                        <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                          {commonLayout.card_two_title || null}
-                        </h3>
-                      </div>
-                      <div className="bg-gray-900 flex-1" />
+                  {/* Card 2 */}
+                  <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
+                    <div
+                      className="flex items-center justify-center"
+                      style={{
+                        background: 'linear-gradient(to right, #1160C9, #08D2B8)',
+                        width: '100%', height: '39px'
+                      }}
+                    >
+                      <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                        {commonLayout.card_two_title || null}
+                      </h3>
                     </div>
+                    <div className="bg-gray-900 flex-1" />
+                  </div>
 
-                    {/* Card 3 */}
-                    <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
-                      <div 
-                        className="flex items-center justify-center"
-                        style={{ 
-                          background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                          width: '100%', height: '39px'
-                        }}
-                      >
-                        <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                          {commonLayout.card_three_title || null}
-                        </h3>
-                      </div>
-                      <div className="bg-gray-900 flex-1" />
+                  {/* Card 3 */}
+                  <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
+                    <div
+                      className="flex items-center justify-center"
+                      style={{
+                        background: 'linear-gradient(to right, #1160C9, #08D2B8)',
+                        width: '100%', height: '39px'
+                      }}
+                    >
+                      <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                        {commonLayout.card_three_title || null}
+                      </h3>
                     </div>
+                    <div className="bg-gray-900 flex-1" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -981,7 +1018,7 @@ export default function ReportDetailPage() {
         )}
 
         {/* Custom Report Request Popup */}
-        <CustomReportForm 
+        <CustomReportForm
           isOpen={isPopupOpen}
           onClose={closePopup}
         />

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLanguageStore, useAboutPageStore } from "@/store";
 import { useQuery } from "@tanstack/react-query";
+import { useParams, useSearchParams } from "next/navigation";
 import { codeToId } from "@/lib/utils";
 import React from "react";
 import Image from "next/image";
@@ -14,21 +15,21 @@ import CustomReportForm from "@/components/common/CustomReportForm";
 // Utility function to split title and apply gradient to the last part
 const formatTitle = (title: string) => {
   if (!title) return null;
-  
+
   // Find the word "in" and split after it
   const words = title.split(' ');
   const inIndex = words.findIndex(word => word.toLowerCase() === 'in');
-  
+
   if (inIndex !== -1 && inIndex < words.length - 1) {
     const beforeIn = words.slice(0, inIndex + 1).join(' ');
     const afterIn = words.slice(inIndex + 1).join(' ');
-    
+
     return {
       beforeBreak: beforeIn,
       afterBreak: afterIn
     };
   }
-  
+
   return {
     beforeBreak: title,
     afterBreak: ''
@@ -38,20 +39,20 @@ const formatTitle = (title: string) => {
 // Utility function to split description and apply gradient to the last part
 const formatDescription = (description: string) => {
   if (!description) return null;
-  
+
   // Find the phrase "dedicated to" and split after it
   const dedicatedToIndex = description.toLowerCase().indexOf('dedicated to');
-  
+
   if (dedicatedToIndex !== -1) {
     const beforeDedicated = description.substring(0, dedicatedToIndex + 'dedicated to'.length);
     const afterDedicated = description.substring(dedicatedToIndex + 'dedicated to'.length).trim();
-    
+
     return {
       beforeBreak: beforeDedicated,
       afterBreak: afterDedicated
     };
   }
-  
+
   return {
     beforeBreak: description,
     afterBreak: ''
@@ -60,6 +61,8 @@ const formatDescription = (description: string) => {
 
 export default function About() {
   const { language } = useLanguageStore();
+  const searchParams = useSearchParams();
+  const highlight = searchParams?.get('highlight');
   const { AboutPage, setAboutPage } = useAboutPageStore();
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
   const id = codeToId[language as keyof typeof codeToId] || codeToId['en'];
@@ -79,6 +82,34 @@ export default function About() {
       setAboutPage(data.about_us);
     }
   }, [data]);
+
+  // Helper function to highlight text
+  const highlightText = (text: string | undefined | null) => {
+    if (!text) return '';
+    if (!highlight) return text;
+
+    try {
+      const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escapedHighlight})`, 'gi');
+      return text.replace(regex, '<mark class="bg-yellow-300 text-black rounded-sm px-0.5">$1</mark>');
+    } catch (e) {
+      return text;
+    }
+  };
+
+  // Auto-scroll to highlight
+  useEffect(() => {
+    if (!highlight || !AboutPage) return;
+
+    const timer = setTimeout(() => {
+      const marks = document.getElementsByTagName('mark');
+      if (marks.length > 0) {
+        marks[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [highlight, AboutPage]);
 
   if (isLoading === true || !AboutPage) {
     return (
@@ -101,16 +132,16 @@ export default function About() {
           <h1 className="mb-6 text-[32px] md:text-[64px]">
             {(() => {
               const titleParts = formatTitle(AboutPage.title);
-              if (!titleParts) return AboutPage.title;
-              
+              if (!titleParts) return <span dangerouslySetInnerHTML={{ __html: highlightText(AboutPage.title) }} />;
+
               return (
                 <>
-                  {titleParts.beforeBreak}
+                  <span dangerouslySetInnerHTML={{ __html: highlightText(titleParts.beforeBreak) }} />
                   {titleParts.afterBreak && (
                     <>
                       <br />
                       <span className="bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] bg-clip-text text-transparent">
-                        {titleParts.afterBreak}
+                        <span dangerouslySetInnerHTML={{ __html: highlightText(titleParts.afterBreak) }} />
                       </span>
                     </>
                   )}
@@ -121,16 +152,16 @@ export default function About() {
           <p className="font-sans" style={{ fontFamily: 'Noto Sans, sans-serif', fontSize: '20px', marginTop: '16px', marginBottom: '55px' }}>
             {(() => {
               const descriptionParts = formatDescription(AboutPage.description);
-              if (!descriptionParts) return AboutPage.description;
-              
+              if (!descriptionParts) return <span dangerouslySetInnerHTML={{ __html: highlightText(AboutPage.description) }} />;
+
               return (
                 <>
-                  {descriptionParts.beforeBreak}
+                  <span dangerouslySetInnerHTML={{ __html: highlightText(descriptionParts.beforeBreak) }} />
                   {descriptionParts.afterBreak && (
                     <>
                       <br />
                       <span className="bg-white bg-clip-text text-transparent">
-                        {descriptionParts.afterBreak}
+                        <span dangerouslySetInnerHTML={{ __html: highlightText(descriptionParts.afterBreak) }} />
                       </span>
                     </>
                   )}
@@ -146,7 +177,7 @@ export default function About() {
                 </span>
                 <span>{AboutPage.first_button}</span>
               </Link>
-              <button 
+              <button
                 onClick={() => setIsCustomReportFormOpen(true)}
                 className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full"
               >
@@ -162,10 +193,10 @@ export default function About() {
 
       <section className="flex w-full flex-col items-center bg-white p-3 py-10 text-black md:py-20">
         <h2 className="text-[32px] md:text-[64px]" style={{ marginBottom: '31px' }}>
-          {AboutPage.section_ttile}
+          <span dangerouslySetInnerHTML={{ __html: highlightText(AboutPage.section_ttile) }} />
         </h2>
         <p className="w-full max-w-[900px] text-center text-[20px] text-[#0B0B0B]">
-          {AboutPage.section_description}
+          <span dangerouslySetInnerHTML={{ __html: highlightText(AboutPage.section_description) }} />
         </p>
         <div className="custom_grid m-auto mt-10 flex w-full max-w-[1440px] flex-col gap-6 md:grid md:gap-4">
           {AboutPage.our_experties.map((card: any, idx: number) => (
@@ -179,8 +210,12 @@ export default function About() {
               }}
               key={card.id}
             >
-              <h3 className="text-[20px] font-bold mb-3" style={{ fontFamily: 'var(--font-space-grotesk)', fontWeight: '700' }}>{card.title}</h3>
-              <p className="text-[16px]">{card.description}</p>
+              <h3 className="text-[20px] font-bold mb-3" style={{ fontFamily: 'var(--font-space-grotesk)', fontWeight: '700' }}>
+                <span dangerouslySetInnerHTML={{ __html: highlightText(card.title) }} />
+              </h3>
+              <p className="text-[16px]">
+                <span dangerouslySetInnerHTML={{ __html: highlightText(card.description) }} />
+              </p>
             </div>
           ))}
         </div>
@@ -189,9 +224,9 @@ export default function About() {
       <GlobalAboveFooter />
 
       {/* Custom Report Form */}
-      <CustomReportForm 
-        isOpen={isCustomReportFormOpen} 
-        onClose={() => setIsCustomReportFormOpen(false)} 
+      <CustomReportForm
+        isOpen={isCustomReportFormOpen}
+        onClose={() => setIsCustomReportFormOpen(false)}
       />
     </>
   );

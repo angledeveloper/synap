@@ -10,14 +10,43 @@ export interface Tab {
 
 interface TermsOfServiceContentProps {
   tabs: Tab[];
+  highlight?: string | null;
 }
 
-export default function TermsOfServiceContent({ tabs }: TermsOfServiceContentProps) {
+export default function TermsOfServiceContent({ tabs, highlight }: TermsOfServiceContentProps) {
   const [expandedTab, setExpandedTab] = useState<number | null>(1);
 
   const toggleTab = (tabId: number) => {
     setExpandedTab(expandedTab === tabId ? null : tabId);
   };
+
+  // Helper function to highlight text
+  const highlightText = (text: string) => {
+    if (!text) return '';
+    if (!highlight) return text;
+
+    try {
+      const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escapedHighlight})`, 'gi');
+      return text.replace(regex, '<mark class="bg-yellow-300 text-black rounded-sm px-0.5">$1</mark>');
+    } catch (e) {
+      return text;
+    }
+  };
+
+  // Auto-expand tab if it contains the highlight
+  useState(() => {
+    if (highlight) {
+      const query = highlight.toLowerCase();
+      const foundTab = tabs.find(tab =>
+        tab.title.toLowerCase().includes(query) ||
+        tab.description.toLowerCase().includes(query)
+      );
+      if (foundTab) {
+        setExpandedTab(foundTab.id);
+      }
+    }
+  });
 
   return (
     <div className="space-y-0">
@@ -30,7 +59,7 @@ export default function TermsOfServiceContent({ tabs }: TermsOfServiceContentPro
             aria-controls={`terms-tab-${tab.id}`}
           >
             <h3 className="text-xl font-semibold text-white group-hover:text-gray-200 transition-colors">
-              {tab.title}
+              <span dangerouslySetInnerHTML={{ __html: highlightText(tab.title) }} />
             </h3>
             <div className="flex items-center justify-center w-6 h-6">
               {expandedTab === tab.id ? (
@@ -44,15 +73,15 @@ export default function TermsOfServiceContent({ tabs }: TermsOfServiceContentPro
               )}
             </div>
           </button>
-          
+
           {expandedTab === tab.id && (
-            <div 
+            <div
               id={`terms-tab-${tab.id}`}
               className="pb-6"
             >
               <div
                 className="text-gray-300 leading-relaxed pr-8 prose prose-invert max-w-none [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:space-y-2 [&_li]:leading-relaxed [&_p]:mb-4"
-                dangerouslySetInnerHTML={{ __html: tab.description || "" }}
+                dangerouslySetInnerHTML={{ __html: highlightText(tab.description || "") }}
               />
             </div>
           )}

@@ -3,14 +3,17 @@ import { useLanguageStore } from '@/store';
 import { codeToId } from '@/lib/utils';
 
 export interface DeepSearchResult {
-  id: number;
+  id?: number;
   title: string;
-  introduction_description: string;
-  cost: string;
-  report_date: string;
+  description?: string;
+  introduction_description?: string; // For reports
+  cost?: string;
+  report_date?: string;
   image?: string;
   category?: string;
   industry?: string;
+  type: 'home' | 'about' | 'report' | 'legal';
+  page_name?: string; // For legal docs
 }
 
 export interface DeepSearchResponse {
@@ -21,7 +24,7 @@ export interface DeepSearchResponse {
 
 const fetchDeepSearch = async (query: string, languageId: number): Promise<DeepSearchResponse> => {
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
-  
+
   if (!baseUrl) {
     throw new Error('NEXT_PUBLIC_DB_URL is not defined');
   }
@@ -42,36 +45,61 @@ const fetchDeepSearch = async (query: string, languageId: number): Promise<DeepS
   }
 
   const data = await response.json();
-  
-  // Handle response with 'home' property (based on your API response)
+
+  let allResults: DeepSearchResult[] = [];
+
+  // Process Home results
   if (data.home && Array.isArray(data.home)) {
-    return {
-      results: data.home,
-      total: data.home.length,
-      query: query.trim()
-    };
+    const homeResults = data.home.map((item: any) => ({
+      ...item,
+      type: 'home' as const,
+      description: item.description || item.tagline // Handle tagline as description
+    }));
+    allResults = [...allResults, ...homeResults];
   }
-  
-  // Handle different response formats
-  if (Array.isArray(data)) {
-    return {
-      results: data,
-      total: data.length,
-      query: query.trim()
-    };
+
+  // Process About Us results
+  if (data.about_us && Array.isArray(data.about_us)) {
+    const aboutResults = data.about_us.map((item: any) => ({
+      ...item,
+      type: 'about' as const
+    }));
+    allResults = [...allResults, ...aboutResults];
   }
-  
-  if (data.results || data.data) {
-    return {
-      results: data.results || data.data || [],
-      total: data.total || data.count || 0,
-      query: query.trim()
-    };
+
+  // Process Reports results
+  if (data.reports && Array.isArray(data.reports)) {
+    const reportResults = data.reports.map((item: any) => ({
+      ...item,
+      type: 'report' as const,
+      description: item.introduction_description // Map for consistency
+    }));
+    allResults = [...allResults, ...reportResults];
+  }
+
+  // Process Legal (Terms/Privacy) results
+  if (data.terms_privacy && Array.isArray(data.terms_privacy)) {
+    const legalResults = data.terms_privacy.map((item: any) => ({
+      ...item,
+      type: 'legal' as const
+    }));
+    allResults = [...allResults, ...legalResults];
+  }
+
+  // Fallback for legacy/simple response structure
+  if (allResults.length === 0) {
+    if (Array.isArray(data)) {
+      // Assume reports if array
+      allResults = data.map((item: any) => ({ ...item, type: 'report' as const }));
+    } else if (data.results || data.data) {
+      const list = data.results || data.data || [];
+      allResults = list.map((item: any) => ({ ...item, type: 'report' as const }));
+    }
   }
 
   return {
-    results: data,
-    total: Array.isArray(data) ? data.length : 0,
+    results: allResults,
+    total: allResults.length,
     query: query.trim()
   };
 };
