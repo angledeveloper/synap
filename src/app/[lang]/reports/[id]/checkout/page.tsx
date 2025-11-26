@@ -17,39 +17,7 @@ import CurrencySelector from "@/components/checkout/CurrencySelector";
 import SupportFooter from "@/components/checkout/SupportFooter";
 import { initiatePayment } from "@/utils/api/apiPlaceholders";
 import useSWR from 'swr';
-
-export interface ReportData {
-  id: number;
-  title: string;
-  subtitle: string;
-  report_id: string;
-  format: string;
-  industry: string;
-  pages: number;
-  last_updated: string;
-  image: string;
-}
-
-export interface LicenseOption {
-  id: string;
-  title: string;
-  description: string;
-  price: number | string;
-  discount?: number;
-  features: string[];
-  highlight?: boolean;
-  icon?: string;
-  discountPercent?: string | number;
-  buyButtonText?: string;
-  buyButtonIcon?: string;
-  disclaimer?: string;
-  actualPrice?: string | number;
-  currencySymbol?: string;
-  disclaimerHeading?: string;
-  mostPopularText?: string;
-
-  // plus any others from the API actually used in LicenseCard, LicenseGrid
-}
+import { ReportData, LicenseOption } from "@/types/checkout";
 
 type SuccessData = any;
 
@@ -88,7 +56,8 @@ export default function CheckoutPage() {
     industry: "Technology & Software",
     pages: parseInt(report.number_of_pages) || 0,
     last_updated: new Date(report.modify_at).toLocaleDateString(),
-    image: report.image
+    image: report.image,
+    report_reference_title: data?.report_reference_title
   } : null;
 
   // LIVE CHECKOUT API DATA
@@ -312,6 +281,7 @@ export default function CheckoutPage() {
                     }}
                     onClose={handleCloseSuccess}
                     orderConfirmation={order_confirmation}
+                    invoiceFile={successData?.invoiceFile}
                   />
                 </div>
               ) : !showBilling ? (
@@ -353,6 +323,7 @@ export default function CheckoutPage() {
                   onOrderSuccess={handleOrderSuccess}
                   oneTimePurchaseText={bill_info_order_summary?.one_time_purchase}
                   offerCodePlaceholder={bill_info_order_summary?.have_offer_placeholder}
+                  languageId={Number(languageId || 1)}
                 />
               ) : null}
             </div>

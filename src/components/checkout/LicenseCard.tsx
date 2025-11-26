@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import type { LicenseOption } from "@/app/[lang]/reports/[id]/checkout/page";
+import type { LicenseOption } from "@/types/checkout";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import ArrowIcon from "@/components/common/ArrowIcon";
 
@@ -47,11 +47,11 @@ export default function LicenseCard({ license, onBuy, whatYouGetHeading = 'What 
   const isHighlighted = Boolean(license.highlight);
 
   return (
-    <div className={`relative ${!isLastCard ? 'mt-8 sm:mt-0' : 'mt-0'}`}>
+    <div className={`relative w-full max-w-[420px] mx-auto ${!isLastCard ? 'mt-8 sm:mt-0' : 'mt-0'}`}>
       {/* Most Popular banner - positioned behind the card */}
       {isHighlighted && (
         <div
-          className="w-[310px] sm:w-[350px] lg:w-[398px] h-23.75 absolute left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white text-center rounded-t-xl text-[14px] sm:text-[16px] font-bold z-0"
+          className="w-full h-23.75 absolute left-0 bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white text-center rounded-t-xl text-[14px] sm:text-[16px] font-bold z-0"
           style={{
             top: '-32px',
             paddingTop: '6px',
@@ -71,7 +71,6 @@ export default function LicenseCard({ license, onBuy, whatYouGetHeading = 'What 
         }`}
         style={{
           width: '100%',
-          maxWidth: '420px',
           height: 'auto',
           minHeight: '760px',
           ...(isHighlighted ? {
@@ -157,7 +156,7 @@ export default function LicenseCard({ license, onBuy, whatYouGetHeading = 'What 
               {whatYouGetHeading}
             </p>
             <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-5">
-              {license.features.map((feature, index) => (
+              {license.features.map((feature: string, index: number) => (
                 <li key={index} className="flex items-start gap-2 sm:gap-3">
                   <div className="flex-shrink-0 mt-0.5">
                     <svg className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">

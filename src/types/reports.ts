@@ -71,6 +71,7 @@ export interface ReportSection {
 export interface ReportDetailResponse {
   success: boolean;
   share_at?: string;
+  report_reference_title?: string;
   data: {
     report: ReportDetail;
     sections: ReportSection[];
