@@ -45,13 +45,16 @@ export interface LicenseOption {
   disclaimer?: string;
   actualPrice?: string | number;
   currencySymbol?: string;
+  disclaimerHeading?: string;
+  mostPopularText?: string;
+
   // plus any others from the API actually used in LicenseCard, LicenseGrid
 }
 
 type SuccessData = any;
 
 const fetchCheckoutData = async (lang: string) => {
-  const languageId = codeToId[lang as keyof typeof codeToId] || '1'; // Default to English (1) if language not found
+  const languageId = codeToId[lang as keyof typeof codeToId]; // Default to English (1) if language not found
 
   const res = await fetch(`https://dashboard.synapseaglobal.com/api/checkout/${languageId}`, {
     method: 'POST',
@@ -69,11 +72,11 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { language } = useLanguageStore();
   const reportId = useMemo(() => Number(params?.id), [params?.id]);
-  const languageId = codeToId[language as keyof typeof codeToId] || 1;
+  const languageId = codeToId[language as keyof typeof codeToId];
   const { data, isLoading: reportLoading, error } = useReportDetail({
     reportId: params?.id as string,
     categoryId: "1",
-    languageId: languageId.toString(),
+    languageId: languageId?.toString() || "1",
   });
   const report = data?.data?.report;
   const reportData = report ? {
@@ -89,7 +92,7 @@ export default function CheckoutPage() {
   } : null;
 
   // LIVE CHECKOUT API DATA
-  const { data: checkoutApi, error: checkoutApiError } = useSWR('checkout-api', () => fetchCheckoutData(params.lang as string));
+  const { data: checkoutApi, error: checkoutApiError } = useSWR(['checkout-api', params.lang], () => fetchCheckoutData(params.lang as string));
   const { checkout_page, payment_common_layout, billing_information, bill_info_order_summary, order_confirmation } = checkoutApi || {};
 
   // All other state hooks:
@@ -142,6 +145,8 @@ export default function CheckoutPage() {
         buyButtonText: checkout_page.buy_license_button,
         buyButtonIcon: checkout_page.buy_license_button_icon_image,
         highlight: type === 'team',
+        disclaimerHeading: checkout_page[`${type}_license_disclaimer_heading`],
+        mostPopularText: checkout_page.most_popular_text,
       };
     };
     return [mapLicensePrices('single'), mapLicensePrices('team'), mapLicensePrices('enterprise')];
@@ -346,6 +351,8 @@ export default function CheckoutPage() {
                   licenseOptions={licenseOptions}
                   checkoutPage={checkout_page}
                   onOrderSuccess={handleOrderSuccess}
+                  oneTimePurchaseText={bill_info_order_summary?.one_time_purchase}
+                  offerCodePlaceholder={bill_info_order_summary?.have_offer_placeholder}
                 />
               ) : null}
             </div>

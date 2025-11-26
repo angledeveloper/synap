@@ -26,9 +26,11 @@ export interface BillingFormProps {
   licenseOptions: LicenseOption[];
   checkoutPage?: any; // Add checkout_page data for pricing
   onOrderSuccess?: (orderData: any) => void; // NEW: notify parent to show confirmation
+  oneTimePurchaseText?: string;
+  offerCodePlaceholder?: string;
 }
 
-export default function BillingForm({ selectedLicense, reportData, onContinue, onBack, billingInformation, billInfoOrderSummary, licenseOptions, checkoutPage, onOrderSuccess }: BillingFormProps) {
+export default function BillingForm({ selectedLicense, reportData, onContinue, onBack, billingInformation, billInfoOrderSummary, licenseOptions, checkoutPage, onOrderSuccess, oneTimePurchaseText, offerCodePlaceholder }: BillingFormProps) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -80,28 +82,28 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
   // Get pricing data from API based on selected license and currency
   const getLicensePricing = () => {
-    const currencySuffix = selectedOrderCurrency === 'INR' ? 'INR' : 
-                           selectedOrderCurrency === 'EUR' ? 'EUR' : 'USD';
-    
+    const currencySuffix = selectedOrderCurrency === 'INR' ? 'INR' :
+      selectedOrderCurrency === 'EUR' ? 'EUR' : 'USD';
+
     let offerPrice = 0;
     let actualPrice = 0;
     let discountPercent = 0;
     let licenseTitle = '';
-    
+
     console.log('Debug - checkoutPage data:', checkoutPage);
     console.log('Debug - selectedOrderLicenseId:', selectedOrderLicenseId);
     console.log('Debug - selectedOrderCurrency:', selectedOrderCurrency);
-    
+
     if (selectedOrderLicenseId === 'single') {
       // Use the correct API field names from checkout_page
       const priceField = `single_license_offer_price_in_${currencySuffix}`;
       const actualPriceField = `single_license_actual_price_in_${currencySuffix}`;
-      
+
       console.log('Debug - priceField:', priceField);
       console.log('Debug - actualPriceField:', actualPriceField);
       console.log('Debug - priceField value:', checkoutPage?.[priceField]);
       console.log('Debug - actualPriceField value:', checkoutPage?.[actualPriceField]);
-      
+
       offerPrice = parseFloat((checkoutPage?.[priceField] || checkoutPage?.single_license_offer_price_in_USD || '$0').replace(/[^0-9.]/g, ''));
       actualPrice = parseFloat((checkoutPage?.[actualPriceField] || checkoutPage?.single_license_actual_price_in_USD || '$0').replace(/[^0-9.]/g, ''));
       discountPercent = parseFloat((checkoutPage?.single_license_discount_percent || '0%').replace(/[^0-9.]/g, ''));
@@ -109,7 +111,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     } else if (selectedOrderLicenseId === 'team') {
       const priceField = `team_license_offer_price_in_${currencySuffix}`;
       const actualPriceField = `team_license_actual_price_in_${currencySuffix}`;
-      
+
       offerPrice = parseFloat((checkoutPage?.[priceField] || checkoutPage?.team_license_offer_price_in_USD || '$0').replace(/[^0-9.]/g, ''));
       actualPrice = parseFloat((checkoutPage?.[actualPriceField] || checkoutPage?.team_license_actual_price_in_USD || '$0').replace(/[^0-9.]/g, ''));
       discountPercent = parseFloat((checkoutPage?.team_license_discount_percent || '0%').replace(/[^0-9.]/g, ''));
@@ -117,15 +119,15 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     } else if (selectedOrderLicenseId === 'enterprise') {
       const priceField = `enterprise_license_offer_price_in_${currencySuffix}`;
       const actualPriceField = `enterprise_license_actual_price_in_${currencySuffix}`;
-      
+
       offerPrice = parseFloat((checkoutPage?.[priceField] || checkoutPage?.enterprise_license_offer_price_in_USD || '$0').replace(/[^0-9.]/g, ''));
       actualPrice = parseFloat((checkoutPage?.[actualPriceField] || checkoutPage?.enterprise_license_actual_price_in_USD || '$0').replace(/[^0-9.]/g, ''));
       discountPercent = parseFloat((checkoutPage?.enterprise_license_discount_percent || '0%').replace(/[^0-9.]/g, ''));
       licenseTitle = checkoutPage?.enterprise_license_heading || 'Enterprise License';
     }
-    
+
     console.log('Debug - Final values:', { offerPrice, actualPrice, discountPercent, licenseTitle });
-    
+
     return { offerPrice, actualPrice, discountPercent, licenseTitle };
   };
 
@@ -140,7 +142,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   const discountAmount = calculatedActualPrice > 0 ? (calculatedActualPrice - offerPrice) : 0;
   const subtotal = offerPrice;
   const isINR = selectedOrderCurrency === 'INR';
-  
+
   // Check if the selected state is Maharashtra (case-insensitive)
   const isMaharashtra = formData.state?.toLowerCase() === 'maharashtra';
 
@@ -172,7 +174,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
         cgstRate = getRate(checkoutPage?.enterprise_license_offer_price_in_INR_CGST_rate);
         sgstRate = getRate(checkoutPage?.enterprise_license_offer_price_in_INR_SGST_rate);
       }
-      
+
       // Fallback to 9% each if API missing
       if (cgstRate === 0 && sgstRate === 0) {
         cgstRate = 0.09;
@@ -200,7 +202,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     if (type === 'single') prefix = 'single_license';
     else if (type === 'team') prefix = 'team_license';
     else if (type === 'enterprise') prefix = 'enterprise_license';
-    
+
     let apiObj = checkoutPage;
     const suffix = cur === 'INR' ? 'INR' : cur === 'EUR' ? 'EUR' : 'USD';
     // Offer price (post-discount, pre-tax):
@@ -267,13 +269,13 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
     // Check if all base fields are filled
     const baseFieldsValid = baseFields.every(field => Boolean(field));
-    
+
     // If not all base fields are filled, no need to check address fields
     if (!baseFieldsValid) return false;
-    
+
     // If country is not India, we don't need to check address fields
     if (!isIndiaSelected) return true;
-    
+
     // For Indian users, check all address fields
     const addressFields = [
       formData.address,
@@ -281,7 +283,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
       formData.city,
       formData.postalCode
     ];
-    
+
     return addressFields.every(field => Boolean(field));
   };
 
@@ -319,7 +321,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
       sgst: String(sgst),
       igst: "0", // Add correct logic if you want IGST value (from API, if needed)
       total: String(finalTotal),
-      ...(appliedOfferCode ? {offer_code: appliedOfferCode} : {})
+      ...(appliedOfferCode ? { offer_code: appliedOfferCode } : {})
     };
     try {
       const res = await fetch('https://dashboard.synapseaglobal.com/api/customer-orders', {
@@ -345,14 +347,14 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   let cgstDiff = '', sgstDiff = '', igstDiff = '';
   if (selectedOrderCurrency === 'INR') {
     // Both offerPriceStr and *_with_* fields are strings (e.g. "₹15,881.40", "₹17,310.73"). Remove non-numeric chars, and subtract.
-    const parse = (v:string) => parseFloat(String(v).replace(/[^0-9.\-]/g,'')) || 0;
+    const parse = (v: string) => parseFloat(String(v).replace(/[^0-9.\-]/g, '')) || 0;
     const offer = parse(offerPriceStr);
     if (cgstStr) cgstDiff = (parse(cgstStr) - offer).toFixed(2);
     if (sgstStr) sgstDiff = (parse(sgstStr) - offer).toFixed(2);
     if (igstStr) igstDiff = (parse(igstStr) - offer).toFixed(2);
   }
 
-  const [paypalScriptTag, setPaypalScriptTag] = useState<HTMLScriptElement|null>(null);
+  const [paypalScriptTag, setPaypalScriptTag] = useState<HTMLScriptElement | null>(null);
 
   // Dynamically load PayPal JS SDK if PayPal is selected
   useEffect(() => {
@@ -390,7 +392,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
       setPaypalStatus("");
       window.paypal.Buttons({
         style: { layout: 'vertical', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
-        createOrder: async function(data: any, actions: any) {
+        createOrder: async function (data: any, actions: any) {
           // POST to backend to create order
           setPaypalStatus('Contacting payment server...');
           try {
@@ -412,11 +414,11 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             const result = await res.json();
             setPaypalStatus('PayPal order created, awaiting payment...');
             return result.orderID;
-          } catch (e:any) {
+          } catch (e: any) {
             setPaypalStatus('PayPal order failed: ' + (e.message || e.toString()));
-    }
+          }
         },
-        onApprove: async function(data: any, actions: any) {
+        onApprove: async function (data: any, actions: any) {
           setPaypalStatus('Capturing payment...');
           try {
             const captureRes = await actions.order.capture();
@@ -479,11 +481,11 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               customerEmail: formData.email || ''
             };
             onOrderSuccess && onOrderSuccess(orderDataForConfirmation);
-          } catch (e:any) {
+          } catch (e: any) {
             setPaypalStatus('Verification failed: ' + (e.message || e.toString()));
           }
         },
-        onError: function(err: any) {
+        onError: function (err: any) {
           setPaypalStatus('Error with PayPal payment: ' + err);
         }
       }).render('#paypal-button-container');
@@ -528,7 +530,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
       <button
         onClick={onBack}
         className="text-[#555353] hover:text-gray-700 transition-colors text-sm sm:text-base"
-        style={{ 
+        style={{
           fontFamily: 'Space Grotesk, sans-serif',
           fontSize: 'clamp(14px, 4vw, 16px)',
           fontWeight: '400'
@@ -540,10 +542,10 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
       <div className="flex flex-col lg:flex-row items-start gap-6 sm:gap-8">
         {/* Left Column - Billing Details */}
         <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-4 sm:p-6 w-full lg:w-full h-auto">
-          <h2 className="text-xl sm:text-2xl lg:text-[24px] text-gray-900 mb-4 sm:mb-6 billing-heading" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700', marginBottom:'clamp(24px, 4vw, 41px)' }}>
+          <h2 className="text-xl sm:text-2xl lg:text-[24px] text-gray-900 mb-4 sm:mb-6 billing-heading" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700', marginBottom: 'clamp(24px, 4vw, 41px)' }}>
             1. {billingInformation?.bill_details_heading || billingInformation?.bill_info_heading || 'Your Billing Details'}
           </h2>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
             {/* Name Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 sm:mb-6">
@@ -555,7 +557,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   id="firstName"
                   value={formData.firstName}
                   onChange={(e) => handleInputChange("firstName", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full h-10 sm:h-12"
+                  className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full h-10 sm:h-12"
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   required
                 />
@@ -568,7 +570,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   id="lastName"
                   value={formData.lastName}
                   onChange={(e) => handleInputChange("lastName", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full h-10 sm:h-12"
+                  className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full h-10 sm:h-12"
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   required
                 />
@@ -585,40 +587,40 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full h-10 sm:h-12"
+                className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white text-black w-full h-10 sm:h-12"
                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                 required
               />
             </div>
 
-             {/* Country and Phone Number */}
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 sm:mb-6">
-               <div>
-                 <Label htmlFor="country" className="font-medium text-gray-500 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)', marginBottom: '12px'}}>
-                   {billingInformation?.residence_text || 'Country of Residence'}*
-                 </Label>
-                 <select 
-                   value={formData.country} 
-                   onChange={(e) => handleCountryChange(e.target.value)}
-                   className="mt-1 border border-[#DBDBDB] rounded-[10px] bg-white w-full h-10 sm:h-12 px-3 text-black appearance-none cursor-pointer focus:border-black focus:outline-none"
-                   style={{ 
-                     fontFamily: 'Space Grotesk, sans-serif',
-                     backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
-                     backgroundPosition: 'right 12px center',
-                     backgroundRepeat: 'no-repeat',
-                     backgroundSize: '16px'
-                   }}
-                 >
-                   <option value="" disabled style={{ color: '#888888' }}>Please select a country</option>
-                   {countries.map((c: any) => (
-                     <option key={c.name.common || c.name} value={c.name.common || c.name}>{c.name.common || c.name}</option>
-                   ))}
-                 </select>
+            {/* Country and Phone Number */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 sm:mb-6">
+              <div>
+                <Label htmlFor="country" className="font-medium text-gray-500 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)', marginBottom: '12px' }}>
+                  {billingInformation?.residence_text || 'Country of Residence'}*
+                </Label>
+                <select
+                  value={formData.country}
+                  onChange={(e) => handleCountryChange(e.target.value)}
+                  className="mt-1 border border-[#DBDBDB] rounded-[10px] bg-white w-full h-10 sm:h-12 px-3 text-black appearance-none cursor-pointer focus:border-black focus:outline-none"
+                  style={{
+                    fontFamily: 'Space Grotesk, sans-serif',
+                    backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
+                    backgroundPosition: 'right 12px center',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: '16px'
+                  }}
+                >
+                  <option value="" disabled style={{ color: '#888888' }}>Please select a country</option>
+                  {countries.map((c: any) => (
+                    <option key={c.name.common || c.name} value={c.name.common || c.name}>{c.name.common || c.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
                 <Label className="font-medium text-gray-500 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)', marginBottom: '12px' }}>
-                  {billingInformation?.phone || 'Phone Number'}*       
+                  {billingInformation?.phone || 'Phone Number'}*
                 </Label>
                 <div className="relative w-full h-10 sm:h-12">
                   <Input
@@ -629,11 +631,11 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                     onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
                     required
                   />
-                  <select 
-                    value={formData.phoneCode} 
+                  <select
+                    value={formData.phoneCode}
                     onChange={(e) => handleInputChange("phoneCode", e.target.value)}
                     className="absolute m-1 sm:m-2 left-0 top-0 border border-[#DBDBDB] rounded-[7px] bg-[#E8E8E8] text-[#767676] w-[55px] sm:w-[61px] h-8 sm:h-[30px] px-2 text-sm sm:text-base z-10 shadow-none outline-1 focus:ring-0 focus:border-[#232323] appearance-none cursor-pointer"
-                    style={{ 
+                    style={{
                       fontFamily: 'Space Grotesk, sans-serif',
                       backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
                       backgroundPosition: 'right 4px center',
@@ -701,14 +703,14 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 <Label htmlFor="city" className="font-medium text-gray-500 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)', marginBottom: '12px' }}>
                   {billingInformation?.city || 'City'}{isIndiaSelected ? '*' : ''}
                 </Label>
-                 <Input
-                   id="city"
-                   value={formData.city} 
-                   onChange={(e) => handleInputChange("city", e.target.value)}
-                   className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full h-10 sm:h-12 text-black"
-                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                   required={isIndiaSelected}
-                 />
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => handleInputChange("city", e.target.value)}
+                  className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full h-10 sm:h-12 text-black"
+                  style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                  required={isIndiaSelected}
+                />
               </div>
               <div>
                 <Label htmlFor="postalCode" className="font-medium text-gray-500 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)', marginBottom: '12px' }}>
@@ -773,7 +775,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             <Button
               type="submit"
               className="mt-4 sm:mt-6 bg-transparent border-1 border-black text-gray-700 hover:bg-gray-50 hover:border-gray-400 rounded-md"
-              style={{ 
+              style={{
                 fontFamily: 'Space Mono, monospace',
                 fontWeight: 'bold',
                 width: 'clamp(160px, 40vw, 215px)',
@@ -783,13 +785,13 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               <div className="flex items-center justify-center gap-2">
                 <span>{billingInformation?.continue_btn_text || 'Continue to Payment'}</span>
                 {billingInformation?.continue_btn_icon && (
-                <Image 
+                  <Image
                     src={`/${billingInformation.continue_btn_icon}`}
-                  alt="Arrow" 
-                  width={32.19} 
-                  height={12.67}
-                  className="text-gray-700"
-                />
+                    alt="Arrow"
+                    width={32.19}
+                    height={12.67}
+                    className="text-gray-700"
+                  />
                 )}
               </div>
             </Button>
@@ -797,7 +799,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
         </div>
 
         {/* Right Column - Order Summary */}
-        <div 
+        <div
           className="bg-white rounded-[20px] p-4 sm:p-6 lg:p-7 mt-6 sm:mt-8 lg:mt-0 lg:ml-12 w-full lg:w-[440px] h-auto"
           style={{
             border: '1px solid transparent',
@@ -811,35 +813,31 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
           {/* License and Currency Selectors */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div className="flex-1">
-              <label className="block mb-1 text-xs sm:text-sm text-gray-700 font-medium">{billInfoOrderSummary?.license_dropdown_text || 'Choose License'}</label>
-               <select 
+              <select
                 value={selectedOrderLicenseId}
                 onChange={e => setSelectedOrderLicenseId(e.target.value)}
-                 className="w-full sm:w-[118px] h-9 sm:h-[38px] border border-black rounded-none px-3 text-black appearance-none cursor-pointer text-sm sm:text-base"
-                 style={{ 
-                   fontFamily: 'Space Grotesk, sans-serif',
-                   backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
-                   backgroundPosition: 'right 8px center',
-                   backgroundRepeat: 'no-repeat',
-                   backgroundSize: '14px'
-                 }}
-               >
+                className="w-full sm:w-[118px] h-9 sm:h-[38px] border border-black rounded-none px-3 text-black appearance-none cursor-pointer text-sm sm:text-base"
+                style={{
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
+                  backgroundPosition: 'right 8px center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '14px'
+                }}
+              >
                 <option value="single">{checkoutPage?.single_license_heading || 'Single License'}</option>
                 <option value="team">{checkoutPage?.team_license_heading || 'Team License'}</option>
                 <option value="enterprise">{checkoutPage?.enterprise_license_heading || 'Enterprise License'}</option>
-               </select>
+              </select>
             </div>
             <div className="w-full sm:w-24">
-              <label className="block mb-1 text-xs sm:text-sm text-gray-700 font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                {billingInformation?.currency_options_text || 'Currency'}
-              </label>
               <div className="relative">
-                <select 
-                  value={selectedOrderCurrency} 
+                <select
+                  value={selectedOrderCurrency}
                   onChange={e => setSelectedOrderCurrency(e.target.value)}
                   disabled={isIndiaSelected}
                   className={`w-full sm:w-[93px] h-9 sm:h-[38px] border ${isIndiaSelected ? 'border-gray-300 bg-gray-100' : 'border-black'} rounded-none px-3 text-black appearance-none ${isIndiaSelected ? 'cursor-not-allowed' : 'cursor-pointer'} text-sm sm:text-base`}
-                  style={{ 
+                  style={{
                     fontFamily: 'Space Grotesk, sans-serif',
                     backgroundImage: isIndiaSelected ? 'none' : 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
                     backgroundPosition: 'right 8px center',
@@ -853,8 +851,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   <option value="EUR">EUR €</option>
                 </select>
                 {isIndiaSelected && (
-                  <div 
-                    className="absolute inset-0 bg-transparent cursor-not-allowed" 
+                  <div
+                    className="absolute inset-0 bg-transparent cursor-not-allowed"
                     title="INR is required for India"
                   />
                 )}
@@ -867,7 +865,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             <div className="flex justify-between items-center">
               <div>
                 <div className="font-medium text-gray-900 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{licenseTitle}</div>
-                <div className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>(One time purchase)</div>
+                <div className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{oneTimePurchaseText || '(One time purchase)'}</div>
               </div>
               <div className="font-medium text-gray-900 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                 {actualPriceStr}
@@ -921,18 +919,18 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 </div>
               </>
             ) : (
-            <div className="flex justify-between items-center">
-              <div className="text-gray-700 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              <div className="flex justify-between items-center">
+                <div className="text-gray-700 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                   {billInfoOrderSummary?.tax_text || 'Tax'}
-              </div>
-              <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                </div>
+                <div className="text-gray-700" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                   {billInfoOrderSummary?.not_applicable_text || 'Not Applicable'}
                 </div>
               </div>
             )}
             <div className="flex justify-between items-center border-t-2 border-gray-300 pt-3">
               <div className="text-base sm:text-lg font-bold text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                {billInfoOrderSummary?.total_text || 'Total'}
+                {billInfoOrderSummary?.total_text || 'To'}
               </div>
               <div className="text-base sm:text-lg font-bold text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                 {couponTotalStr || totalStr}
@@ -946,14 +944,14 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               <button type="button" className="text-blue-600 underline text-xs sm:text-sm hover:text-blue-800" style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                 onClick={() => setShowOfferField(true)}>
                 {billInfoOrderSummary?.have_offer_text || 'Have an offer code?'}
-            </button>
+              </button>
             )}
             {showOfferField && (
               <div className="flex flex-col sm:flex-row gap-2 mb-2">
                 <Input
                   className="flex-1 border-[#DBDBDB] rounded-[8px] text-black text-sm sm:text-base"
                   value={offerCode}
-                  placeholder="Enter offer code"
+                  placeholder={offerCodePlaceholder || "Enter offer code"}
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   onChange={(e) => setOfferCode(e.target.value)}
                 />
@@ -994,87 +992,85 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             )}
           </div>
 
-          
+
         </div>
       </div>
 
-       {/* Payment Method Section - Only show after form submission */}
-       <div id="payment-section">
-       {formSubmitted && (
-         <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-4 sm:p-6 mt-6 sm:mt-8 w-full lg:w-full h-auto">
-           <h2 className="text-lg sm:text-xl lg:text-[24px] text-gray-900 mb-4 sm:mb-6" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700' }}>
-             2. {billingInformation?.payment_method_text || 'Payment Method'}
-           </h2>
-           
-           <div className="space-y-4">
-             {/* CCAvenue Payment Option */}
-             <div 
-               className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                 selectedPaymentMethod === "ccavenue" 
-                   ? "border-blue-500 bg-blue-50" 
-                   : "border-gray-200 hover:border-gray-300"
-               }`}
-               onClick={() => handlePaymentMethodChange("ccavenue")}
-             >
-                   <div className="flex flex-col sm:flex-row sm:items-center space-x-0 sm:space-x-3 space-y-3 sm:space-y-0">
-                     <input
-                       type="radio"
-                       name="paymentMethod"
-                       value="ccavenue"
-                       checked={selectedPaymentMethod === "ccavenue"}
-                       onChange={() => handlePaymentMethodChange("ccavenue")}
-                       className="w-4 h-4 text-blue-600"
-                     />
-                     <div className="flex items-center space-x-3">
-                       <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded flex items-center justify-center">
-                         <span className="text-white font-bold text-xs sm:text-sm">CC</span>
-                       </div>
-                       <div>
-                         <h3 className="font-medium text-gray-900 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                       CCAvenue
-                     </h3>
-                     <p className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                       Credit/Debit Cards, Net Banking, UPI, Wallets
-                     </p>
-                   </div>
-                 </div>
-               </div>
-             </div>
+      {/* Payment Method Section - Only show after form submission */}
+      <div id="payment-section">
+        {formSubmitted && (
+          <div className="bg-white border border-[#B5B5B5] rounded-[20px] p-4 sm:p-6 mt-6 sm:mt-8 w-full lg:w-full h-auto">
+            <h2 className="text-lg sm:text-xl lg:text-[24px] text-gray-900 mb-4 sm:mb-6" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700' }}>
+              2. {billingInformation?.payment_method_text || 'Payment Method'}
+            </h2>
 
-             {/* PayPal Payment Option */}
-             <div 
-               className={`border-2 rounded-lg p-3 sm:p-4 cursor-pointer transition-all ${
-                 selectedPaymentMethod === "paypal" 
-                   ? "border-blue-500 bg-blue-50" 
-                   : "border-gray-200 hover:border-gray-300"
-               }`}
-               onClick={() => handlePaymentMethodChange("paypal")}
-             >
-               <div className="flex flex-col sm:flex-row sm:items-center space-x-0 sm:space-x-3 space-y-3 sm:space-y-0">
-                 <input
-                   type="radio"
-                   name="paymentMethod"
-                   value="paypal"
-                   checked={selectedPaymentMethod === "paypal"}
-                   onChange={() => handlePaymentMethodChange("paypal")}
-                   className="w-4 h-4 text-blue-600"
-                 />
-                 <div className="flex items-center space-x-3">
-                   <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded flex items-center justify-center">
-                     <span className="text-white font-bold text-xs sm:text-sm">PP</span>
-                   </div>
-                   <div>
-                     <h3 className="font-medium text-gray-900 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                       PayPal
-                     </h3>
-                     <p className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                       Pay with your PayPal account
-                     </p>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </div>
+            <div className="space-y-4">
+              {/* CCAvenue Payment Option */}
+              <div
+                className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${selectedPaymentMethod === "ccavenue"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300"
+                  }`}
+                onClick={() => handlePaymentMethodChange("ccavenue")}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center space-x-0 sm:space-x-3 space-y-3 sm:space-y-0">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="ccavenue"
+                    checked={selectedPaymentMethod === "ccavenue"}
+                    onChange={() => handlePaymentMethodChange("ccavenue")}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <div className="flex items-center space-x-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded flex items-center justify-center">
+                      <span className="text-white font-bold text-xs sm:text-sm">CC</span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                        CCAvenue
+                      </h3>
+                      <p className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                        Credit/Debit Cards, Net Banking, UPI, Wallets
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* PayPal Payment Option */}
+              <div
+                className={`border-2 rounded-lg p-3 sm:p-4 cursor-pointer transition-all ${selectedPaymentMethod === "paypal"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300"
+                  }`}
+                onClick={() => handlePaymentMethodChange("paypal")}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center space-x-0 sm:space-x-3 space-y-3 sm:space-y-0">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="paypal"
+                    checked={selectedPaymentMethod === "paypal"}
+                    onChange={() => handlePaymentMethodChange("paypal")}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <div className="flex items-center space-x-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded flex items-center justify-center">
+                      <span className="text-white font-bold text-xs sm:text-sm">PP</span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                        PayPal
+                      </h3>
+                      <p className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                        Pay with your PayPal account
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Payment Button */}
             {selectedPaymentMethod === 'paypal' && (
@@ -1083,7 +1079,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 {paypalStatus && <div className="mt-2 sm:mt-4 text-blue-700 text-sm sm:text-base">{paypalStatus}</div>}
               </div>
             )}
-            
+
             <div className="mt-4 sm:mt-6">
               {isINR ? (
                 <button
