@@ -45,6 +45,7 @@ interface LicenseCardProps {
 
 export default function LicenseCard({ license, onBuy, whatYouGetHeading = 'What you get', isLastCard = false }: LicenseCardProps) {
   const isHighlighted = Boolean(license.highlight);
+  const isINR = license.currencySymbol === '₹' || (typeof license.price === 'string' && license.price.includes('₹'));
 
   return (
     <div className={`relative w-full max-w-[420px] mx-auto ${!isLastCard ? 'mt-8 sm:mt-0' : 'mt-0'}`}>
@@ -117,10 +118,10 @@ export default function LicenseCard({ license, onBuy, whatYouGetHeading = 'What 
           {/* Price */}
           <div className="mb-6">
             <div className="flex items-baseline gap-2 sm:gap-4">
-              <span className="text-gray-500 font-bold line-through text-[20px] sm:text-[25px] lg:text-[30px]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              <span className={`text-gray-500 font-bold line-through ${isINR ? 'text-[16px] sm:text-[18px] lg:text-[20px]' : 'text-[20px] sm:text-[25px] lg:text-[30px]'}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                 {license.actualPrice || ''}
               </span>
-              <span className="text-[24px] sm:text-[30px] lg:text-[35px] font-bold text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              <span className={`${isINR ? 'text-[18px] sm:text-[20px] lg:text-[24px]' : 'text-[24px] sm:text-[30px] lg:text-[35px]'} font-bold text-gray-900`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                 {license.price || ''}
               </span>
             </div>
