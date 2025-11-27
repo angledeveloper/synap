@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import GlobalFooter from '@/components/layout/GlobalFooter';
+import phoneCodes from '@/utils/phoneCodes.json';
 
 interface ContactUsData {
   id: number;
@@ -49,11 +50,11 @@ export default function ContactPage() {
         setIsLoading(true);
         const languageId = codeToId[language as keyof typeof codeToId] || '1';
         const response = await fetch(`${process.env.NEXT_PUBLIC_DB_URL}contactus/${languageId}`);
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch contact data');
         }
-        
+
         const data = await response.json();
         setContactData(data.contactus);
       } catch (err) {
@@ -94,7 +95,7 @@ export default function ContactPage() {
       };
 
       // Form submission initiated
-      
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_DB_URL}contact-us-entries`, {
         method: 'POST',
         headers: {
@@ -110,23 +111,23 @@ export default function ContactPage() {
         console.error('Failed to parse JSON response:', jsonError);
         responseData = {};
       }
-      
+
       // Request completed
-      
+
       if (!response.ok) {
         throw new Error(
-          responseData.message || 
-          responseData.error || 
+          responseData.message ||
+          responseData.error ||
           `Server responded with status: ${response.status} ${response.statusText}`
         );
       }
-      
+
       // If we get here, the submission was successful
       setSubmitStatus({
         success: true,
         message: 'Thank you for your message! We will get back to you soon.'
       });
-      
+
       // Reset form
       setFormData({
         fullName: '',
@@ -138,11 +139,11 @@ export default function ContactPage() {
         inquiryType: '',
         message: '',
       });
-      
+
     } catch (err) {
       const error = err as Error;
       console.error('Form submission error:', error.message);
-      
+
       setSubmitStatus({
         success: false,
         message: error.message || 'Failed to submit form. Please try again.'
@@ -186,7 +187,7 @@ export default function ContactPage() {
         />
         {/* Mobile overlay for better readability */}
         <div className="md:hidden absolute inset-0 "></div>
-        
+
         <div className="relative m-auto mt-12 flex w-full max-w-[1440px] flex-col justify-center py-16 md:py-24 p-4 md:p-8">
           <div className="flex flex-col md:flex-row items-start justify-center gap-8 md:gap-36">
             {/* Left Side - Content */}
@@ -201,7 +202,7 @@ export default function ContactPage() {
                 {contactData.our_team}
               </p>
             </div>
-            
+
             {/* Right Side - Form */}
             <div className="w-full md:w-[332px] order-2 md:order-2">
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -233,15 +234,16 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-4 gap-2">
                   <div className="col-span-1">
-                    <select 
+                    <select
                       name="phoneCode"
                       value={formData.phoneCode}
                       onChange={handleChange}
                       className="w-full rounded-md bg-[#242424] px-2 md:px-3 py-3 text-white text-xs md:text-sm focus:outline-none appearance-none"
                     >
-                      <option value="+1">+1</option>
-                      <option value="+44">+44</option>
-                      <option value="+91">+91</option>
+                      <option value="" disabled>Code</option>
+                      {phoneCodes.map((p: any) => (
+                        <option key={p.dial_code + p.name} value={p.dial_code}>{p.dial_code}</option>
+                      ))}
                     </select>
                   </div>
                   <div className="col-span-3">
@@ -301,7 +303,7 @@ export default function ContactPage() {
                   </select>
                   <div className="absolute right-3 top-3 pointer-events-none">
                     <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 1.5L6 6.5L11 1.5" stroke="#969696" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M1 1.5L6 6.5L11 1.5" stroke="#969696" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                 </div>
@@ -335,7 +337,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <CallToAction 
+      <CallToAction
         title="Ready to Transform Your Market Strategy?"
         buttonText="Check our Research"
       />

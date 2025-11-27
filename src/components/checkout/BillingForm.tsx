@@ -318,32 +318,27 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     e.preventDefault && e.preventDefault();
     // Compose payload as required
     const payload: any = {
-      language_id: 1, // change to dynamic if needed
+      language_id: propLanguageId || 1,
       first_name: formData.firstName,
       last_name: formData.lastName,
       email: formData.email,
       residence: formData.country,
       phone: `${formData.phoneCode}${formData.phoneNumber}`,
-      // Only include address fields if country is India
-      ...(isIndiaSelected && {
-        first_line_add: formData.address,
-        state_province: formData.state,
-        city: formData.city,
-        postal_zipcode: formData.postalCode
-      }),
+      first_line_add: formData.address || "",
+      state_province: formData.state || "",
+      city: formData.city || "",
+      postal_zipcode: formData.postalCode || "",
       add_company_details: formData.addCompanyDetails ? "Yes" : "No",
-      ...(formData.addCompanyDetails ? {
-        company_name: formData.companyName,
-        GSTIN: formData.gstin,
-      } : {}),
+      company_name: formData.companyName || "",
+      GSTIN: formData.gstin || "",
       license_type: licenseTitle,
       discount: String(finalDiscountAmount),
       subtotal: String(subtotal),
       cgst: String(cgst),
       sgst: String(sgst),
-      igst: "0", // Add correct logic if you want IGST value (from API, if needed)
+      igst: String(igst),
       total: String(finalTotal),
-      ...(appliedOfferCode ? { offer_code: appliedOfferCode } : {})
+      offer_code: offerCode || ""
     };
     try {
       const res = await fetch('https://dashboard.synapseaglobal.com/api/customer-orders', {
@@ -423,31 +418,27 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
           // 1. Create order on external server first to get user_id and language_id
           try {
             const customerOrderPayload = {
-              language_id: propLanguageId || 1, // Use prop or default
+              language_id: propLanguageId || 1,
               first_name: formData.firstName,
               last_name: formData.lastName,
               email: formData.email,
               residence: formData.country,
               phone: `${formData.phoneCode}${formData.phoneNumber}`,
-              ...(isIndiaSelected && {
-                first_line_add: formData.address,
-                state_province: formData.state,
-                city: formData.city,
-                postal_zipcode: formData.postalCode
-              }),
+              first_line_add: formData.address || "",
+              state_province: formData.state || "",
+              city: formData.city || "",
+              postal_zipcode: formData.postalCode || "",
               add_company_details: formData.addCompanyDetails ? "Yes" : "No",
-              ...(formData.addCompanyDetails ? {
-                company_name: formData.companyName,
-                GSTIN: formData.gstin,
-              } : {}),
+              company_name: formData.companyName || "",
+              GSTIN: formData.gstin || "",
               license_type: licenseTitle,
               discount: String(finalDiscountAmount),
               subtotal: String(subtotal),
               cgst: String(cgst),
               sgst: String(sgst),
-              igst: "0",
+              igst: String(igst),
               total: String(finalTotal),
-              ...(appliedOfferCode ? { offer_code: appliedOfferCode } : {})
+              offer_code: offerCode || ""
             };
 
             const customerOrderRes = await fetch('https://dashboard.synapseaglobal.com/api/customer-orders', {
@@ -533,7 +524,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               purchase_date: new Date().toISOString().split('T')[0],
               report_title: reportData?.report_reference_title || reportData?.title || '',
               currency: selectedOrderCurrency,
-              payment_status: captureRes.status
+              payment_status: captureRes.status,
+              paypal_response: captureRes
             };
 
             let invoiceFile = '';
@@ -753,7 +745,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                       >
                         <option value="" disabled style={{ color: '#888888' }}>Code</option>
                         {phoneCodes.map((p: any) => (
-                          <option key={p.dial_code + p.name} value={p.dial_code}>{p.dial_code} ({p.name})</option>
+                          <option key={p.dial_code + p.name} value={p.dial_code}>{p.dial_code}</option>
                         ))}
                       </select>
                     </div>
@@ -844,7 +836,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                     onChange={(e) => handleInputChange("addCompanyDetails", e.target.checked)}
                     className="w-4 h-4 text-blue-600 border-1 border-black  rounded focus:ring-blue-500"
                   />
-                  <Label htmlFor="addCompanyDetails" className="text-black font-normal text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)', marginBottom: '12px' }}>
+                  <Label htmlFor="addCompanyDetails" className="text-black font-normal text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)' }}>
                     {billingInformation?.add_company_details || 'Add Company Details'}
                   </Label>
                 </div>
@@ -1069,7 +1061,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
             <div className="flex justify-between items-center">
               <div>
                 <div className="font-medium text-gray-900 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{licenseTitle}</div>
-                <div className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>(One time purchase)</div>
+                <div className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{billInfoOrderSummary?.one_time_purchase || oneTimePurchaseText || '(One time purchase)'}</div>
               </div>
               <div className="font-medium text-gray-900 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                 {actualPriceStr}
@@ -1155,7 +1147,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 <Input
                   className="flex-1 border-[#DBDBDB] rounded-[8px] text-black text-sm sm:text-base"
                   value={offerCode}
-                  placeholder="Enter offer code"
+                  placeholder={billInfoOrderSummary?.have_offer_placeholder || offerCodePlaceholder || "Enter your referal code"}
                   style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   onChange={(e) => setOfferCode(e.target.value)}
                 />
@@ -1286,7 +1278,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   <div className="flex justify-between items-center">
                     <div>
                       <div className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{licenseTitle}</div>
-                      <div className="text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{oneTimePurchaseText || '(One time purchase)'}</div>
+                      <div className="text-sm text-gray-500" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{billInfoOrderSummary?.one_time_purchase || oneTimePurchaseText || '(One time purchase)'}</div>
                     </div>
                     <div className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                       {actualPriceStr}
@@ -1367,7 +1359,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                       <Input
                         className="flex-1 border-[#DBDBDB] rounded-[8px] text-black text-base"
                         value={offerCode}
-                        placeholder={offerCodePlaceholder || "Enter offer code"}
+                        placeholder={billInfoOrderSummary?.have_offer_placeholder || offerCodePlaceholder || "Enter your referal code"}
                         style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                         onChange={(e) => setOfferCode(e.target.value)}
                       />
