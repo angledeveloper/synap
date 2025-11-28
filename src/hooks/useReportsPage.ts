@@ -47,6 +47,15 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
   formData.append('page', filters.page.toString());
   formData.append('per_page', filters.per_page.toString());
 
+  // Add filter parameters
+  if (filters.base_year && filters.base_year !== 'all') {
+    formData.append('base_year', filters.base_year);
+  }
+
+  if (filters.forecast_period && filters.forecast_period !== 'all') {
+    formData.append('forecast_period', filters.forecast_period);
+  }
+
   // Use reports_store_page for both search and regular fetching
   // It supports search parameter
   if (filters.search && filters.search.trim()) {
@@ -88,7 +97,20 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
   }
 
   // Deduplicate reports by ID
-  const uniqueReports = Array.from(new Map(reports.map(report => [report.id, report])).values());
+  let uniqueReports = Array.from(new Map(reports.map(report => [report.id, report])).values());
+
+  // Client-side filtering
+  if (filters.base_year && filters.base_year !== 'all') {
+    uniqueReports = uniqueReports.filter(report =>
+      report.base_year?.trim() === filters.base_year.trim()
+    );
+  }
+
+  if (filters.forecast_period && filters.forecast_period !== 'all') {
+    uniqueReports = uniqueReports.filter(report =>
+      report.forecast_period?.trim() === filters.forecast_period.trim()
+    );
+  }
 
   // Apply client-side pagination as a fallback if not done by the server
   const startIndex = (filters.page - 1) * filters.per_page;

@@ -8,6 +8,7 @@ interface CaseStudy {
   title: string;
   description: string;
   read_text: string;
+  file_url?: string;
 }
 
 interface CaseStudiesProps {
@@ -21,7 +22,7 @@ const createMarkup = (html: string) => {
   return { __html: cleanHtml };
 };
 
-function CaseStudyCard({ title, description, read_text }: CaseStudy) {
+function CaseStudyCard({ title, description, read_text, file_url }: CaseStudy) {
   return (
     <div className="flex flex-col gap-4 p-8 md:p-14">
       <h3 className="text-[24px] md:text-[28px] font-semibold " style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
@@ -33,7 +34,7 @@ function CaseStudyCard({ title, description, read_text }: CaseStudy) {
         dangerouslySetInnerHTML={createMarkup(description)}
       />
 
-      <Link href="#" className="underline text-[20px] font-medium w-fit">
+      <Link href={file_url || "#"} target={file_url ? "_blank" : undefined} className="underline text-[20px] font-medium w-fit">
         {read_text || "Read case study"}
       </Link>
     </div>

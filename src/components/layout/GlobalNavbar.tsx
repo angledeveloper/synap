@@ -246,7 +246,7 @@ export default function GlobalNavbar() {
                 </h2>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-4 gap-x-6">
                   {HomePage.case_studies?.map((caseStudy: any) => (
-                    <Link href={`/${language}/case-studies/${caseStudy.id}`} key={caseStudy.id} className="group">
+                    <Link href={caseStudy.file_url || "#"} target={caseStudy.file_url ? "_blank" : undefined} key={caseStudy.id} className="group">
                       <div className="hover:bg-gray-50 p-3 rounded-lg transition-colors">
                         <h3 className="text-[14px] font-normal text-gray-900 leading-snug group-hover:text-blue-600 transition-colors" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
                           {caseStudy.title}
@@ -731,7 +731,7 @@ export default function GlobalNavbar() {
                   </h2>
                   <div className="grid grid-cols-1 gap-y-3">
                     {HomePage.case_studies?.map((caseStudy: any) => (
-                      <Link href={`/${language}/case-studies/${caseStudy.id}`} key={caseStudy.id} className="group">
+                      <Link href={caseStudy.file_url || "#"} target={caseStudy.file_url ? "_blank" : undefined} key={caseStudy.id} className="group">
                         <div className="hover:bg-gray-50 p-3 rounded-lg transition-colors">
                           <h3 className="text-[14px] font-normal text-gray-900 leading-snug group-hover:text-blue-600 transition-colors" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
                             {caseStudy.title}
