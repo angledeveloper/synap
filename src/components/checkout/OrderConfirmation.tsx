@@ -22,6 +22,7 @@ interface OrderConfirmationProps {
   onClose?: () => void;
   orderConfirmation?: any; // API data for order confirmation
   invoiceFile?: string;
+  invoiceId?: string;
 }
 
 export default function OrderConfirmation(props: OrderConfirmationProps) {
@@ -40,7 +41,8 @@ export default function OrderConfirmation(props: OrderConfirmationProps) {
     onCallAnalyst,
     onClose,
     orderConfirmation,
-    invoiceFile
+    invoiceFile,
+    invoiceId
   } = props;
 
   // State for tracking order save result
@@ -169,7 +171,7 @@ export default function OrderConfirmation(props: OrderConfirmationProps) {
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
                 <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderConfirmation?.order_id_text || 'Order ID'}:</span>
-                <span className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderId}</span>
+                <span className="font-medium text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{invoiceId || orderId}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{orderConfirmation?.transaction_id_text || 'Transaction ID'}:</span>

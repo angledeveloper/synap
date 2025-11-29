@@ -30,9 +30,18 @@ export interface BillingFormProps {
   oneTimePurchaseText?: string;
   offerCodePlaceholder?: string;
   languageId?: number;
+  customPricing?: {
+    amount: number;
+    currency: string;
+    licenseType: string;
+    igst: number;
+    cgst: number;
+    sgst: number;
+    total: number;
+  };
 }
 
-export default function BillingForm({ selectedLicense, reportData, onContinue, onBack, billingInformation, billInfoOrderSummary, licenseOptions, checkoutPage, onOrderSuccess, oneTimePurchaseText, offerCodePlaceholder, languageId: propLanguageId }: BillingFormProps) {
+export default function BillingForm({ selectedLicense, reportData, onContinue, onBack, billingInformation, billInfoOrderSummary, licenseOptions, checkoutPage, onOrderSuccess, oneTimePurchaseText, offerCodePlaceholder, languageId: propLanguageId, customPricing }: BillingFormProps) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -52,8 +61,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   // Check if the selected country is India
   const isIndiaSelected = formData.country?.toLowerCase() === 'india';
 
-  const [selectedOrderLicenseId, setSelectedOrderLicenseId] = useState(selectedLicense?.id || "single");
-  const [selectedOrderCurrency, setSelectedOrderCurrency] = useState("USD");
+  const [selectedOrderLicenseId, setSelectedOrderLicenseId] = useState(customPricing ? customPricing.licenseType.toLowerCase().includes('team') ? 'team' : customPricing.licenseType.toLowerCase().includes('enterprise') ? 'enterprise' : 'single' : (selectedLicense?.id || "single"));
+  const [selectedOrderCurrency, setSelectedOrderCurrency] = useState(customPricing ? customPricing.currency : "USD");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("ccavenue");
   const [couponCode, setCouponCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -149,7 +158,14 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     return { offerPrice, actualPrice, discountPercent, licenseTitle };
   };
 
-  const { offerPrice, actualPrice, discountPercent, licenseTitle } = getLicensePricing();
+  const { offerPrice, actualPrice, discountPercent, licenseTitle } = customPricing
+    ? {
+      offerPrice: customPricing.amount,
+      actualPrice: customPricing.amount,
+      discountPercent: 0,
+      licenseTitle: customPricing.licenseType
+    }
+    : getLicensePricing();
 
   // Calculate actual price if it's null/0 from API but we have offer price and discount
   let calculatedActualPrice = actualPrice;
@@ -202,14 +218,16 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   }
 
   // Calculate tax amounts
-  const cgst = isINR && !isMaharashtra ? +(subtotal * cgstRate).toFixed(2) : 0;
-  const sgst = isINR && !isMaharashtra ? +(subtotal * sgstRate).toFixed(2) : 0;
-  const igst = isINR && isMaharashtra ? +(subtotal * igstRate).toFixed(2) : 0;
-  const total = subtotal + cgst + sgst + igst;
+  // Calculate tax amounts
+  const cgst = customPricing ? customPricing.cgst : (isINR && !isMaharashtra ? +(subtotal * cgstRate).toFixed(2) : 0);
+  const sgst = customPricing ? customPricing.sgst : (isINR && !isMaharashtra ? +(subtotal * sgstRate).toFixed(2) : 0);
+  const igst = customPricing ? customPricing.igst : (isINR && isMaharashtra ? +(subtotal * igstRate).toFixed(2) : 0);
+  const total = customPricing ? customPricing.total : (subtotal + cgst + sgst + igst);
 
   // 2. Update order breakdown to use discount responsive to offer code
   const finalDiscountAmount = dynamicDiscount > 0 ? dynamicDiscount : discountAmount;
-  const finalTotal = Math.max(0, (subtotal - finalDiscountAmount) + cgst + sgst);
+  const calculatedTotal = customPricing ? customPricing.total : Math.max(0, (subtotal - finalDiscountAmount) + cgst + sgst + igst);
+  const finalTotal = isNaN(calculatedTotal) ? 0 : calculatedTotal;
 
   // Helper to pick right API string by license/currency
   const getSummaryStrings = () => {
@@ -241,7 +259,24 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     return { offerPriceStr, actualPriceStr, discountStr, cgstStr, sgstStr, igstStr, totalStr };
   };
 
-  const { offerPriceStr, actualPriceStr, discountStr, cgstStr, sgstStr, igstStr, totalStr } = getSummaryStrings();
+  const getCustomSummaryStrings = () => {
+    if (!customPricing) return getSummaryStrings();
+
+    const symbol = customPricing.currency === 'USD' ? '$' : customPricing.currency === 'EUR' ? '€' : '₹';
+    const format = (val: number) => `${symbol}${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    return {
+      offerPriceStr: format(customPricing.amount),
+      actualPriceStr: format(customPricing.amount),
+      discountStr: "0%",
+      cgstStr: format(customPricing.cgst),
+      sgstStr: format(customPricing.sgst),
+      igstStr: format(customPricing.igst),
+      totalStr: format(customPricing.total)
+    };
+  };
+
+  const { offerPriceStr, actualPriceStr, discountStr, cgstStr, sgstStr, igstStr, totalStr } = getCustomSummaryStrings();
   // Helpers to parse currency strings like $80.00, ₹8,375.17, €69.26
   const parseMoney = (v: string): number => {
     if (!v) return 0;
@@ -404,7 +439,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
       selectedPaymentMethod === 'paypal' &&
       paypalLoaded &&
       window.paypal &&
-      finalTotal > 0
+      (finalTotal > 0 || !!customPricing)
     ) {
       // Check if button already exists to prevent duplicates
       const container = document.getElementById('paypal-button-container');
@@ -471,7 +506,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 reportId: reportData?.id || '',
                 licenseType: selectedOrderLicenseId,
                 currency: selectedOrderCurrency,
-                amount: (couponTotalNumeric > 0 ? couponTotalNumeric : finalTotal).toFixed(2),
+                amount: (customPricing ? customPricing.total : (couponTotalNumeric > 0 ? couponTotalNumeric : finalTotal)).toFixed(2),
                 internalOrderId: internalId
               })
             });
@@ -503,7 +538,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 orderID: captureRes.id,
                 reportId: reportData?.id || '',
                 licenseType: selectedOrderLicenseId,
-                amount: (couponTotalNumeric > 0 ? couponTotalNumeric : finalTotal).toFixed(2),
+                amount: (customPricing ? customPricing.total : (couponTotalNumeric > 0 ? couponTotalNumeric : finalTotal)).toFixed(2),
                 currency: selectedOrderCurrency,
                 internalOrderId: paypalInternalOrderId.current
               })
@@ -525,10 +560,12 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               report_title: reportData?.report_reference_title || reportData?.title || '',
               currency: selectedOrderCurrency,
               payment_status: captureRes.status,
-              paypal_response: captureRes
+              full_payment_details: captureRes,
+              invoice_number: `INV-${Math.floor(100000 + Math.random() * 900000)}`
             };
 
             let invoiceFile = '';
+            let invoiceId = '';
             try {
               const updateRes = await fetch('https://dashboard.synapseaglobal.com/api/customer-orders/update', {
                 method: 'POST',
@@ -538,6 +575,9 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               const updateData = await updateRes.json();
               if (updateData.invoice_file) {
                 invoiceFile = updateData.invoice_file;
+              }
+              if (updateData.invoice_number) {
+                invoiceId = updateData.invoice_number;
               }
             } catch (e) {
               console.error('Failed to update order:', e);
@@ -554,7 +594,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               discountAmount: dynamicDiscount || discountAmount,
               subtotal: subtotal,
               customerEmail: formData.email || '',
-              invoiceFile: invoiceFile // Pass invoice file to confirmation
+              invoiceFile: invoiceFile, // Pass invoice file to confirmation
+              invoiceId: invoiceId // Pass invoice ID
             };
             onOrderSuccess && onOrderSuccess(orderDataForConfirmation);
           } catch (e: any) {
@@ -572,10 +613,10 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
   // Force currency to INR if India is selected
   useEffect(() => {
-    if (isIndiaSelected && selectedOrderCurrency !== 'INR') {
+    if (!customPricing && isIndiaSelected && selectedOrderCurrency !== 'INR') {
       setSelectedOrderCurrency('INR');
     }
-  }, [isIndiaSelected, selectedOrderCurrency]);
+  }, [isIndiaSelected, selectedOrderCurrency, customPricing]);
 
   // Get country code from country name
   const getCountryCode = (countryName: string) => {
@@ -1012,7 +1053,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
               <select
                 value={selectedOrderLicenseId}
                 onChange={e => setSelectedOrderLicenseId(e.target.value)}
-                className="w-full sm:w-[118px] h-9 sm:h-[38px] border border-black rounded-none px-3 text-black appearance-none cursor-pointer text-sm sm:text-base"
+                disabled={!!customPricing}
+                className={`w-full sm:w-[118px] h-9 sm:h-[38px] border ${customPricing ? 'border-gray-300 bg-gray-100' : 'border-black'} rounded-none px-3 text-black appearance-none ${customPricing ? 'cursor-not-allowed' : 'cursor-pointer'} text-sm sm:text-base`}
                 style={{
                   fontFamily: 'Space Grotesk, sans-serif',
                   backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
@@ -1031,15 +1073,15 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 <select
                   value={selectedOrderCurrency}
                   onChange={e => setSelectedOrderCurrency(e.target.value)}
-                  disabled={isIndiaSelected}
-                  className={`w-full sm:w-[93px] h-9 sm:h-[38px] border ${isIndiaSelected ? 'border-gray-300 bg-gray-100' : 'border-black'} rounded-none px-3 text-black appearance-none ${isIndiaSelected ? 'cursor-not-allowed' : 'cursor-pointer'} text-sm sm:text-base`}
+                  disabled={isIndiaSelected || !!customPricing}
+                  className={`w-full sm:w-[93px] h-9 sm:h-[38px] border ${isIndiaSelected || customPricing ? 'border-gray-300 bg-gray-100' : 'border-black'} rounded-none px-3 text-black appearance-none ${isIndiaSelected || customPricing ? 'cursor-not-allowed' : 'cursor-pointer'} text-sm sm:text-base`}
                   style={{
                     fontFamily: 'Space Grotesk, sans-serif',
-                    backgroundImage: isIndiaSelected ? 'none' : 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
+                    backgroundImage: isIndiaSelected || customPricing ? 'none' : 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
                     backgroundPosition: 'right 8px center',
                     backgroundRepeat: 'no-repeat',
                     backgroundSize: '14px',
-                    opacity: isIndiaSelected ? 0.7 : 1
+                    opacity: isIndiaSelected || customPricing ? 0.7 : 1
                   }}
                 >
                   <option value="USD">USD $</option>
@@ -1136,13 +1178,13 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
 
           {/* Offer Code Link/Button */}
           <div className="mb-2">
-            {showOfferField ? null : (
+            {showOfferField && !customPricing ? null : !customPricing ? (
               <button type="button" className="text-blue-600 underline text-xs sm:text-sm hover:text-blue-800" style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                 onClick={() => setShowOfferField(true)}>
                 {billInfoOrderSummary?.have_offer_text || 'Have an offer code?'}
               </button>
-            )}
-            {showOfferField && (
+            ) : null}
+            {showOfferField && !customPricing && (
               <div className="flex flex-col sm:flex-row gap-2 mb-2">
                 <Input
                   className="flex-1 border-[#DBDBDB] rounded-[8px] text-black text-sm sm:text-base"
