@@ -1,5 +1,5 @@
 import React from "react";
-import type { LicenseOption, ReportData } from "@/app/[lang]/reports/[id]/checkout/page";
+import type { LicenseOption, ReportData } from "@/types/checkout";
 
 interface SuccessModalProps {
   open: boolean;

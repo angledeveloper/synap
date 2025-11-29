@@ -1,5 +1,5 @@
-  import React, { useEffect, useRef } from "react";
-import type { LicenseOption, ReportData } from "@/app/[lang]/reports/[id]/checkout/page";
+import React, { useEffect, useRef } from "react";
+import type { LicenseOption, ReportData } from "@/types/checkout";
 
 interface PaymentModalProps {
   open: boolean;
