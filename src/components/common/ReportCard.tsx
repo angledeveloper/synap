@@ -85,37 +85,38 @@ export default function ReportCard({ report, viewReportLabel, baseYearLabel, for
             </p>
           </div>
 
-          {/* Base Year and Forecast Period */}
-          {(report.base_year || report.forecast_period) && (
-            <div className="mb-4 flex gap-4 text-xs text-[#555353]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-              {report.base_year && (
-                <div>
-                  <span className="font-semibold">{baseYearLabel || 'Base Year:'}</span> {report.base_year}
-                </div>
-              )}
-              {report.forecast_period && (
-                <div>
-                  <span className="font-semibold">{forecastPeriodLabel || 'Forecast Period:'}</span> {report.forecast_period}
-                </div>
-              )}
-            </div>
-          )}
+          {/* Metadata Grid */}
+          <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[#555353]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+            {report.base_year && (
+              <div>
+                <span className="font-semibold">{baseYearLabel || 'Base Year:'}</span> {report.base_year}
+              </div>
+            )}
+            {report.forecast_period && (
+              <div>
+                <span className="font-semibold">{forecastPeriodLabel || 'Forecast Period:'}</span> {report.forecast_period}
+              </div>
+            )}
+            {report.report_date && (
+              <div>
+                <span className="font-semibold">Published:</span> {formatDate(report.report_date)}
+              </div>
+            )}
+            {report.last_updated && (
+              <div>
+                <span className="font-semibold">Updated:</span> {report.last_updated}
+              </div>
+            )}
+            {report.number_of_pages && (
+              <div>
+                <span className="font-semibold">Pages:</span> {report.number_of_pages}
+              </div>
+            )}
+          </div>
 
-          {/* Bottom Section with Date, Cost, and View Report Button */}
-          <div className="flex justify-between items-center mt-4 mb-0">
-            {/* Date and Cost */}
-            <div className="flex items-center gap-4">
-              <span style={{
-                fontFamily: 'Space Grotesk, sans-serif',
-                fontWeight: '400',
-                fontSize: '16px',
-                color: '#555353',
-                lineHeight: '22px',
-                letterSpacing: '0%',
-              }}>
-                {formatDate(report.report_date)}
-              </span>
-            </div>
+          {/* Bottom Section with View Report Button */}
+          <div className="flex justify-end items-center mt-4 mb-0">
+            {/* View Report Button - Text with underline */}
 
             {/* View Report Button - Text with underline */}
             <Link href={`/${language}/reports/${report.id}`}>

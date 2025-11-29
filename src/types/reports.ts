@@ -11,7 +11,7 @@ export interface Report {
   industry?: string;
   forecast_period?: string;
   report_id?: string;
-  number_of_pages?: number;
+  number_of_pages?: string;
   toc_included?: boolean;
   key_highlights?: string;
   dominant_segments?: string;
