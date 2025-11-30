@@ -5,9 +5,22 @@ import type { ReportData } from "@/types/checkout";
 
 interface CheckoutHeaderProps {
   report: ReportData | null;
+  labels?: any;
 }
 
-export default function CheckoutHeader({ report }: CheckoutHeaderProps) {
+export default function CheckoutHeader({ report, labels }: CheckoutHeaderProps) {
+  // Default labels if not provided
+  const t = labels || {
+    lastUpdated: "Last Updated",
+    baseYear: "Base Year data",
+    format: "Format",
+    industry: "Industry",
+    forecastPeriod: "Forecast Period",
+    reportId: "Report ID",
+    numberOfPages: "Number of Pages",
+    tocIncluded: "TOC included"
+  };
+
   if (!report) {
     return (
       <div className="w-full bg-[#f5f5f5] p-6">
@@ -99,44 +112,44 @@ export default function CheckoutHeader({ report }: CheckoutHeaderProps) {
                 {/* Column 1 */}
                 <div className="flex flex-col space-y-1 sm:space-y-2">
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span className="font-medium">Last Updated:</span>
+                    <span className="font-medium">{t.lastUpdated}:</span>
                     <span className="ml-1 sm:ml-2">{report.last_updated}</span>
                   </div>
                   <div className="flex items-center text-xs sm:text-sm">
                     <span>{new Date(report.last_updated).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span className="font-medium">Base Year data:</span>
-                    <span className="ml-1 sm:ml-2">2024</span>
+                    <span className="font-medium">{t.baseYear}:</span>
+                    <span className="ml-1 sm:ml-2">{report.base_year || '-'}</span>
                   </div>
                 </div>
 
                 {/* Column 2 */}
                 <div className="flex flex-col space-y-1 sm:space-y-2">
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span className="font-medium">Format:</span>
+                    <span className="font-medium">{t.format}:</span>
                     <span className="ml-1 sm:ml-2">{String(report.format).toUpperCase()}</span>
                   </div>
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span>Industry - {report.industry}</span>
+                    <span>{t.industry}: {report.industry}</span>
                   </div>
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span className="font-medium">Forecast Period:</span>
-                    <span className="ml-1 sm:ml-2">2025-2032</span>
+                    <span className="font-medium">{t.forecastPeriod}:</span>
+                    <span className="ml-1 sm:ml-2">{report.forecast_period || '-'}</span>
                   </div>
                 </div>
 
                 {/* Column 3 */}
                 <div className="flex flex-col space-y-1 sm:space-y-2">
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span className="font-medium">Report ID:</span>
+                    <span className="font-medium">{t.reportId}:</span>
                     <span className="ml-1 sm:ml-2">{report.report_id}</span>
                   </div>
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span>Number of Pages - {report.pages}</span>
+                    <span>{t.numberOfPages}: {report.pages}</span>
                   </div>
                   <div className="flex items-center">
-                    <span>TOC included</span>
+                    <span>{t.tocIncluded}</span>
                   </div>
                 </div>
               </div>

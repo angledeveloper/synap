@@ -7,6 +7,7 @@ import CheckoutHeader from "@/components/checkout/CheckoutHeader";
 import BillingForm from "@/components/checkout/BillingForm";
 import OrderConfirmation from "@/components/checkout/OrderConfirmation";
 import { codeToId } from "@/lib/utils";
+import { useTranslations } from "@/hooks/useTranslations";
 import { ReportData } from "@/types/checkout";
 
 const fetchCheckoutData = async (lang: string) => {
@@ -41,6 +42,19 @@ export default function CustomPaymentPage() {
         params.lang ? ['checkout-api', params.lang] : null,
         () => fetchCheckoutData(params.lang)
     );
+
+    // Get dynamic translations
+    const { data: translations } = useTranslations({ language: params.lang, page: 'reportDetail' });
+    const t = translations || {
+        lastUpdated: "Last Updated",
+        baseYear: "Base Year data",
+        format: "Format",
+        industry: "Industry",
+        forecastPeriod: "Forecast Period",
+        reportId: "Report ID",
+        numberOfPages: "Number of Pages",
+        tocIncluded: "TOC included"
+    };
 
     const { checkout_page, billing_information, bill_info_order_summary, order_confirmation } = checkoutApi || {};
 
@@ -87,14 +101,16 @@ export default function CustomPaymentPage() {
     const reportData: ReportData = {
         id: stringToNumber(params.token), // Unique ID derived from token
         title: tokenData.report_title,
-        subtitle: "",
-        report_id: "", // Placeholder
-        format: "", // Placeholder
-        industry: "", // Placeholder
+        subtitle: "-",
+        report_id: "-", // Placeholder
+        format: "-", // Placeholder
+        industry: "-", // Placeholder
         pages: 0,
-        last_updated: new Date().toISOString(),
+        last_updated: "-",
         image: "", // Placeholder
-        report_reference_title: tokenData.report_title
+        report_reference_title: tokenData.report_title,
+        base_year: tokenData.base_year || "-",
+        forecast_period: tokenData.forecast_period || "-"
     };
 
     const safeParseFloat = (val: any) => {
@@ -129,7 +145,7 @@ export default function CustomPaymentPage() {
 
                 {/* Checkout Header */}
                 <div className="w-full mt-6">
-                    <CheckoutHeader report={reportData} />
+                    <CheckoutHeader report={reportData} labels={t} />
                 </div>
 
                 {/* Main Content Area */}

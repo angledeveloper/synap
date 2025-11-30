@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useLanguageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
 import { useReportDetail } from "@/hooks/useReportDetail";
+import { useTranslations } from "@/hooks/useTranslations";
 import CheckoutHeader from "@/components/checkout/CheckoutHeader";
 import LicenseGrid from "@/components/checkout/LicenseGrid";
 import BillingForm, { BillingFormProps } from "@/components/checkout/BillingForm";
@@ -57,8 +58,23 @@ export default function CheckoutPage() {
     pages: parseInt(report.number_of_pages) || 0,
     last_updated: new Date(report.modify_at).toLocaleDateString(),
     image: report.image,
-    report_reference_title: data?.report_reference_title
+    report_reference_title: data?.report_reference_title,
+    base_year: report.base_year,
+    forecast_period: report.forecast_period
   } : null;
+
+  // Get dynamic translations
+  const { data: translations } = useTranslations({ language: params.lang, page: 'reportDetail' });
+  const t = translations || {
+    lastUpdated: "Last Updated",
+    baseYear: "Base Year data",
+    format: "Format",
+    industry: "Industry",
+    forecastPeriod: "Forecast Period",
+    reportId: "Report ID",
+    numberOfPages: "Number of Pages",
+    tocIncluded: "TOC included"
+  };
 
   // LIVE CHECKOUT API DATA
   const { data: checkoutApi, error: checkoutApiError } = useSWR(['checkout-api', params.lang], () => fetchCheckoutData(params.lang as string));
@@ -239,7 +255,7 @@ export default function CheckoutPage() {
 
         {/* Checkout Header */}
         <div className="w-full mt-6">
-          <CheckoutHeader report={reportData} />
+          <CheckoutHeader report={reportData} labels={t} />
         </div>
 
         {/* Main Content Container */}

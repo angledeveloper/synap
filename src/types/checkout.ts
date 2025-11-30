@@ -9,6 +9,8 @@ export interface ReportData {
     last_updated: string;
     image: string;
     report_reference_title?: string;
+    base_year?: string;
+    forecast_period?: string;
 }
 
 export interface LicenseOption {

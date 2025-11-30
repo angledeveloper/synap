@@ -1243,9 +1243,11 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   <span className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Total</span>
                   <span className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{couponTotalStr || totalStr}</span>
                 </div>
-                <button className="text-blue-600 text-sm font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                  {billInfoOrderSummary?.have_offer_text || 'Have an offer code?'}
-                </button>
+                {!customPricing && (
+                  <button className="text-blue-600 text-sm font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                    {billInfoOrderSummary?.have_offer_text || 'Have an offer code?'}
+                  </button>
+                )}
               </div>
               <ChevronUp className="w-6 h-6 text-gray-500" />
             </div>
@@ -1277,7 +1279,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                     <select
                       value={selectedOrderLicenseId}
                       onChange={e => setSelectedOrderLicenseId(e.target.value)}
-                      className="w-full h-[38px] border border-black rounded-none px-3 text-black appearance-none cursor-pointer text-base"
+                      disabled={!!customPricing}
+                      className={`w-full h-[38px] border ${customPricing ? 'border-gray-300 bg-gray-100' : 'border-black'} rounded-none px-3 text-black appearance-none ${customPricing ? 'cursor-not-allowed' : 'cursor-pointer'} text-base`}
                       style={{
                         fontFamily: 'Space Grotesk, sans-serif',
                         backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
@@ -1296,15 +1299,15 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                       <select
                         value={selectedOrderCurrency}
                         onChange={e => setSelectedOrderCurrency(e.target.value)}
-                        disabled={isIndiaSelected}
-                        className={`w-full h-[38px] border ${isIndiaSelected ? 'border-gray-300 bg-gray-100' : 'border-black'} rounded-none px-3 text-black appearance-none ${isIndiaSelected ? 'cursor-not-allowed' : 'cursor-pointer'} text-base`}
+                        disabled={isIndiaSelected || !!customPricing}
+                        className={`w-full h-[38px] border ${isIndiaSelected || customPricing ? 'border-gray-300 bg-gray-100' : 'border-black'} rounded-none px-3 text-black appearance-none ${isIndiaSelected || customPricing ? 'cursor-not-allowed' : 'cursor-pointer'} text-base`}
                         style={{
                           fontFamily: 'Space Grotesk, sans-serif',
-                          backgroundImage: isIndiaSelected ? 'none' : 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
+                          backgroundImage: isIndiaSelected || customPricing ? 'none' : 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
                           backgroundPosition: 'right 8px center',
                           backgroundRepeat: 'no-repeat',
                           backgroundSize: '14px',
-                          opacity: isIndiaSelected ? 0.7 : 1
+                          opacity: isIndiaSelected || customPricing ? 0.7 : 1
                         }}
                       >
                         <option value="USD">USD $</option>
@@ -1392,54 +1395,56 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 </div>
 
                 {/* Offer Code */}
-                <div className="mb-2">
-                  <div className="flex flex-col gap-2 mb-2">
-                    <p className="text-blue-600 text-sm font-medium mb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                      {billInfoOrderSummary?.have_offer_text || 'Have an offer code?'}
-                    </p>
-                    <div className="flex gap-2">
-                      <Input
-                        className="flex-1 border-[#DBDBDB] rounded-[8px] text-black text-base"
-                        value={offerCode}
-                        placeholder={billInfoOrderSummary?.have_offer_placeholder || offerCodePlaceholder || "Enter your referal code"}
-                        style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                        onChange={(e) => setOfferCode(e.target.value)}
-                      />
-                      <Button
-                        type="button"
-                        className="bg-blue-600 text-white px-4 text-base"
-                        style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                        onClick={() => {
-                          const code = (offerCode || '').trim().toUpperCase();
-                          if (!code) {
-                            setDiscountError('Enter a valid code');
-                            return;
-                          }
-                          const prefix = selectedOrderLicenseId === 'single' ? 'single_license' : selectedOrderLicenseId === 'team' ? 'team_license' : 'enterprise_license';
-                          const suffix = selectedOrderCurrency === 'INR' ? 'INR' : selectedOrderCurrency === 'EUR' ? 'EUR' : 'USD';
-                          const key = `${prefix}_offer_price_in_${suffix}_with_coupan${code}_total`;
-                          const str = checkoutPage?.[key] as string | undefined;
-                          if (str) {
-                            setAppliedOfferCode(code);
-                            setCouponTotalStr(str);
-                            const discount = Math.max(0, baseTotalNumeric - parseMoney(str));
-                            setDynamicDiscount(discount);
-                            setDiscountError("");
-                          } else {
-                            setAppliedOfferCode("");
-                            setCouponTotalStr("");
-                            setDynamicDiscount(0);
-                            setDiscountError('Invalid or unsupported code');
-                          }
-                        }}
-                      >Apply</Button>
+                {!customPricing && (
+                  <div className="mb-2">
+                    <div className="flex flex-col gap-2 mb-2">
+                      <p className="text-blue-600 text-sm font-medium mb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                        {billInfoOrderSummary?.have_offer_text || 'Have an offer code?'}
+                      </p>
+                      <div className="flex gap-2">
+                        <Input
+                          className="flex-1 border-[#DBDBDB] rounded-[8px] text-black text-base"
+                          value={offerCode}
+                          placeholder={billInfoOrderSummary?.have_offer_placeholder || offerCodePlaceholder || "Enter your referal code"}
+                          style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                          onChange={(e) => setOfferCode(e.target.value)}
+                        />
+                        <Button
+                          type="button"
+                          className="bg-blue-600 text-white px-4 text-base"
+                          style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                          onClick={() => {
+                            const code = (offerCode || '').trim().toUpperCase();
+                            if (!code) {
+                              setDiscountError('Enter a valid code');
+                              return;
+                            }
+                            const prefix = selectedOrderLicenseId === 'single' ? 'single_license' : selectedOrderLicenseId === 'team' ? 'team_license' : 'enterprise_license';
+                            const suffix = selectedOrderCurrency === 'INR' ? 'INR' : selectedOrderCurrency === 'EUR' ? 'EUR' : 'USD';
+                            const key = `${prefix}_offer_price_in_${suffix}_with_coupan${code}_total`;
+                            const str = checkoutPage?.[key] as string | undefined;
+                            if (str) {
+                              setAppliedOfferCode(code);
+                              setCouponTotalStr(str);
+                              const discount = Math.max(0, baseTotalNumeric - parseMoney(str));
+                              setDynamicDiscount(discount);
+                              setDiscountError("");
+                            } else {
+                              setAppliedOfferCode("");
+                              setCouponTotalStr("");
+                              setDynamicDiscount(0);
+                              setDiscountError('Invalid or unsupported code');
+                            }
+                          }}
+                        >Apply</Button>
+                      </div>
                     </div>
+                    {discountError && <div className="text-red-500 text-sm mb-3">{discountError}</div>}
+                    {appliedOfferCode && dynamicDiscount > 0 && (
+                      <div className="text-green-700 text-sm mb-3">Applied: {appliedOfferCode} (-{dynamicDiscount})</div>
+                    )}
                   </div>
-                  {discountError && <div className="text-red-500 text-sm mb-3">{discountError}</div>}
-                  {appliedOfferCode && dynamicDiscount > 0 && (
-                    <div className="text-green-700 text-sm mb-3">Applied: {appliedOfferCode} (-{dynamicDiscount})</div>
-                  )}
-                </div>
+                )}
               </div>
             </div>
           )}
