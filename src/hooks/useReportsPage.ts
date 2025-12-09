@@ -19,7 +19,16 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
     console.warn('Category not found in report_store_dropdown, using first available category');
     const firstCategory = allCategories[0];
     if (!firstCategory) {
-      throw new Error('No categories available in report_store_dropdown');
+      // Instead of throwing, return empty response
+      console.warn('No categories available in report_store_dropdown');
+      return {
+        reports: [],
+        totalPages: 0,
+        currentPage: 1,
+        totalCount: 0,
+        category_name: '',
+        category_desc: ''
+      };
     }
     return {
       reports: [],

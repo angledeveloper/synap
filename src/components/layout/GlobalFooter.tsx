@@ -105,7 +105,12 @@ export default function GlobalFooter() {
         </div>
       </div>
       <div className="m-auto my-10 flex w-full max-w-[1440px] flex-col gap-4 text-[14px] text-[#808080] md:flex-row md:justify-between">
-        <p className="w-full">{HomePage.footer.section.copyright_text}</p>
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-6 w-full">
+          <p>{HomePage.footer.section.copyright_text}</p>
+          <Link href="/sitemap.xml" className="hover:text-white transition-colors">
+            Sitemap
+          </Link>
+        </div>
         <span className="w-[200px] text-sm">
           {HomePage.footer.section.credit_text}
         </span>

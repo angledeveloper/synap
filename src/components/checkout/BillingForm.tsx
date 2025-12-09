@@ -659,7 +659,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
         {/* Left Column Wrapper */}
         <div className="w-full lg:w-[752px] lg:ml-10 flex flex-col gap-6 sm:gap-8">
           {/* Billing Details Card */}
-          <div className={`bg-white border border-[#B5B5B5] rounded-[20px] p-4 sm:p-6 w-full ${!formSubmitted ? 'lg:min-h-[856px]' : ''} h-auto transition-all duration-300`}>
+          <div className={`bg-white border border-[#B5B5B5] rounded-[20px] p-4 sm:p-6 w-full h-auto transition-all duration-300`}>
             <h2 className="text-xl sm:text-2xl lg:text-[24px] text-gray-900 mb-4 sm:mb-6 billing-heading" style={{ fontFamily: 'var(--font-space-grotesk), sans-serif', fontWeight: '700', marginBottom: 'clamp(24px, 4vw, 41px)' }}>
               1. {billingInformation?.bill_details_heading || billingInformation?.bill_info_heading || 'Your Billing Details'}
             </h2>
@@ -766,7 +766,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                     <div className="relative w-full h-10 sm:h-12">
                       <Input
                         type="tel"
-                        className="w-full h-full border border-[#DBDBDB] bg-white rounded-r-[10px] px-4 pl-[60px] sm:pl-[70px] text-black text-sm sm:text-base placeholder-[#888888] focus:border-black"
+                        className="w-full h-full border border-[#DBDBDB] bg-white rounded-r-[10px] px-4 pl-[80px] sm:pl-[90px] text-black text-sm sm:text-base placeholder-[#888888] focus:border-black"
                         style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                         value={formData.phoneNumber}
                         onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
@@ -775,7 +775,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                       <select
                         value={formData.phoneCode}
                         onChange={(e) => handleInputChange("phoneCode", e.target.value)}
-                        className="absolute m-1 sm:m-2 left-0 top-0 border border-[#DBDBDB] rounded-[7px] bg-[#E8E8E8] text-[#767676] w-[55px] sm:w-[61px] h-8 sm:h-[30px] px-2 text-sm sm:text-base z-10 shadow-none outline-1 focus:ring-0 focus:border-[#232323] appearance-none cursor-pointer"
+                        className="absolute m-1 sm:m-2 left-0 top-0 border border-[#DBDBDB] rounded-[7px] bg-[#E8E8E8] text-[#767676] w-[65px] sm:w-[75px] h-8 sm:h-[30px] px-2 text-sm sm:text-base z-10 shadow-none outline-1 focus:ring-0 focus:border-[#232323] appearance-none cursor-pointer"
                         style={{
                           fontFamily: 'Space Grotesk, sans-serif',
                           backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
@@ -839,34 +839,36 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 </div>
 
                 {/* City and Postal Code */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 sm:mb-6">
-                  <div>
-                    <Label htmlFor="city" className="font-medium text-gray-500 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)', marginBottom: '12px' }}>
-                      {billingInformation?.city || 'City'}{isIndiaSelected ? '*' : ''}
-                    </Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => handleInputChange("city", e.target.value)}
-                      className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full h-10 sm:h-12 text-black"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                      required={isIndiaSelected}
-                    />
+                {isIndiaSelected && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 sm:mb-6">
+                    <div>
+                      <Label htmlFor="city" className="font-medium text-gray-500 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)', marginBottom: '12px' }}>
+                        {billingInformation?.city || 'City'}{isIndiaSelected ? '*' : ''}
+                      </Label>
+                      <Input
+                        id="city"
+                        value={formData.city}
+                        onChange={(e) => handleInputChange("city", e.target.value)}
+                        className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full h-10 sm:h-12 text-black"
+                        style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                        required={isIndiaSelected}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="postalCode" className="font-medium text-gray-500 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)', marginBottom: '12px' }}>
+                        {billingInformation?.postal_zipcode || 'ZIP Code'}{isIndiaSelected ? '*' : ''}
+                      </Label>
+                      <Input
+                        id="postalCode"
+                        value={formData.postalCode}
+                        onChange={(e) => handleInputChange("postalCode", e.target.value)}
+                        className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full h-10 sm:h-12 text-black"
+                        style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                        required={isIndiaSelected}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="postalCode" className="font-medium text-gray-500 text-sm sm:text-base" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 3vw, 16px)', marginBottom: '12px' }}>
-                      {billingInformation?.postal_zipcode || 'ZIP Code'}{isIndiaSelected ? '*' : ''}
-                    </Label>
-                    <Input
-                      id="postalCode"
-                      value={formData.postalCode}
-                      onChange={(e) => handleInputChange("postalCode", e.target.value)}
-                      className="mt-1 border-[#DBDBDB] rounded-[10px] bg-white w-full h-10 sm:h-12 text-black"
-                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                      required={isIndiaSelected}
-                    />
-                  </div>
-                </div>
+                )}
 
                 {/* Company Details Checkbox */}
                 <div className="flex items-center space-x-2 mb-4 sm:mb-6">

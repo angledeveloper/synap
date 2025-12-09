@@ -27,9 +27,9 @@ export default function GlobalLanguageSwitch() {
     const handleClickOutside = (event: MouseEvent) => {
       const dropdownContainer = document.getElementById('language-dropdown-container');
       const languageButton = document.getElementById('language-button');
-      if (dropdownContainer && 
-          !dropdownContainer.contains(event.target as Node) &&
-          !languageButton?.contains(event.target as Node)) {
+      if (dropdownContainer &&
+        !dropdownContainer.contains(event.target as Node) &&
+        !languageButton?.contains(event.target as Node)) {
         setShowDropdown(false);
       }
     };
@@ -54,7 +54,7 @@ export default function GlobalLanguageSwitch() {
         <span className="text-sm font-normal">{currentLang.code.toUpperCase()}</span>
         <Icon icon="mdi:chevron-down" className={`text-sm transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
       </div>
-      
+
       {showDropdown && (
         <div
           id="language-dropdown-container"
@@ -63,20 +63,16 @@ export default function GlobalLanguageSwitch() {
           {supportedLanguages.map((l) => (
             <button
               key={l.code}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                l.code === lang ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'
-              }`}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${l.code === lang ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'
+                }`}
               onClick={() => {
-          const segments = pathname.split("/");
-                segments[1] = l.code;
-          const newPath = segments.join("/");
-          router.push(newPath);
+                router.push(`/${l.code}`);
                 setShowDropdown(false);
               }}
-          >
-            {l.label}
+            >
+              {l.label}
             </button>
-        ))}
+          ))}
         </div>
       )}
     </div>

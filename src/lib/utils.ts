@@ -29,3 +29,31 @@ export const supportedLanguages = [
 ];
 
 export const locale = supportedLanguages.map((l) => l.code);
+
+export function slugify(title: string, id: number | string): string {
+  if (!title) return `${id}`;
+
+  // Convert to lowercase and remove special characters
+  let slug = title.toLowerCase()
+    .replace(/[^\w\s-]/g, '') // Remove non-word chars (except spaces and hyphens)
+    .replace(/\s+/g, '-')     // Replace spaces with hyphens
+    .trim();
+
+  // Stop at "market" keyword if present
+  const marketIndex = slug.indexOf('market');
+  if (marketIndex !== -1) {
+    // Include "market" in the slug
+    slug = slug.substring(0, marketIndex + 6);
+  }
+
+  // Remove trailing hyphens
+  slug = slug.replace(/-+$/, '');
+
+  return `${slug}-${id}`;
+}
+
+export function extractIdFromSlug(slug: string): string {
+  if (!slug) return '';
+  const parts = slug.split('-');
+  return parts[parts.length - 1];
+}

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Report } from "@/types/reports";
 import { useLanguageStore } from "@/store";
 import ArrowIcon from "@/components/common/ArrowIcon";
+import { slugify } from "@/lib/utils";
 
 interface ReportCardProps {
   report: Report;
@@ -47,7 +48,7 @@ export default function ReportCard({ report, viewReportLabel, baseYearLabel, for
 
   return (
     <Card
-      className="w-full h-[294px] md:h-[250px] bg-[#f8f8f8] shadow-sm hover:shadow-md transition-shadow duration-200"
+      className="w-full h-auto min-h-[294px] md:min-h-[250px] bg-[#f8f8f8] shadow-sm hover:shadow-md transition-shadow duration-200"
       style={{
         borderWidth: '1px',
         borderStyle: 'solid',
@@ -59,16 +60,17 @@ export default function ReportCard({ report, viewReportLabel, baseYearLabel, for
         <div className="flex flex-col h-full">
           {/* Title Text - Limited to 3 lines */}
           <div className="mb-4">
-            <p className="text-[#202020] text-base line-clamp-3 md:text-base" style={{
-              fontFamily: 'Space Mono, monospace',
-              fontWeight: '400',
-              lineHeight: '24px',
-              letterSpacing: '0%',
-              color: '#374151',
-              fontSize: '16px'
-            }}>
-              {truncateText(report.title, 3)}
-            </p>
+            <Link href={`/${language}/reports/${slugify(report.title, report.id)}`} className="block">
+              <p className="text-[#202020] text-base line-clamp-3 md:text-base hover:text-blue-700 transition-colors" style={{
+                fontFamily: 'Space Mono, monospace',
+                fontWeight: '400',
+                lineHeight: '24px',
+                letterSpacing: '0%',
+                fontSize: '16px'
+              }}>
+                {truncateText(report.title, 3)}
+              </p>
+            </Link>
           </div>
 
           {/* Description Text - Limited to 3 lines */}
@@ -115,11 +117,9 @@ export default function ReportCard({ report, viewReportLabel, baseYearLabel, for
           </div>
 
           {/* Bottom Section with View Report Button */}
-          <div className="flex justify-end items-center mt-4 mb-0">
+          <div className="flex justify-end items-center mt-auto mb-0 pt-2">
             {/* View Report Button - Text with underline */}
-
-            {/* View Report Button - Text with underline */}
-            <Link href={`/${language}/reports/${report.id}`}>
+            <Link href={`/${language}/reports/${slugify(report.title, report.id)}`}>
               <span
                 className="hover:text-gray-700 transition-colors duration-200 border-b-2 border-gray-900 hover:border-gray-700 font-medium"
                 style={{

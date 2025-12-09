@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { supportedLanguages } from "@/lib/utils";
-import { Geist, Geist_Mono, Orbitron, Space_Grotesk } from "next/font/google";
+import { Geist, Geist_Mono, Orbitron, Space_Grotesk, Noto_Sans_Arabic, Noto_Sans_JP, Noto_Sans_KR, Noto_Sans_SC } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/components/common/QueryProvider";
 
@@ -31,6 +31,26 @@ const spaceGrotesk = Space_Grotesk({
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
+});
+
+const notoSansArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-noto-arabic",
+});
+
+const notoSansJP = Noto_Sans_JP({
+  subsets: ["latin"],
+  variable: "--font-noto-jp",
+});
+
+const notoSansKR = Noto_Sans_KR({
+  subsets: ["latin"],
+  variable: "--font-noto-kr",
+});
+
+const notoSansSC = Noto_Sans_SC({
+  subsets: ["latin"],
+  variable: "--font-noto-sc",
 });
 
 export async function generateMetadata({
@@ -75,7 +95,7 @@ export default async function RootLayout({
 
   return (
     <html lang={langCode}>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable}  bg-black text-white antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable} ${notoSansArabic.variable} ${notoSansJP.variable} ${notoSansKR.variable} ${notoSansSC.variable} bg-black text-white antialiased`}>
         <AuthProvider>
           <LoginWall>
             <QueryProvider>

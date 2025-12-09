@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useLanguageStore } from "@/store";
-import { codeToId } from "@/lib/utils";
+import { useLanguageStore, useHomePageStore } from "@/store";
+import { codeToId, extractIdFromSlug } from "@/lib/utils";
 import { useReportDetail } from "@/hooks/useReportDetail";
 import { useTranslations } from "@/hooks/useTranslations";
 import CheckoutHeader from "@/components/checkout/CheckoutHeader";
@@ -40,11 +40,28 @@ export default function CheckoutPage() {
   const params = useParams<{ lang: string; id: string }>();
   const router = useRouter();
   const { language } = useLanguageStore();
-  const reportId = useMemo(() => Number(params?.id), [params?.id]);
+  const { HomePage } = useHomePageStore();
+
+  const extractedId = extractIdFromSlug(params?.id as string);
+  const reportId = useMemo(() => Number(extractedId), [extractedId]);
   const languageId = codeToId[language as keyof typeof codeToId];
+
+  // Calculate default category ID based on language
+  const defaultCategoryId = useMemo(() => {
+    if (!HomePage?.report_store_dropdown) return "1";
+
+    // Find categories for current language
+    const langCats = HomePage.report_store_dropdown.filter(
+      (c: any) => String(c.language_id) === String(languageId)
+    );
+
+    // Use the first category ID if found, otherwise keep "1"
+    return langCats.length > 0 ? String(langCats[0].category_id) : "1";
+  }, [HomePage, languageId]);
+
   const { data, isLoading: reportLoading, error } = useReportDetail({
-    reportId: params?.id as string,
-    categoryId: "1",
+    reportId: extractedId,
+    categoryId: defaultCategoryId,
     languageId: languageId?.toString() || "1",
   });
   const report = data?.data?.report;
@@ -150,7 +167,7 @@ export default function CheckoutPage() {
     );
   }
 
-  if (reportLoading) {
+  if (reportLoading || !HomePage) {
     return (
       <div className="min-h-screen bg-white pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

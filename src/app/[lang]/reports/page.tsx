@@ -142,6 +142,8 @@ export default function ReportsPage() {
 
   const { HomePage } = useHomePageStore();
 
+
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -215,6 +217,8 @@ export default function ReportsPage() {
   }, [reports, memoizedTranslations, dynamicLabels]);
 
   useEffect(() => {
+    if (!HomePage) return;
+
     // Fetch reports when filters change
     console.log('Fetching reports with filters:', filters);
     setIsLoading(true); // Set loading state when starting fetch
@@ -277,7 +281,7 @@ export default function ReportsPage() {
         setIsLoading(false);
       },
     });
-  }, [filters, fetchReports]); // Added fetchReports back to dependencies
+  }, [filters, fetchReports, HomePage]); // Added fetchReports back to dependencies
 
   // Add timeout to prevent infinite loading
   useEffect(() => {
@@ -408,6 +412,28 @@ export default function ReportsPage() {
       </div>
     );
   };
+
+  if (!HomePage) {
+    return (
+      <div className="min-h-screen bg-white pt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Skeleton className="h-8 w-2/3 mb-4" />
+          <Skeleton className="h-4 w-full mb-6" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <Skeleton key={i} className="h-80 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white pt-20">

@@ -21,10 +21,11 @@ interface UseFilterOptionsParams {
 export function useFilterOptions({ language, category }: UseFilterOptionsParams) {
   const languageId = codeToId[language as keyof typeof codeToId] || '1';
   // category is already the ID string or number, just ensure it's a string
-  const categoryId = category ? String(category) : '1';
+  const categoryId = category ? String(category) : '';
 
   return useQuery({
     queryKey: ['filter-options', languageId, categoryId],
+    enabled: !!language && !!categoryId && categoryId !== 'undefined' && categoryId !== 'null' && categoryId !== '0',
     queryFn: async (): Promise<FilterOptions> => {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_DB_URL;

@@ -43,9 +43,14 @@ export default function ReportsFilterBar({
   forecastPeriodLabel
 }: ReportsFilterBarProps) {
   const { language } = useLanguageStore();
+
+  // Validate category against available categories to prevent fetching with invalid default ID
+  const isCategoryValid = categories.length === 0 || categories.some(c => c.value === String(filters.category_id));
+  const categoryForHook = isCategoryValid ? (filters.category_id || '') : '';
+
   const { data: filterOptions, isLoading: isFilterOptionsLoading } = useFilterOptions({
     language,
-    category: filters.category_id || '' // Use the category_id from filters or fallback to empty string
+    category: categoryForHook
   });
 
   const t = translations || {

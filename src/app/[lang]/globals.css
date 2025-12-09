@@ -459,3 +459,32 @@ p {
   position: relative;
   isolation: isolate;
 }
+
+/* Language-specific font overrides */
+html[lang="ar"] {
+  --font-sans: var(--font-noto-arabic);
+  --font-orbitron: var(--font-noto-arabic);
+  --font-space-grotesk: var(--font-noto-arabic);
+  --font-geist-sans: var(--font-noto-arabic);
+}
+
+html[lang="ja"] {
+  --font-sans: var(--font-noto-jp);
+  --font-orbitron: var(--font-noto-jp);
+  --font-space-grotesk: var(--font-noto-jp);
+  --font-geist-sans: var(--font-noto-jp);
+}
+
+html[lang="ko"] {
+  --font-sans: var(--font-noto-kr);
+  --font-orbitron: var(--font-noto-kr);
+  --font-space-grotesk: var(--font-noto-kr);
+  --font-geist-sans: var(--font-noto-kr);
+}
+
+html[lang="zh"] {
+  --font-sans: var(--font-noto-sc);
+  --font-orbitron: var(--font-noto-sc);
+  --font-space-grotesk: var(--font-noto-sc);
+  --font-geist-sans: var(--font-noto-sc);
+}

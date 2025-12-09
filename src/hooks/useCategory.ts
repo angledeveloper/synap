@@ -39,7 +39,7 @@ export function useCategory({ categoryId, languageId }: UseCategoryParams) {
       }
 
       const data = await response.json();
-      
+
       // Extract category name from the response
       // This is a workaround - ideally there should be a dedicated category endpoint
       if (data && data.reports && data.reports.length > 0) {
@@ -53,7 +53,7 @@ export function useCategory({ categoryId, languageId }: UseCategoryParams) {
           };
         }
       }
-      
+
       // Fallback: return a default category name based on category_id
       const categoryNames: { [key: string]: string } = {
         '1': 'Technology & Software',
@@ -67,14 +67,14 @@ export function useCategory({ categoryId, languageId }: UseCategoryParams) {
         '9': 'Aerospace & Defense',
         '10': 'Chemicals & Materials'
       };
-      
+
       return {
         id: parseInt(categoryId),
         name: categoryNames[categoryId] || 'Technology & Software',
         language_id: parseInt(languageId)
       };
     },
-    enabled: !!categoryId && !!languageId,
+    enabled: !!categoryId && categoryId !== 'undefined' && categoryId !== 'null' && categoryId !== '' && categoryId !== '0',
     staleTime: 10 * 60 * 1000, // 10 minutes
     retry: 1,
   });

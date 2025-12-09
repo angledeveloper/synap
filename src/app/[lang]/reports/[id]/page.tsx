@@ -1,8 +1,8 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useLanguageStore } from "@/store";
-import { codeToId } from "@/lib/utils";
+import { useLanguageStore, useHomePageStore } from "@/store";
+import { codeToId, extractIdFromSlug } from "@/lib/utils";
 import { ReportDetail, ReportSection } from "@/types/reports";
 import { useReportDetail } from "@/hooks/useReportDetail";
 import { useCategory } from "@/hooks/useCategory";
@@ -34,6 +34,7 @@ export default function ReportDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { language } = useLanguageStore();
+  const { HomePage } = useHomePageStore();
   const searchParams = useSearchParams();
   const highlight = searchParams?.get('highlight');
   const [activeTab, setActiveTab] = useState(0);
@@ -77,10 +78,28 @@ export default function ReportDetailPage() {
   // Get language ID from the language store
   const languageId = codeToId[language as keyof typeof codeToId] || 1;
 
+  // Extract report ID from slug
+  const reportId = extractIdFromSlug(params.id as string);
+
+  // Calculate default category ID based on language
+  // If we have HomePage data, use the first category for the current language
+  // Otherwise default to "1"
+  const defaultCategoryId = useMemo(() => {
+    if (!HomePage?.report_store_dropdown) return "1";
+
+    // Find categories for current language
+    const langCats = HomePage.report_store_dropdown.filter(
+      (c: any) => String(c.language_id) === String(languageId)
+    );
+
+    // Use the first category ID if found, otherwise keep "1"
+    return langCats.length > 0 ? String(langCats[0].category_id) : "1";
+  }, [HomePage, languageId]);
+
   // Fetch report data from API
   const { data, isLoading, error } = useReportDetail({
-    reportId: params.id as string,
-    categoryId: "1", // Default category, will be updated once we get the report data
+    reportId: reportId,
+    categoryId: defaultCategoryId,
     languageId: languageId.toString(),
   });
 
@@ -90,7 +109,7 @@ export default function ReportDetailPage() {
 
   // Get category information using the report's category_id
   const { data: categoryData } = useCategory({
-    categoryId: report?.category_id?.toString() || "1",
+    categoryId: report?.category_id?.toString() || "",
     languageId: languageId.toString(),
   });
 
@@ -243,7 +262,7 @@ export default function ReportDetailPage() {
     setIsPopupOpen(false);
   };
 
-  if (isLoading) {
+  if (isLoading || !HomePage) {
     return (
       <div className="min-h-screen bg-white pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -333,7 +352,7 @@ export default function ReportDetailPage() {
               </li>
               <li className="min-w-0 flex-1">
                 <span className="text-gray-500 font-normal text-sm truncate block">
-                  {report.title}
+                  {report.title.split(' ').slice(0, 5).join(' ') + (report.title.split(' ').length > 5 ? '...' : '')}
                 </span>
               </li>
             </ol>
