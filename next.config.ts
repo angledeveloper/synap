@@ -2,7 +2,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["3.109.207.37", "dashboard.synapseaglobal.com"],
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "3.109.207.37",
+      },
+      {
+        protocol: "https",
+        hostname: "dashboard.synapseaglobal.com",
+      },
+    ],
   },
 };
 

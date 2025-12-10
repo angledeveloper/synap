@@ -9,7 +9,7 @@ import GlobalFooter from "@/components/layout/GlobalFooter";
 import HomepageHydrator from "@/components/common/HomepageHydrator";
 import { AuthProvider } from "@/contexts/AuthContext";
 import LoginWall from "@/components/auth/LoginWall";
-import { useEffect } from "react";
+
 import { codeToId } from "@/lib/utils";
 
 const geistSans = Geist({
