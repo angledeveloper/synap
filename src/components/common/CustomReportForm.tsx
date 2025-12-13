@@ -197,7 +197,7 @@ export default function CustomReportForm({ isOpen, onClose }: CustomReportFormPr
           {isSuccess ? (
             <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
               <h2
-                className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#1160C9] to-[#08D2B8]"
+                className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#1160C9] to-[#08D2B8] pb-2"
                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
               >
                 Thank you
@@ -215,7 +215,7 @@ export default function CustomReportForm({ isOpen, onClose }: CustomReportFormPr
               </div>
 
               {formFields?.description && (
-                <p className="text-[#242424] text-sm mb-4" style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 'normal' }}>
+                <p className="text-[#242424] text-sm mb-4 hidden md:block" style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 'normal' }}>
                   {formFields.description}
                 </p>
               )}
@@ -251,7 +251,7 @@ export default function CustomReportForm({ isOpen, onClose }: CustomReportFormPr
                   <select
                     value={formData.phoneCode}
                     onChange={(e) => setFormData({ ...formData, phoneCode: e.target.value })}
-                    className="w-[30%] px-2 py-2 text-sm border border-[#D3D3D3] rounded-md focus:ring-1 focus:ring-blue-500 text-[#969696] bg-white text-center"
+                    className="w-[30%] px-0 py-2 text-sm border border-[#D3D3D3] rounded-md focus:ring-1 focus:ring-blue-500 text-[#969696] bg-white text-center"
                   >
                     {/* Map over imported phoneCodes */}
                     {phoneCodes.map((p: any) => (

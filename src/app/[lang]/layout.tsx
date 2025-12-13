@@ -62,14 +62,18 @@ export async function generateMetadata({
   const langCode = lang || "en";
   const langObj =
     supportedLanguages.find((l) => l.code === langCode) || supportedLanguages[0];
+
+  const alternates: Record<string, string> = {};
+  supportedLanguages.forEach((l) => {
+    alternates[l.code] = l.code === 'en' ? '/' : `/${l.code}`;
+  });
+
   return {
     title: `Home | ${langObj.label}`,
     description: `Welcome to the ${langObj.label} version of our site.`,
     alternates: {
-      canonical: `/${langCode}`,
-      languages: Object.fromEntries(
-        supportedLanguages.map((l) => [l.code, `/${l.code}`]),
-      ),
+      canonical: langCode === 'en' ? '/' : `/${langCode}`,
+      languages: alternates,
     },
     openGraph: {
       locale: langCode,

@@ -57,3 +57,10 @@ export function extractIdFromSlug(slug: string): string {
   const parts = slug.split('-');
   return parts[parts.length - 1];
 }
+
+export function getLocalizedPath(path: string, language: string): string {
+  if (language === 'en') {
+    return path.startsWith('/') ? path : `/${path}`;
+  }
+  return path.startsWith('/') ? `/${language}${path}` : `/${language}/${path}`;
+}

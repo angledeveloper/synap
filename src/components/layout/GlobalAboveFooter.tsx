@@ -110,19 +110,15 @@ export default function GlobalAboveFooter() {
               </div>
             </div>
           </div>
-          <button
-            onClick={() => {
-              const categoryId = HomePage.home_section4_reports?.[0]?.category_id || HomePage.home_section4_reports?.[0]?.id || '1';
-              const safeCategoryId = String(categoryId).trim();
-              router.push(`/${language}/reports?category=${safeCategoryId}`);
-            }}
+          <Link
+            href={`/${language}/reports`}
             className="mt-10 inline-flex h-[105px] min-w-[300px] w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] text-white font-bold hover:opacity-85 max-md:w-full border border-black"
           >
             <span className="flex w-full justify-end">
               <ArrowIcon variant="gradient" />
             </span>
             <span>{HomePage.common_layout_above_footer?.button ?? ''}</span>
-          </button>
+          </Link>
         </div>
       </div>
     </div>

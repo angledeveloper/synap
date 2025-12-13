@@ -6,6 +6,10 @@ import { useLanguageStore } from "@/store";
 import { supportedLanguages } from "../../lib/utils";
 import { Icon } from "@iconify/react";
 
+import { getLocalizedPath } from "../../lib/utils";
+
+// ... inside component ...
+
 export default function GlobalLanguageSwitch() {
   const router = useRouter();
   const params = useParams();
@@ -66,7 +70,25 @@ export default function GlobalLanguageSwitch() {
               className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${l.code === lang ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'
                 }`}
               onClick={() => {
-                router.push(`/${l.code}`);
+                // If switching language, we want to stay on the same page but with new locale
+                // We need to strip the current locale from the pathname first
+                let currentPath = pathname;
+
+                // Remove existing locale prefix if present
+                for (const supported of supportedLanguages) {
+                  const prefix = `/${supported.code}`;
+                  if (currentPath === prefix || currentPath.startsWith(`${prefix}/`)) {
+                    currentPath = currentPath.substring(prefix.length);
+                    break;
+                  }
+                }
+
+                // If path became empty (meaning we were at root of that locale), make it '/'
+                if (!currentPath) currentPath = '/';
+
+                // Construct new path
+                const newPath = getLocalizedPath(currentPath, l.code);
+                router.push(newPath);
                 setShowDropdown(false);
               }}
             >

@@ -367,97 +367,106 @@ export default function ReportDetailPage() {
           {/* Main Content Area: full width on mobile, 2/3 on desktop */}
           <div className="col-span-1 lg:col-span-2">
             {/* Report Header */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
-              {/* Report Image - Left aligned on mobile, left on desktop */}
-              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg flex-shrink-0 overflow-hidden mx-0">
-                {report.image ? (
-                  <Image
-                    src={report.image}
-                    alt={report.title}
-                    width={171}
-                    height={214}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <Icon icon="mdi:file-document-outline" className="text-4xl text-gray-400" />
-                  </div>
-                )}
+            <div className="flex flex-col mb-4 sm:mb-6">
+              {/* Divider 1 */}
+              <div className="w-full h-px bg-[#E5E5E5] mb-6"></div>
+
+              {/* Title and Image Container */}
+              <div className="flex flex-row gap-4 sm:gap-6 mb-6">
+                {/* Report Image - 93x93, no border radius */}
+                <div className="w-[93px] h-[93px] flex-shrink-0 bg-gray-200 overflow-hidden">
+                  {report.image ? (
+                    <Image
+                      src={report.image}
+                      alt={report.title}
+                      width={93}
+                      height={93}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <Icon icon="mdi:file-document-outline" className="text-3xl text-gray-400" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Report Title */}
+                <div className="flex-1">
+                  <h1
+                    className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent"
+                    style={{
+                      fontFamily: 'Space Grotesk, sans-serif',
+                      fontSize: '24px',
+                      lineHeight: '31px',
+                      letterSpacing: '0px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {report.title}
+                  </h1>
+                </div>
               </div>
 
-              {/* Report Title and Metadata - Left aligned on mobile, right side on desktop */}
-              <div className="flex-1 text-left sm:text-left">
-                <h1
-                  className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent mb-3 sm:mb-4"
-                  style={{
-                    fontFamily: 'Space Grotesk, sans-serif',
-                    fontSize: '24px',
-                    lineHeight: '31px',
-                    letterSpacing: '0px',
-                    fontWeight: '500'
-                  }}
-                >
-                  {report.title}
-                </h1>
-
-                {/* Report Metadata Grid - Left aligned on mobile, normal on desktop */}
-                <div
-                  className="flex flex-col sm:flex-row sm:justify-between space-y-2 sm:space-y-0"
-                  style={{
-                    fontFamily: 'Space Grotesk, sans-serif',
-                    fontSize: '14px',
-                    lineHeight: '18px',
-                    letterSpacing: '0px',
-                    fontWeight: '500',
-                    color: '#7C7C7C'
-                  }}
-                >
-                  {/* Column 1 */}
-                  <div className="flex flex-col">
-                    <div className="flex items-center">
-                      <span>{t.lastUpdated}:</span>
-                      <span className="ml-2">{new Date(report.modify_at).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span>{new Date(report.created_at).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span>{t.baseYear}:</span>
-                      <span className="ml-2">{report.base_year}</span>
-                    </div>
+              {/* Report Metadata Grid - Full width below title/image */}
+              <div
+                className="flex flex-col sm:flex-row justify-between w-full mb-6 gap-y-4"
+                style={{
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  fontSize: '12px',
+                  lineHeight: '18px',
+                  letterSpacing: '0px',
+                  fontWeight: '400', // Regular font weight
+                  color: '#7C7C7C'
+                }}
+              >
+                {/* Column 1 */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center">
+                    <span>{t.lastUpdated}:</span>
+                    <span className="ml-1">{new Date(report.modify_at).toLocaleDateString()}</span>
                   </div>
-
-                  {/* Column 2 */}
-                  <div className="flex flex-col">
-                    <div className="flex items-center">
-                      <span>{t.format}:</span>
-                      <span className="ml-2">{report.format}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span>{t.industry} - {categoryData?.name || 'Technology & Software'}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span>{t.forecastPeriod}:</span>
-                      <span className="ml-2">{report.forecast_period}</span>
-                    </div>
+                  <div className="flex items-center">
+                    <span>{new Date(report.created_at).toLocaleDateString()}</span>
                   </div>
+                  <div className="flex items-center">
+                    <span>{t.baseYear}:</span>
+                    <span className="ml-1">{report.base_year}</span>
+                  </div>
+                </div>
 
-                  {/* Column 3 */}
-                  <div className="flex flex-col">
-                    <div className="flex items-center">
-                      <span>{t.reportId}:</span>
-                      <span className="ml-2">{report.report_id}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span>{t.numberOfPages} -</span>
-                      <span className="ml-1">{report.number_of_pages}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span>{t.tocIncluded}</span>
-                    </div>
+                {/* Column 2 */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center">
+                    <span>{t.format}:</span>
+                    <span className="ml-1">{report.format}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span>{t.industry} - {categoryData?.name || 'Technology & Software'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span>{t.forecastPeriod}:</span>
+                    <span className="ml-1">{report.forecast_period}</span>
+                  </div>
+                </div>
+
+                {/* Column 3 */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center">
+                    <span>{t.reportId}:</span>
+                    <span className="ml-1">{report.report_id}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span>{t.numberOfPages} -</span>
+                    <span className="ml-1">{report.number_of_pages}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span>{t.tocIncluded}</span>
                   </div>
                 </div>
               </div>
+
+              {/* Divider 2 */}
+              <div className="w-full h-px bg-[#E5E5E5] mt-6"></div>
             </div>
 
             {/* Mobile Sidebar - Show only on mobile, after metadata */}

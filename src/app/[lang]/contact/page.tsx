@@ -340,6 +340,7 @@ export default function ContactPage() {
       <CallToAction
         title="Ready to Transform Your Market Strategy?"
         buttonText="Check our Research"
+        buttonLink={`/${language}/reports`}
       />
     </>
   );

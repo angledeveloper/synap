@@ -1056,7 +1056,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                 value={selectedOrderLicenseId}
                 onChange={e => setSelectedOrderLicenseId(e.target.value)}
                 disabled={!!customPricing}
-                className={`w-full sm:w-[118px] h-9 sm:h-[38px] border ${customPricing ? 'border-gray-300 bg-gray-100' : 'border-black'} rounded-none px-3 text-black appearance-none ${customPricing ? 'cursor-not-allowed' : 'cursor-pointer'} text-sm sm:text-base`}
+                className={`w-full sm:w-auto h-9 sm:h-[38px] border ${customPricing ? 'border-gray-300 bg-gray-100' : 'border-black'} rounded-none pl-3 pr-8 text-black appearance-none ${customPricing ? 'cursor-not-allowed' : 'cursor-pointer'} text-sm sm:text-base`}
                 style={{
                   fontFamily: 'Space Grotesk, sans-serif',
                   backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',

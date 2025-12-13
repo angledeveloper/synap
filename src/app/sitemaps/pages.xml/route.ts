@@ -16,15 +16,20 @@ const staticPages = [
 function buildAlternates(path: string) {
     const links = languages
         .map(
-            (lang) => `
+            (lang) => {
+                const href = lang === "en"
+                    ? `${BASE_URL}${path ? `/${path}` : ""}`
+                    : `${BASE_URL}/${lang}${path ? `/${path}` : ""}`;
+                return `
     <xhtml:link rel="alternate" hreflang="${lang}"
-      href="${BASE_URL}/${lang}${path ? `/${path}` : ""}" />`
+      href="${href}" />`
+            }
         )
         .join("");
 
     const xDefault = `
     <xhtml:link rel="alternate" hreflang="x-default"
-      href="${BASE_URL}/en${path ? `/${path}` : ""}" />`;
+      href="${BASE_URL}${path ? `/${path}` : ""}" />`;
 
     return links + xDefault;
 }
@@ -40,7 +45,8 @@ export async function GET() {
     const urls = staticPages
         .map((path) => {
             // homepage special-case: /en, not /en/
-            const loc = path === "" ? `${BASE_URL}/en` : `${BASE_URL}/en/${path}`;
+            // Update: 'en' is now root, so it's just BASE_URL
+            const loc = `${BASE_URL}${path ? `/${path}` : ""}`;
             const alternates = buildAlternates(path);
             const priority = getPriority(path);
 

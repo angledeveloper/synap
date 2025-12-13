@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLanguageStore, useHomePageStore } from "@/store";
 import { useQuery } from "@tanstack/react-query";
-import { codeToId } from "@/lib/utils";
+import { codeToId, getLocalizedPath } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface CategoryItem {
@@ -217,7 +217,7 @@ export default function GlobalNavbar() {
         {/* Centered Container with 284px margins */}
         <div className="hidden lg:flex items-center justify-between w-full px-4 xl:px-8 2xl:px-[284px]">
           {/* Logo */}
-          <Link href={`/${language}`} className="flex-shrink-0">
+          <Link href={getLocalizedPath('/', language)} className="flex-shrink-0">
             <div className="h-[30px] w-auto">
               <FullLogo />
             </div>
@@ -225,7 +225,7 @@ export default function GlobalNavbar() {
           {/* Right Side - Navigation Links, Search, Language, Contact */}
           <div className="flex items-center gap-8 text-sm">
             {/* About Us */}
-            <Link href={`/${language}/about`} className="text-gray-300 hover:text-white transition-colors font-normal whitespace-nowrap">
+            <Link href={getLocalizedPath('/about', language)} className="text-gray-300 hover:text-white transition-colors font-normal whitespace-nowrap">
               {HomePage.navbar?.item_one_name ?? 'About Us'}
             </Link>
             {/* Case Studies Dropdown */}
@@ -278,7 +278,7 @@ export default function GlobalNavbar() {
                   <div className="grid grid-cols-4 gap-x-10 gap-y-8">
                     {HomePage.report_store_dropdown.map((item: CategoryItem) => (
                       <Link
-                        href={`/${language}/reports${item.category_name === 'All Industries' ? '' : `?category=${item.category_id}`}`}
+                        href={getLocalizedPath(`${'reports'}${item.category_name === 'All Industries' ? '' : `?category=${item.category_id}`}`, language)}
                         key={item.category_id}
                         className="group"
                       >
@@ -389,19 +389,19 @@ export default function GlobalNavbar() {
                             setIsHoveringSearch(false);
                             setShowSearch(false);
 
-                            let targetUrl = `/${language}`;
+                            let targetUrl = getLocalizedPath('', language);
                             const queryParam = `?highlight=${encodeURIComponent(debouncedSearchValue)}`;
 
                             switch (result.type) {
                               case 'home':
-                                targetUrl = `/${language}${queryParam}`;
+                                targetUrl = getLocalizedPath(queryParam, language);
                                 break;
                               case 'about':
-                                targetUrl = `/${language}/about${queryParam}`;
+                                targetUrl = getLocalizedPath(`/about${queryParam}`, language);
                                 break;
                               case 'report':
                                 if (result.id) {
-                                  targetUrl = `/${language}/reports/${result.id}${queryParam}`;
+                                  targetUrl = getLocalizedPath(`/reports/${result.id}${queryParam}`, language);
                                 } else {
                                   // Workaround for missing ID: Fetch ID using reports_store_page API
                                   try {
@@ -447,26 +447,26 @@ export default function GlobalNavbar() {
                                       }
 
                                       if (reportId) {
-                                        targetUrl = `/${language}/reports/${reportId}${queryParam}`;
+                                        targetUrl = getLocalizedPath(`/reports/${reportId}${queryParam}`, language);
                                       } else {
                                         console.error('Could not find report ID for:', result.title);
                                         // Fallback to reports list if ID still not found
-                                        targetUrl = `/${language}/reports${queryParam}`;
+                                        targetUrl = getLocalizedPath(`/reports${queryParam}`, language);
                                       }
                                     }
                                   } catch (error) {
                                     console.error('Error fetching report ID:', error);
-                                    targetUrl = `/${language}/reports${queryParam}`;
+                                    targetUrl = getLocalizedPath(`/reports${queryParam}`, language);
                                   }
                                 }
                                 break;
                               case 'legal':
                                 const page = result.page_name === 'terms' ? 'terms-of-service' : 'privacy';
-                                targetUrl = `/${language}/${page}${queryParam}`;
+                                targetUrl = getLocalizedPath(`/${page}${queryParam}`, language);
                                 break;
                               default:
                                 // Fallback to reports if type is missing (legacy)
-                                targetUrl = `/${language}/reports/${result.id || ''}${queryParam}`;
+                                targetUrl = getLocalizedPath(`/reports/${result.id || ''}${queryParam}`, language);
                             }
 
                             window.location.href = targetUrl;
@@ -571,7 +571,7 @@ export default function GlobalNavbar() {
             </div>
 
             {/* Contact Us Button */}
-            <Link href={`/${language}/contact`} className="flex-shrink-0">
+            <Link href={getLocalizedPath('/contact', language)} className="flex-shrink-0">
               <Button className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] hover:opacity-90 text-white font-normal rounded-[7px] px-6 py-2 transition-opacity whitespace-nowrap">
                 {HomePage?.navbar?.button_text ?? 'Contact Us'}
               </Button>
@@ -583,7 +583,7 @@ export default function GlobalNavbar() {
     justify-between lg:hidden">
 
           {/* Logo left */}
-          <Link href={`/${language}`} className="flex items-center">
+          <Link href={getLocalizedPath('/', language)} className="flex items-center">
             <div className="h-[28px] w-auto">
               <FullLogo />
             </div>
@@ -657,25 +657,25 @@ export default function GlobalNavbar() {
                                 setShowSearchResults(false);
                                 setShowMenu(false);
 
-                                let targetUrl = `/${language}`;
+                                let targetUrl = getLocalizedPath('', language);
                                 const queryParam = `?highlight=${encodeURIComponent(debouncedSearchValue)}`;
 
                                 switch (result.type) {
                                   case 'home':
-                                    targetUrl = `/${language}${queryParam}`;
+                                    targetUrl = getLocalizedPath(queryParam, language);
                                     break;
                                   case 'about':
-                                    targetUrl = `/${language}/about${queryParam}`;
+                                    targetUrl = getLocalizedPath(`/about${queryParam}`, language);
                                     break;
                                   case 'report':
-                                    targetUrl = `/${language}/reports/${result.id}${queryParam}`;
+                                    targetUrl = getLocalizedPath(`/reports/${result.id}${queryParam}`, language);
                                     break;
                                   case 'legal':
                                     const page = result.page_name === 'terms' ? 'terms-of-service' : 'privacy';
-                                    targetUrl = `/${language}/${page}${queryParam}`;
+                                    targetUrl = getLocalizedPath(`/${page}${queryParam}`, language);
                                     break;
                                   default:
-                                    targetUrl = `/${language}/reports/${result.id || ''}${queryParam}`;
+                                    targetUrl = getLocalizedPath(`/reports/${result.id || ''}${queryParam}`, language);
                                 }
 
                                 window.location.href = targetUrl;
@@ -715,7 +715,7 @@ export default function GlobalNavbar() {
                 </div>
                 <GlobalLanguageSwitch />
               </div>
-              <Link href={`/${language}/about`} className="hover:text-white transition-colors">{HomePage?.navbar?.item_one_name ?? 'About Us'}</Link>
+              <Link href={getLocalizedPath('/about', language)} className="hover:text-white transition-colors">{HomePage?.navbar?.item_one_name ?? 'About Us'}</Link>
               <div
                 id="mobile-case-studies-dropdown-button"
                 className="flex cursor-pointer items-center gap-1 hover:text-white transition-colors"
@@ -757,7 +757,7 @@ export default function GlobalNavbar() {
                   </h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-6 gap-x-6">
                     {HomePage.report_store_dropdown.slice(0, 4).map((item: any, idx: number) => (
-                      <Link href={`/${language}/reports?category=${item.category_id}`} key={`m-top-${idx}`} className="group">
+                      <Link href={getLocalizedPath(`/reports?category=${item.category_id}`, language)} key={`m-top-${idx}`} className="group">
                         <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                           <div className="w-6 h-6 relative flex-shrink-0">
                             <Image src={item.icon} alt={item.category_name} width={24} height={24} className="w-full h-full object-contain" />
@@ -782,7 +782,7 @@ export default function GlobalNavbar() {
                   }, []).map((row: any[], rowIdx: number) => (
                     <div key={`m-row-${rowIdx}`} className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6 mt-6">
                       {row.map((item: any) => (
-                        <Link href={`/${language}/reports?category=${item.category_id}`} key={`m-item-${item.originalIndex}`} className="group">
+                        <Link href={getLocalizedPath(`/reports?category=${item.category_id}`, language)} key={`m-item-${item.originalIndex}`} className="group">
                           <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                             <div className="w-6 h-6 relative flex-shrink-0">
                               <Image src={item.icon} alt={item.category_name} width={24} height={24} className="w-full h-full object-contain" />
