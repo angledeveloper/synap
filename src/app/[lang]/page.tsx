@@ -308,7 +308,16 @@ export default function Home() {
               <div className="flex flex-col gap-2 p-4 group-hover:bg-[#2F2F2F]">
                 <div className="flex items-center justify-between gap-2 from-[#1160C9] to-[#08D2B8] font-mono text-[20px] leading-snug font-bold transition-all duration-200 group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:text-transparent">
                   {item.title}
-                  <ArrowIcon variant="gradient" className="w-[33px] h-[14px]" />
+                  <div className="relative h-[14px] w-[33px]">
+                    <ArrowIcon
+                      variant="gradient"
+                      className="absolute inset-0 h-full w-full opacity-100 transition-opacity duration-200 group-hover:opacity-0"
+                    />
+                    <ArrowIcon
+                      variant="white"
+                      className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                    />
+                  </div>
                 </div>
                 <p className="text-[16px] group-hover:text-[#F2F1EF] line-clamp-3 multilingual-text">
                   {item.introduction_description}

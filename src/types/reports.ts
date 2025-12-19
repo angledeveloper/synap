@@ -21,6 +21,7 @@ export interface Report {
   image_url?: string;
   category?: string;
   share_at?: string;
+  report_reference_title?: string;
 }
 
 export interface ReportDetail {

@@ -17,6 +17,8 @@ export const codeToId: Record<string, string> = {
   ar: "8",  // Arabic
 };
 
+export const targetLanguageIds: string[] = ["5", "6", "7", "8"];
+
 export const supportedLanguages = [
   { code: "en", label: "English", id: "1" },
   { code: "fr", label: "Français", id: "2" },
@@ -35,7 +37,7 @@ export function slugify(title: string, id: number | string): string {
 
   // Convert to lowercase and remove special characters
   let slug = title.toLowerCase()
-    .replace(/[^\w\s-]/g, '') // Remove non-word chars (except spaces and hyphens)
+    .replace(/[^\w\s\u0080-\uFFFF-]/g, '') // Keep alphanumeric, spaces, unicode characters, and hyphens
     .replace(/\s+/g, '-')     // Replace spaces with hyphens
     .trim();
 

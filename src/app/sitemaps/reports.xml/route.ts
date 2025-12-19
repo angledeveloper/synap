@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { slugify } from "@/lib/utils";
+import { slugify, codeToId, targetLanguageIds } from "@/lib/utils";
 
 const BASE_URL = "https://www.synapseaglobal.com";
 const languages = ["en", "fr", "es", "de", "ja", "zh", "ko", "ar"] as const;
@@ -54,9 +54,20 @@ function buildAlternates(report: any) {
     const slug = slugify(report.title, report.id);
     const links = languages
         .map(
-            (lang) => `
+            (lang) => {
+                const langId = codeToId[lang];
+                // For target languages (Asian/Arabic), attempt to use report_reference_title (English) if available.
+                // Otherwise, fallback to empty string to force ID-only slug, per user request to avoid localized URLs for now.
+                const useReferenceTitle = targetLanguageIds.includes(langId);
+                const slugTitle = useReferenceTitle
+                    ? (report.report_reference_title || "")
+                    : report.title;
+                const slug = slugify(slugTitle, report.id);
+
+                return `
     <xhtml:link rel="alternate" hreflang="${lang}"
-      href="${BASE_URL}/${lang}/reports/${slug}" />`
+      href="${BASE_URL}/${lang}/reports/${slug}" />`;
+            }
         )
         .join("");
 

@@ -44,18 +44,21 @@ function CaseStudyCard({ title, description, read_text, file_url }: CaseStudy) {
 
 export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 w-full text-white ">
+    <div className="grid grid-cols-1 md:grid-cols-2 w-full text-white">
 
       {caseStudies.map((cs, idx) => (
         <div
           key={`cs-${cs.id || idx}`}
-          className={
-            idx === 0
-              ? "bg-[#06A591] w-full"
-              : "bg-black w-full"
-          }
+          className={`flex flex-col justify-center w-full ${
+            // Left column (Index 0, 2, etc.) aligns content to the END (Right side)
+            // Right column (Index 1, 3, etc.) aligns content to the START (Left side)
+            idx % 2 === 0 ? "bg-[#06A591] md:items-end" : "bg-black md:items-start"
+            }`}
         >
-          <CaseStudyCard {...cs} />
+          {/* Constrain the inner content to half of the max-width (720px) to simulate the 1440px container */}
+          <div className="w-full max-w-[720px]">
+            <CaseStudyCard {...cs} />
+          </div>
         </div>
       ))}
 

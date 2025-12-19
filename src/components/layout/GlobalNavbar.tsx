@@ -269,43 +269,48 @@ export default function GlobalNavbar() {
               </span>
               <Icon icon="mdi:chevron-down" className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
               {showDropdown && (
-                <div id="dropdown-container" className="absolute lg:top-[80px] lg:left-1/2 lg:-translate-x-1/2 w-full max-w-[1440px] bg-white shadow-sm px-8 py-10 z-50">
+                <div id="dropdown-container" className="absolute lg:top-[80px] lg:left-1/2 lg:-translate-x-1/2 w-fit max-w-[1440px] bg-white shadow-sm px-8 py-10 z-50">
                   <h2 className="text-left text-xl font-medium text-gray-900 mb-10" style={{ fontFamily: 'var(--font-geist-mono)' }}>
                     {HomePage?.report_store_dropdown?.[0]?.title ?? ''}
                   </h2>
 
-                  {/* First row - responsive categories */}
-                  <div className="grid grid-cols-4 gap-x-10 gap-y-8">
-                    {HomePage.report_store_dropdown.map((item: CategoryItem) => (
-                      <Link
-                        href={getLocalizedPath(`${'reports'}${item.category_name === 'All Industries' ? '' : `?category=${item.category_id}`}`, language)}
-                        key={item.category_id}
-                        className="group"
-                      >
-                        <div className="flex items-start space-x-4 hover:bg-gray-50 p-3 rounded-lg transition-colors">
-                          <div className="w-7 h-7 relative flex-shrink-0">
-                            <Image
-                              src={item.icon}
-                              alt={item.category_name}
-                              width={28}
-                              height={28}
-                              className="w-full h-full object-contain"
-                            />
-                          </div>
-
-                          <div>
-                            <h3 className="text-[15px] font-medium text-gray-900 leading-snug group-hover:text-blue-600 transition-colors" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-                              {item.category_name}
-                            </h3>
-                            <p className="text-[13px] text-black font-normal mt-1" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-                              {item.category_tagline?.split(' ').slice(0, 3).join(' ')}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
+                  {/* Optimized Layout: Vertical Columns (4 items per column) */}
+                  <div className="flex flex-col lg:flex-row gap-y-6 lg:gap-x-12 lg:w-fit">
+                    {/* Helper to chunk array into columns of 4 */}
+                    {Array.from({ length: Math.ceil((HomePage?.report_store_dropdown?.length || 0) / 4) }).map((_, colIndex) => (
+                      <div key={colIndex} className="flex flex-col gap-y-6 whitespace-nowrap">
+                        {HomePage.report_store_dropdown.slice(colIndex * 4, (colIndex + 1) * 4).map((item: CategoryItem) => (
+                          <Link
+                            href={getLocalizedPath(`${'reports'}${item.category_name === 'All Industries' ? '' : `?category=${item.category_id}`}`, language)}
+                            key={item.category_id}
+                            className="group flex-shrink-0"
+                          >
+                            <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                              <div className="w-6 h-6 relative flex-shrink-0 mt-0.5">
+                                <Image
+                                  src={item.icon}
+                                  alt={item.category_name}
+                                  width={24}
+                                  height={24}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              <div>
+                                <h3 className="text-[15px] font-medium text-gray-900 leading-snug group-hover:text-blue-600 transition-colors whitespace-nowrap" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                                  {item.category_name}
+                                </h3>
+                                {/* Tagline removed or hidden if needed to save space, but kept for now */}
+                                {item.category_tagline && (
+                                  <p className="text-[13px] text-black font-normal mt-1 max-w-[200px] whitespace-normal" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                                    {item.category_tagline.split(' ').slice(0, 3).join(' ')}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
                     ))}
-
-
                   </div>
 
                 </div>
@@ -472,7 +477,7 @@ export default function GlobalNavbar() {
                             window.location.href = targetUrl;
                           }}
                           onMouseDown={(e) => {
-                            // Prevent input blur when clicking results
+                            // Prevent output blur when clicking results
                             e.preventDefault();
                           }}
                         >
@@ -605,7 +610,7 @@ export default function GlobalNavbar() {
         {/* MOBILE MENU CONTENT */}
         {showMenu && (
           <div className="absolute top-[80px] left-0 w-full max-h-[70vh] overflow-y-scroll 
-      rounded-b-[20px] bg-[#060606]/90 p-4 z-50">
+      bg-[#060606]/90 p-4 z-50">
 
             <div className="flex flex-col gap-4 text-lg text-gray-300">
 
@@ -842,4 +847,3 @@ export default function GlobalNavbar() {
     </nav>
   );
 }
-

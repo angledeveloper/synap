@@ -214,7 +214,7 @@ export default function ContactPage() {
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder={`${contactData.full_name} *`}
-                    className="w-full rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white placeholder-[#969696] focus:border-white focus:outline-none focus:ring-1 focus:ring-white text-base md:text-lg"
+                    className="w-full h-[40px] rounded-[7px] bg-[#242424] px-3 md:px-4 text-white placeholder-[#969696] focus:border-white focus:outline-none focus:ring-1 focus:ring-white text-[15px]"
                     required
                   />
                 </div>
@@ -227,24 +227,29 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder={`${contactData.business_email} *`}
-                    className="w-full rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white placeholder-[#969696] focus:border-white focus:outline-none focus:ring-1 focus:ring-white text-base md:text-lg"
+                    className="w-full h-[40px] rounded-[7px] bg-[#242424] px-3 md:px-4 text-white placeholder-[#969696] focus:border-white focus:outline-none focus:ring-1 focus:ring-white text-[15px]"
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-4 gap-2">
-                  <div className="col-span-1">
+                  <div className="col-span-1 relative">
                     <select
                       name="phoneCode"
                       value={formData.phoneCode}
                       onChange={handleChange}
-                      className="w-full rounded-md bg-[#242424] px-2 md:px-3 py-3 text-white text-xs md:text-sm focus:outline-none appearance-none"
+                      className="w-full h-[40px] rounded-[7px] bg-[#242424] px-2 md:px-3 text-white text-[15px] focus:outline-none appearance-none"
                     >
                       <option value="" disabled>Code</option>
                       {phoneCodes.map((p: any) => (
                         <option key={p.dial_code + p.name} value={p.dial_code}>{p.dial_code}</option>
                       ))}
                     </select>
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg width="10" height="6" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1.5L6 6.5L11 1.5" stroke="#969696" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
                   </div>
                   <div className="col-span-3">
                     <input
@@ -254,7 +259,7 @@ export default function ContactPage() {
                       value={formData.phoneNumber}
                       onChange={handleChange}
                       placeholder={contactData.phone_no}
-                      className="w-full rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white placeholder-[#969696] focus:outline-none text-base md:text-lg"
+                      className="w-full h-[40px] rounded-[7px] bg-[#242424] px-3 md:px-4 text-white placeholder-[#969696] focus:outline-none text-[15px]"
                     />
                   </div>
                 </div>
@@ -268,16 +273,16 @@ export default function ContactPage() {
                       value={formData.jobTitle || ''}
                       onChange={handleChange}
                       placeholder={contactData.job_title}
-                      className="w-full appearance-none ro  unded-md bg-[#242424] px-3 md:px-4 py-3 text-white text-xs md:text-sm focus:outline-none"
+                      className="w-full h-[40px] appearance-none rounded-[7px] bg-[#242424] px-3 md:px-4 text-white text-[15px] focus:outline-none"
                     />
                   </div>
-                  <div>
+                  <div className="relative">
                     <select
                       id="country"
                       name="country"
                       value={formData.country || ''}
                       onChange={handleChange}
-                      className="w-full appearance-none rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white text-xs md:text-sm focus:outline-none"
+                      className="w-full h-[40px] appearance-none rounded-[7px] bg-[#242424] px-3 md:px-4 text-white text-[15px] focus:outline-none"
                     >
                       <option value="" disabled>{contactData.country}</option>
                       <option value="US">US</option>
@@ -285,6 +290,11 @@ export default function ContactPage() {
                       <option value="UK">UK</option>
                       <option value="AU">AU</option>
                     </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1.5L6 6.5L11 1.5" stroke="#969696" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
 
@@ -294,14 +304,14 @@ export default function ContactPage() {
                     name="inquiryType"
                     value={formData.inquiryType || ''}
                     onChange={handleChange}
-                    className="w-full appearance-none rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white text-xs md:text-sm mb-2 focus:outline-none"
+                    className="w-full h-[40px] appearance-none rounded-[7px] bg-[#242424] px-3 md:px-4 text-white text-[15px] mb-2 focus:outline-none"
                   >
                     <option value="" disabled>{contactData.type}</option>
                     <option value="general">General Inquiry</option>
                     <option value="sales">Sales</option>
                     <option value="support">Support</option>
                   </select>
-                  <div className="absolute right-3 top-3 pointer-events-none">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 mb-2 pointer-events-none">
                     <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M1 1.5L6 6.5L11 1.5" stroke="#969696" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -315,7 +325,7 @@ export default function ContactPage() {
                     value={formData.message}
                     onChange={handleChange}
                     placeholder={`${contactData.description} *`}
-                    className="w-full h-[120px] md:h-[158px] resize-none rounded-md bg-[#242424] px-3 md:px-4 py-3 text-white placeholder-[#969696] focus:outline-none text-xs md:text-sm"
+                    className="w-full h-[120px] md:h-[158px] resize-none rounded-[7px] bg-[#242424] px-3 md:px-4 py-3 text-white placeholder-[#969696] focus:outline-none text-[15px]"
                     required
                   />
                 </div>
