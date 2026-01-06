@@ -68,6 +68,7 @@ export async function generateMetadata({
   });
 
   return {
+    metadataBase: new URL(`https://www.synapseaglobal.com`),
     title: `Home | ${langObj.label}`,
     description: `Welcome to the ${langObj.label} version of our site.`,
     alternates: {

@@ -34,6 +34,9 @@ interface FormData {
 interface SampleReportFormProps {
   isOpen: boolean;
   onClose: () => void;
+  reportTitle?: string;
+  reportId?: string;
+  reportImage?: string;
 }
 
 export default function SampleReportForm({ isOpen, onClose }: SampleReportFormProps) {

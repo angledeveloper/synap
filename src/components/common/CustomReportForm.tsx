@@ -35,6 +35,7 @@ interface FormData {
 interface CustomReportFormProps {
   isOpen: boolean;
   onClose: () => void;
+  reportTitle?: string;
 }
 
 export default function CustomReportForm({ isOpen, onClose }: CustomReportFormProps) {
