@@ -22,6 +22,50 @@ export interface Report {
   category?: string;
   share_at?: string;
   report_reference_title?: string;
+  report_identity?: ReportIdentity;
+}
+
+export interface ReportDetail {
+  id: number;
+  language_id: number;
+  title: string;
+  image: string;
+  category_id: number;
+  report_id: string;
+  number_of_pages: string;
+  format: string;
+  introduction_section: string;
+  introduction_description: string;
+  key_report_highlights: string;
+  key_report_description: string;
+  dominant_section: string;
+  dominant_description: string;
+  strategic_section: string;
+  strategic_description: string;
+  competititve_section: string;
+  competititve_description: string;
+  regional_section: string;
+  regional_description: string;
+  one_time_section: string;
+  cost: string;
+  free_sample: string;
+  free_sample_section: string;
+  download_button: string;
+  need_custom_report: string;
+  custom_report_description: string;
+  custom_report_button: string;
+  created_at: string;
+  modify_at: string;
+  share_at?: string;
+  report_identity?: ReportIdentity;
+}
+
+export interface ReportIdentity {
+  actual_report_id: number;
+  report_reference_id: string;
+  category_id: number;
+  category_reference_id: number;
+  language_id: string;
 }
 
 export interface ReportDetail {
@@ -58,6 +102,7 @@ export interface ReportDetail {
   base_year?: string;
   forecast_period?: string;
   share_at?: string;
+  report_identity?: ReportIdentity;
 }
 
 export interface ReportSection {

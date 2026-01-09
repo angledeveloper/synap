@@ -396,61 +396,9 @@ export default function GlobalNavbar() {
                                 if (result.id) {
                                   targetUrl = getLocalizedPath(`/reports/${result.id}${queryParam}`, language);
                                 } else {
-                                  // Workaround for missing ID: Fetch ID using reports_store_page API
-                                  try {
-                                    const formData = new FormData();
-                                    formData.append('search', result.title);
-                                    formData.append('language_id', codeToId[language as keyof typeof codeToId] || '1');
-                                    formData.append('page', '1');
-                                    formData.append('per_page', '10');
-                                    // We don't send category_id or send 'all' to search across all categories
-                                    formData.append('category_id', 'all');
-
-                                    const response = await fetch(`${process.env.NEXT_PUBLIC_DB_URL}reports_store_page`, {
-                                      method: 'POST',
-                                      body: formData,
-                                    });
-
-                                    if (response.ok) {
-                                      const data = await response.json();
-                                      let reportId;
-
-                                      // Check filtered categories for the report
-                                      if (data.filtered && Array.isArray(data.filtered)) {
-                                        for (const category of data.filtered) {
-                                          if (category.reports && Array.isArray(category.reports)) {
-                                            const foundReport = category.reports.find((r: any) => r.title === result.title);
-                                            if (foundReport) {
-                                              reportId = foundReport.id;
-                                              break;
-                                            }
-                                          }
-                                        }
-                                      }
-
-                                      // Fallback to direct data check if structure differs
-                                      if (!reportId) {
-                                        if (data.reports && data.reports.length > 0) {
-                                          const found = data.reports.find((r: any) => r.title === result.title);
-                                          if (found) reportId = found.id;
-                                        } else if (data.data && data.data.length > 0) {
-                                          const found = data.data.find((r: any) => r.title === result.title);
-                                          if (found) reportId = found.id;
-                                        }
-                                      }
-
-                                      if (reportId) {
-                                        targetUrl = getLocalizedPath(`/reports/${reportId}${queryParam}`, language);
-                                      } else {
-                                        console.error('Could not find report ID for:', result.title);
-                                        // Fallback to reports list if ID still not found
-                                        targetUrl = getLocalizedPath(`/reports${queryParam}`, language);
-                                      }
-                                    }
-                                  } catch (error) {
-                                    console.error('Error fetching report ID:', error);
-                                    targetUrl = getLocalizedPath(`/reports${queryParam}`, language);
-                                  }
+                                  // Fallback if ID is missing despite backend fix (should ideally not happen)
+                                  console.warn('Report ID missing for:', result.title);
+                                  targetUrl = getLocalizedPath(`/reports${queryParam}`, language);
                                 }
                                 break;
                               case 'legal':

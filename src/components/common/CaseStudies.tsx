@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 
 interface CaseStudy {
@@ -17,51 +17,182 @@ interface CaseStudiesProps {
 
 // Function to safely parse and clean HTML content
 const createMarkup = (html: string) => {
-  // Basic XSS protection - only allow safe HTML tags
-  const cleanHtml = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  const cleanHtml = html?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') || '';
   return { __html: cleanHtml };
 };
 
-function CaseStudyCard({ title, description, read_text, file_url }: CaseStudy) {
+const CaseStudyCard = ({
+  caseStudy,
+  variant
+}: {
+  caseStudy: CaseStudy;
+  variant: 'dark' | 'teal';
+}) => {
   return (
-    <div className="flex flex-col gap-4 p-8 md:p-14">
-      <h3 className="text-[24px] md:text-[28px] font-semibold " style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-        {title}
-      </h3>
+    <div
+      className={`relative flex h-[309px] flex-col justify-between p-6 ${variant === 'teal' ? 'bg-[#06A591]' : 'bg-[#0B0B0B]'
+        }`}
+    >
+      <div>
+        <h3 className="mb-3 text-[20px] font-semibold leading-snug text-white" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+          {caseStudy.title}
+        </h3>
 
-      <div
-        className="text-[20px] font-light space-y-3 prose max-w-none"
-        dangerouslySetInnerHTML={createMarkup(description)}
-      />
+        <div
+          className="mb-4 text-[16px] font-light leading-relaxed text-white opacity-80 prose max-w-none line-clamp-4"
+          dangerouslySetInnerHTML={createMarkup(caseStudy.description)}
+        />
+      </div>
 
-      <Link href={file_url || "#"} target={file_url ? "_blank" : undefined} className="underline text-[20px] font-medium w-fit">
-        {read_text || "Read case study"}
+      <Link
+        href={caseStudy.file_url || "#"}
+        target={caseStudy.file_url ? "_blank" : undefined}
+        className="w-fit text-[16px] font-medium text-white underline decoration-1 underline-offset-4 hover:opacity-80"
+      >
+        {caseStudy.read_text || "Read case study"}
       </Link>
     </div>
   );
-}
-
+};
 
 export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [itemsPerPage, setItemsPerPage] = useState(1);
+  const [displayData, setDisplayData] = useState<CaseStudy[]>([]);
+
+  // Duplicate data for testing if not enough items
+  useEffect(() => {
+    if (!caseStudies) return;
+    let data = [...caseStudies];
+    // If we have fewer than 10 items, duplicate them for carousel effect as requested
+    if (data.length > 0 && data.length < 10) {
+      // Duplicate 4 times more (total 5 copies) or until reasonable length
+      const copies = 4; // user said "add the same case studies 4 times more"
+      for (let i = 0; i < copies; i++) {
+        data = [...data, ...caseStudies];
+      }
+    }
+    // Assign unique IDs to avoid key errors
+    const uniqueData = data.map((item, index) => ({ ...item, id: index })); // Mock IDs
+    setDisplayData(uniqueData);
+  }, [caseStudies]);
+
+  // Responsive items per page
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1440) setItemsPerPage(4); // Fits roughly 1440 / 4 ~ 360, but user wants 473px width.
+      // If user wants EXACTLY 473px width, 1440px / 473px = ~3 items.
+      // Let's adjust breakpoints to fit fixed width cards better.
+      else if (window.innerWidth >= 1024) setItemsPerPage(3);
+      else if (window.innerWidth >= 640) setItemsPerPage(2);
+      else setItemsPerPage(1);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Auto-scroll logic
+  useEffect(() => {
+    if (displayData.length <= itemsPerPage) return;
+
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => {
+        const nextIndex = prev + 1;
+        // Logic for infinite loop or reset
+        // With smooth scroll, resetting to 0 jumps back. Use simple loop for now.
+        if (nextIndex > displayData.length - itemsPerPage) {
+          return 0;
+        }
+        return nextIndex;
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [itemsPerPage, displayData.length]);
+
+  // Smooth scroll to active index
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      // We want strict card width?
+      // If we use flex-basis with 100/itemsPerPage, the width is dynamic.
+      // User requested 473px width.
+      // If we force 473px, we might overflow the container or have gaps.
+      // Better to check if the container is flex or grid.
+      // Let's try to match the DESIGN width 473px on large screens.
+
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      const itemWidth = containerWidth / itemsPerPage;
+
+      scrollContainerRef.current.scrollTo({
+        left: activeIndex * itemWidth,
+        behavior: 'smooth'
+      });
+    }
+  }, [activeIndex, itemsPerPage]);
+
+  if (!displayData || displayData.length === 0) return null;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 w-full text-white">
-
-      {caseStudies.map((cs, idx) => (
-        <div
-          key={`cs-${cs.id || idx}`}
-          className={`flex flex-col justify-center w-full ${
-            // Left column (Index 0, 2, etc.) aligns content to the END (Right side)
-            // Right column (Index 1, 3, etc.) aligns content to the START (Left side)
-            idx % 2 === 0 ? "bg-[#06A591] md:items-end" : "bg-black md:items-start"
-            }`}
+    <div className="w-full bg-white py-20 overflow-hidden">
+      {/* Title - Centered */}
+      <div className="mx-auto w-full max-w-[1920px] px-4">
+        <h2
+          className="mb-12 text-center text-[40px] text-black md:mb-16 md:text-[64px]"
+          style={{ fontFamily: 'var(--font-orbitron)' }}
         >
-          {/* Constrain the inner content to half of the max-width (720px) to simulate the 1440px container */}
-          <div className="w-full max-w-[720px]">
-            <CaseStudyCard {...cs} />
-          </div>
-        </div>
-      ))}
+          Case Studies
+        </h2>
+      </div>
 
+      {/* Carousel Container - Full Width edge to edge */}
+      <div className="relative w-full">
+        <div
+          ref={scrollContainerRef}
+          className="flex w-full overflow-x-hidden snap-x snap-mandatory pl-[5vw] md:pl-[max(0px,calc(50vw-720px))]"
+        >
+          {displayData.map((cs, index) => (
+            <div
+              key={cs.id}
+              className="flex-shrink-0 px-3 snap-start"
+              style={{
+                // Fixed width for consistent look, allow them to flow off-screen
+                width: '473px',
+                maxWidth: '90vw' // responsive fallback
+              }}
+            >
+              <CaseStudyCard
+                caseStudy={cs}
+                variant={index % 4 === 2 ? 'teal' : 'dark'}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Pagination Dots */}
+      <div className="mt-10 flex justify-center gap-2">
+        {/* Show limited number of dots to avoid overcrowding */}
+        {displayData.map((_, idx) => {
+          // If too many items, maybe only show dots for pages?
+          // Let's show all for now since we have ~10
+          if (idx > displayData.length - itemsPerPage) return null;
+
+          return (
+            <button
+              key={idx}
+              onClick={() => setActiveIndex(idx)}
+              className={`h-3 w-3 rounded-full transition-all duration-300 ${activeIndex === idx
+                ? 'bg-black w-3 opacity-100 scale-110'
+                : 'bg-[#D9D9D9] opacity-100 hover:bg-black/50'
+                }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }

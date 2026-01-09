@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Report } from "@/types/reports";
-import { useLanguageStore } from "@/store";
+import { useLanguageStore, useHomePageStore } from "@/store";
 import ArrowIcon from "@/components/common/ArrowIcon";
 import { codeToId, targetLanguageIds, slugify } from "@/lib/utils";
 
@@ -62,7 +62,7 @@ export default function ReportCard({ report, viewReportLabel, baseYearLabel, for
 
   return (
     <Card
-      className="w-full h-auto min-h-[294px] md:min-h-[250px] bg-[#f8f8f8] shadow-sm hover:shadow-md transition-shadow duration-200"
+      className="w-full h-auto bg-[#f8f8f8] shadow-sm hover:shadow-md transition-shadow duration-200"
       style={{
         borderWidth: '1px',
         borderStyle: 'solid',
@@ -70,11 +70,19 @@ export default function ReportCard({ report, viewReportLabel, baseYearLabel, for
         borderRadius: '0px',
       }}
     >
-      <CardContent className="!p-4 !pt-2">
+      <CardContent className="!px-4 !pt-3 !pb-3">
         <div className="flex flex-col h-full">
           {/* Title Text - Limited to 3 lines */}
-          <div className="mb-4">
-            <Link href={reportUrl} className="block">
+          <div className="mb-3">
+            <Link href={reportUrl} className="block" onClick={() => {
+              const { setIdentity } = useHomePageStore.getState();
+              if (report.report_identity && report.report_identity.report_reference_id) {
+                setIdentity({
+                  report_reference_id: report.report_identity.report_reference_id,
+                  category_reference_id: String(report.report_identity.category_reference_id)
+                });
+              }
+            }}>
               <p className="text-[#202020] text-base line-clamp-3 md:text-base hover:text-blue-700 transition-colors" style={{
                 fontFamily: 'Space Mono, monospace',
                 fontWeight: '400',
@@ -88,7 +96,7 @@ export default function ReportCard({ report, viewReportLabel, baseYearLabel, for
           </div>
 
           {/* Description Text - Limited to 3 lines */}
-          <div className="mb-6">
+          <div className="mb-3">
             <p className="text-[#555353] text-sm line-clamp-3" style={{
               fontFamily: 'Space Grotesk, sans-serif',
               fontWeight: '300',
@@ -101,51 +109,62 @@ export default function ReportCard({ report, viewReportLabel, baseYearLabel, for
             </p>
           </div>
 
-          {/* Metadata Grid */}
-          <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[#555353]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-            {report.base_year && (
-              <div>
-                <span className="font-semibold">{baseYearLabel || 'Base Year:'}</span> {report.base_year}
-              </div>
-            )}
-            {report.forecast_period && (
-              <div>
-                <span className="font-semibold">{forecastPeriodLabel || 'Forecast Period:'}</span> {report.forecast_period}
-              </div>
-            )}
-            {report.report_date && (
-              <div>
-                <span className="font-semibold">Published:</span> {formatDate(report.report_date)}
-              </div>
-            )}
-            {report.last_updated && (
-              <div>
-                <span className="font-semibold">Updated:</span> {report.last_updated}
-              </div>
-            )}
-            {report.number_of_pages && (
-              <div>
-                <span className="font-semibold">Pages:</span> {report.number_of_pages}
-              </div>
-            )}
-          </div>
+          {/* Metadata and Button Row */}
+          <div className="mt-auto mb-0 pt-0 flex items-end justify-between gap-4">
+            {/* Metadata Grid (Left) */}
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-[#555353]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              {report.base_year && (
+                <div>
+                  <span className="font-semibold">{baseYearLabel || 'Base Year:'}</span> {report.base_year}
+                </div>
+              )}
+              {report.forecast_period && (
+                <div>
+                  <span className="font-semibold">{forecastPeriodLabel || 'Forecast Period:'}</span> {report.forecast_period}
+                </div>
+              )}
+              {report.report_date && (
+                <div>
+                  <span className="font-semibold">Published:</span> {formatDate(report.report_date)}
+                </div>
+              )}
+              {report.last_updated && (
+                <div>
+                  <span className="font-semibold">Updated:</span> {report.last_updated}
+                </div>
+              )}
+              {report.number_of_pages && (
+                <div>
+                  <span className="font-semibold">Pages:</span> {report.number_of_pages}
+                </div>
+              )}
+            </div>
 
-          {/* Bottom Section with View Report Button */}
-          <div className="flex justify-end items-center mt-auto mb-0 pt-2">
-            {/* View Report Button - Text with underline */}
-            <Link href={reportUrl}>
-              <span
-                className="hover:text-gray-700 transition-colors duration-200 border-b-2 border-gray-900 hover:border-gray-700 font-medium"
-                style={{
-                  fontFamily: 'Noto Sans, sans-serif',
-                  color: '#010912',
-                  fontSize: '16px',
-                  lineHeight: '22px',
-                }}
-              >
-                {viewReportLabel || 'View Report'}
-              </span>
-            </Link>
+            {/* View Report Button (Right) */}
+            <div className="flex-shrink-0">
+              <Link href={reportUrl} onClick={() => {
+                const { setIdentity } = useHomePageStore.getState();
+                // Check if report_identity exists, otherwise fallback or log
+                if (report.report_identity && report.report_identity.report_reference_id) {
+                  setIdentity({
+                    report_reference_id: report.report_identity.report_reference_id,
+                    category_reference_id: String(report.report_identity.category_reference_id)
+                  });
+                }
+              }}>
+                <span
+                  className="hover:text-gray-700 transition-colors duration-200 border-b-2 border-gray-900 hover:border-gray-700 font-medium"
+                  style={{
+                    fontFamily: 'Noto Sans, sans-serif',
+                    color: '#010912',
+                    fontSize: '16px',
+                    lineHeight: '22px',
+                  }}
+                >
+                  {viewReportLabel || 'View Report'}
+                </span>
+              </Link>
+            </div>
           </div>
         </div>
       </CardContent>

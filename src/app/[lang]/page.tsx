@@ -205,7 +205,7 @@ export default function Home() {
         </div>
       </section>
       {/* Desktop layout for home_section2 - hidden on 834px */}
-      <section className="hidden w-full justify-center bg-[#000] p-3 py-20 md:flex [@media(width:834px)]:hidden">
+      <section className="hidden w-full justify-center bg-[#000] p-3 py-10 md:flex [@media(width:834px)]:hidden">
         <div className="flex w-full max-w-[1440px] flex-col items-center justify-center gap-10 md:flex-row">
           {HomePage.home_section2?.map((section: any, index: number) => (
             <div
@@ -265,7 +265,7 @@ export default function Home() {
         </div>
       </section>
       <section
-        className="w-full bg-gradient-to-b from-[#000910] to-[#000] bg-cover bg-center py-20 md:min-h-[650px] md:pt-40 md:pb-40 relative"
+        className="w-full bg-gradient-to-b from-[#000910] to-[#000] bg-cover bg-center py-20 md:min-h-[450px] md:py-24 relative"
         style={{
           backgroundImage: `url('/blackgrid.png')`,
           backgroundPosition: "bottom",
@@ -296,7 +296,7 @@ export default function Home() {
             <div
               key={index}
               onClick={() => handleReportClick(item.category_id || item.id || '1')}
-              className="group relative h-full w-full bg-[#F2F1EF] hover:bg-[#2F2F2F] cursor-pointer"
+              className="group relative h-full w-full bg-[#F2F1EF] hover:bg-[#2F2F2F] cursor-pointer shadow-lg hover:shadow-xl transition-shadow"
             >
               <Image
                 src={item.image}
@@ -333,12 +333,12 @@ export default function Home() {
           <div className="w-full flex justify-center bg-[#F5F5F5] py-16">
             <div className="w-full max-w-[900px] px-4 text-center">
 
-              <h4 className="text-[32px] md:text-[64px] font-bold mb-16 text-[#242424]">
+              <h4 className="text-[32px] md:text-[64px] font-bold mb-8 text-[#242424]">
                 <span dangerouslySetInnerHTML={{ __html: highlightText(HomePage.home_section5?.title) }} />
               </h4>
 
               {/* TESTIMONIAL CAROUSEL */}
-              <div className="relative w-full h-[380px] md:h-[420px]">
+              <div className="relative w-full h-[280px] md:h-[320px]">
                 {HomePage.testimonials.map((testimonial: any, index: number) => (
                   <div
                     key={index}

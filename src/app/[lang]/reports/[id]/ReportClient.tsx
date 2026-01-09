@@ -30,7 +30,12 @@ const CustomReportForm = dynamic(() => import('@/components/common/CustomReportF
 import useSWR from 'swr';
 
 
-export default function ReportDetailPage() {
+interface ReportDetailPageProps {
+    initialData?: any;
+    initialReferenceId?: string;
+}
+
+export default function ReportDetailPage({ initialData, initialReferenceId }: ReportDetailPageProps) {
     const params = useParams();
     const router = useRouter();
     const { language } = useLanguageStore();
@@ -42,6 +47,8 @@ export default function ReportDetailPage() {
     const [isSampleFormOpen, setIsSampleFormOpen] = useState(false);
     const [email, setEmail] = useState('');
     const formRef = useRef<HTMLDivElement>(null);
+
+    // ... (rest of useEffects/handlers omitted for brevity)
 
     // Close form when clicking outside
     useEffect(() => {
@@ -96,11 +103,18 @@ export default function ReportDetailPage() {
         return langCats.length > 0 ? String(langCats[0].category_id) : "1";
     }, [HomePage, languageId]);
 
+    // Prefer initialReferenceId passed from server if ref_id is missing from URL
+    const activeInitialRefId = initialReferenceId;
+    const refId = searchParams?.get('ref_id') || activeInitialRefId || undefined;
+
     // Fetch report data from API
     const { data, isLoading, error } = useReportDetail({
         reportId: reportId,
         categoryId: defaultCategoryId,
         languageId: languageId.toString(),
+        reportReferenceId: searchParams?.get('ref_id') || initialReferenceId, // specific priority
+        slug: params.id as string,
+        initialData: initialData, // Pass server-side data
     });
 
     const report = data?.data?.report;
@@ -165,7 +179,7 @@ export default function ReportDetailPage() {
         const query = highlight.toLowerCase();
 
         // Check if the query is in any specific section (tab)
-        const foundSectionIndex = sections.findIndex(s =>
+        const foundSectionIndex = sections.findIndex((s: ReportSection) =>
             s.section_description.toLowerCase().includes(query) ||
             s.section_name.toLowerCase().includes(query)
         );
@@ -722,7 +736,7 @@ export default function ReportDetailPage() {
                                     className="w-full p-3 border border-gray-300 rounded-lg bg-white text-[#000000] text-[14px] font-medium focus:outline-none focus:ring-1.5 focus:ring-[#1160C9]"
                                     style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                                 >
-                                    {sections.map((section, index) => (
+                                    {sections.map((section: ReportSection, index: number) => (
                                         <option key={section.id} value={index} className="text-[#000000] text-[14px] font-medium">
                                             {section.section_name.toUpperCase()}
                                         </option>
@@ -733,7 +747,7 @@ export default function ReportDetailPage() {
                             {/* Desktop Tab Navigation */}
                             <div className="hidden sm:flex w-full overflow-x-auto no-scrollbar">
                                 <div className="flex">
-                                    {sections.map((section, index) => (
+                                    {sections.map((section: ReportSection, index: number) => (
                                         <button
                                             key={section.id}
                                             onClick={() => setActiveTab(index)}
@@ -761,9 +775,9 @@ export default function ReportDetailPage() {
                             </div>
 
                             {/* Tab Content - Connected to tabs */}
-                            {sections.map((section, index) => {
+                            {sections.map((section: ReportSection, index: number) => {
                                 // Find the TOC section to extract FAQs
-                                const tocSection = sections.find(s => s.section_name === 'TOC');
+                                const tocSection = sections.find((s: ReportSection) => s.section_name === 'TOC');
                                 const faqContent = tocSection?.section_description.includes('FAQs Section')
                                     ? tocSection.section_description.split('<strong>FAQs Section</strong>')[1]
                                     : '';

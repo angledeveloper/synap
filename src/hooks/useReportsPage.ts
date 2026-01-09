@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { Filters, ReportsResponse } from '@/types/reports';
 import { useHomePageStore } from '@/store';
 
@@ -42,7 +43,12 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
 
   // Create FormData with the validated category
   const formData = new FormData();
-  formData.append('category_id', String(category.category_id));
+  // Use category_reference_id as primary if available, fallback to category_id
+  if (category.category_reference_id) {
+    formData.append('category_reference_id', String(category.category_reference_id));
+  } else {
+    formData.append('category_id', String(category.category_id));
+  }
   formData.append('language_id', String(category.language_id));
 
   // Add search parameter - try different parameter names
@@ -143,13 +149,38 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
 };
 
 export const useReportsPage = () => {
-  const { HomePage } = useHomePageStore();
+  const { HomePage, setIdentity } = useHomePageStore();
   const allCategories = HomePage?.report_store_dropdown || [];
 
-  return useMutation<ReportsResponse, Error, Filters>({
+  const mutation = useMutation<ReportsResponse, Error, Filters>({
     mutationFn: (filters) => fetchReports(filters, allCategories),
     onError: (error) => {
       console.error('Reports fetch error:', error);
     },
   });
+
+  useEffect(() => {
+    if (mutation.data) {
+      // If we have data, we can try to extract category reference id from the first report or the filters
+      // But simpler: just use the category from filters if possible.
+      // Actually, since we don't have easy access to filters here (it's in mutation variables),
+      // we can look at the response if it has category info.
+
+      // However, fetchReports returns category_name etc. 
+      // Let's iterate through reports to find identity if needed, or rely on logic in component.
+      // But wait, the mutation variables are available in mutation.variables if we need them.
+
+      const filters = mutation.variables;
+      if (filters && allCategories.length > 0) {
+        const category = allCategories.find(
+          (cat: any) => String(cat.category_id) === String(filters.category_id)
+        );
+        if (category && category.category_reference_id) {
+          setIdentity({ category_reference_id: String(category.category_reference_id) });
+        }
+      }
+    }
+  }, [mutation.data, mutation.variables, allCategories, setIdentity]);
+
+  return mutation;
 };

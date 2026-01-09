@@ -523,7 +523,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Reports Grid */}
-      <div className="pb-12" style={{ paddingTop: '48px' }}>
+      <div className="pb-12" style={{ paddingTop: '12px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading || isPending ? (
             <div className="bg-[#F0F0F0] pb-6" style={{ paddingTop: '61px', paddingLeft: '41px', paddingRight: '41px' }}>

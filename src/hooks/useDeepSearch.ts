@@ -4,6 +4,7 @@ import { codeToId } from '@/lib/utils';
 
 export interface DeepSearchResult {
   id?: number;
+  language_id?: number;
   title: string;
   description?: string;
   introduction_description?: string; // For reports
@@ -71,6 +72,8 @@ const fetchDeepSearch = async (query: string, languageId: number): Promise<DeepS
   if (data.reports && Array.isArray(data.reports)) {
     const reportResults = data.reports.map((item: any) => ({
       ...item,
+      id: item.id, // Ensure ID is captured
+      language_id: item.language_id, // Capture language_id
       type: 'report' as const,
       description: item.introduction_description // Map for consistency
     }));
