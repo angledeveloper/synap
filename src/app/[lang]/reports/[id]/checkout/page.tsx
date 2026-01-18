@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useLanguageStore, useHomePageStore } from "@/store";
 import { codeToId, extractIdFromSlug } from "@/lib/utils";
 import { useReportDetail } from "@/hooks/useReportDetail";
@@ -112,6 +112,43 @@ export default function CheckoutPage() {
       setSelectedCurrency(list?.[0] || "");
     }
   }, [checkout_page]);
+
+  // Handle CCAvenue Payment Return
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const status = searchParams.get('status');
+    const orderId = searchParams.get('orderId');
+    const transactionId = searchParams.get('transactionId');
+    const error = searchParams.get('error');
+
+    if (status === 'success' && orderId) {
+      // Construct success data
+      // Note: Ideally we should fetch the full order details from API here, 
+      // effectively validating the order again.
+      // For now, using query params to show confirmation.
+      setSuccessData({
+        orderId,
+        transactionId: transactionId || 'N/A',
+        paymentMethod: 'CCAvenue',
+        purchaseDate: new Date().toLocaleDateString(),
+        // These details might be missing if we just redirected back, 
+        // but for confirmation display purposes we might need them or fetch them.
+        // Using logic to try and populate or fail gracefully.
+        reportTitle: reportData?.title || 'Report',
+        licenseType: selectedLicense?.title || 'License', // This might be null if state lost
+        // ...
+      });
+
+      // Hide other steps
+      setShowBilling(false);
+      setShowPayment(false);
+
+      // Clear params to avoid loop/refresh issues
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (error) {
+      alert("Payment Failed: " + error); // Simple alert or toast
+    }
+  }, [searchParams, reportData, selectedLicense]);
 
   // License option assembly from API - MEMOIZED to update when currency changes
   const licenseOptions = useMemo(() => {

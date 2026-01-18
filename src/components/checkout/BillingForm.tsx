@@ -348,51 +348,127 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     }
   };
 
-  // --- SUBMISSION logic: POST to /customer-orders. Use proper keys/casing ---
-  const handlePayment = async (e: React.FormEvent) => {
-    e.preventDefault && e.preventDefault();
-    // Compose payload as required
-    const payload: any = {
-      language_id: propLanguageId || 1,
-      first_name: formData.firstName,
-      last_name: formData.lastName,
-      email: formData.email,
-      residence: formData.country,
-      phone: `${formData.phoneCode}${formData.phoneNumber}`,
-      first_line_add: formData.address || "",
-      state_province: formData.state || "",
-      city: formData.city || "",
-      postal_zipcode: formData.postalCode || "",
-      add_company_details: formData.addCompanyDetails ? "Yes" : "No",
-      company_name: formData.companyName || "",
-      GSTIN: formData.gstin || "",
-      license_type: licenseTitle,
-      discount: String(finalDiscountAmount),
-      subtotal: String(subtotal),
-      cgst: String(cgst),
-      sgst: String(sgst),
-      igst: String(igst),
-      total: String(finalTotal),
-      offer_code: offerCode || ""
-    };
+  // --- CCAvenue Payment Handler ---
+  const handleCCAvenuePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isFormComplete()) {
+      // Ideally trigger validation display, but for now rely on browser 'required' or simple check
+      setDiscountError("Please complete all required fields.");
+      return;
+    }
+
+    setIsLoading(true);
+    setDiscountError("");
+
     try {
+      // 1. Create Order in Main DB (dashboard.synapseaglobal.com)
+      const payload: any = {
+        language_id: propLanguageId || 1,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        residence: formData.country,
+        phone: `${formData.phoneCode}${formData.phoneNumber}`,
+        first_line_add: formData.address || "",
+        state_province: formData.state || "",
+        city: formData.city || "",
+        postal_zipcode: formData.postalCode || "",
+        add_company_details: formData.addCompanyDetails ? "Yes" : "No",
+        company_name: formData.companyName || "",
+        GSTIN: formData.gstin || "",
+        license_type: licenseTitle,
+        discount: String(finalDiscountAmount),
+        subtotal: String(subtotal),
+        cgst: String(cgst),
+        sgst: String(sgst),
+        igst: String(igst),
+        total: String(finalTotal),
+        offer_code: offerCode || ""
+      };
+
       const res = await fetch('https://dashboard.synapseaglobal.com/api/customer-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
       if (!res.ok) {
         const errText = await res.text();
-        throw new Error('Failed to submit order: ' + errText);
+        throw new Error('Failed to submit order to database: ' + errText);
       }
       const data = await res.json();
-      // Pass fields to parent/order-confirmation component as needed
-      // e.g. props.onOrderComplete(data) or setOrderData context
-      // For now, just log:
 
-    } catch (err) {
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to create customer order');
+      }
+
+      // 2. Generate Internal Order ID
+      const internalId = generateInternalOrderId();
+
+      // 3. Initiate CCAvenue Payment
+      // Calculate final amount to charge
+      const amountToCharge = (customPricing ? customPricing.total : (couponTotalNumeric > 0 ? couponTotalNumeric : finalTotal)).toFixed(2);
+
+      const initiateRes = await fetch('/api/payments/ccavenue/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: internalId,
+          currency: selectedOrderCurrency,
+          amount: amountToCharge,
+          // Billing info for CCAvenue pre-fill
+          billing_name: `${formData.firstName} ${formData.lastName}`,
+          billing_address: formData.address,
+          billing_city: formData.city,
+          billing_state: formData.state,
+          billing_zip: formData.postalCode,
+          billing_country: formData.country,
+          billing_tel: formData.phoneNumber,
+          billing_email: formData.email,
+          return_url: window.location.href
+        })
+      });
+
+      const initiateData = await initiateRes.json();
+      if (!initiateRes.ok) {
+        throw new Error(initiateData.error || 'Failed to initiate payment gateway');
+      }
+
+      const { encRequest, access_code, action } = initiateData;
+
+      if (!encRequest || !access_code) {
+        throw new Error("Invalid response from payment gateway");
+      }
+
+      // 4. Submit POST form to CCAvenue
+      // Create a hidden form and submit it
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = action;
+      form.style.display = 'none';
+
+      const encInput = document.createElement('input');
+      encInput.type = 'hidden';
+      encInput.name = 'encRequest';
+      encInput.value = encRequest;
+      form.appendChild(encInput);
+
+      const accessInput = document.createElement('input');
+      accessInput.type = 'hidden';
+      accessInput.name = 'access_code';
+      accessInput.value = access_code;
+      form.appendChild(accessInput);
+
+      document.body.appendChild(form);
+      form.submit();
+
+      // User is now redirected away.
+
+    } catch (err: any) {
       console.error('Failed to submit order', err);
-      setDiscountError('Failed to submit order. Please try again!');
+      setDiscountError(err.message || 'Failed to submit order. Please try again!');
+      setIsLoading(false);
     }
   };
 
@@ -977,21 +1053,22 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                             {isINR ? (
                               <button
                                 type="submit"
-                                onClick={handlePayment}
-                                className="bg-blue-600 text-white px-6 py-3 rounded-md w-full text-base font-medium hover:bg-blue-700 transition-colors"
+                                onClick={handleCCAvenuePayment}
+                                disabled={isLoading}
+                                className="bg-blue-600 text-white px-6 py-3 rounded-md w-full text-base font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                               >
-                                {billingInformation?.proceed_to_pay_text || 'Submit payment'}
+                                {isLoading ? 'Processing...' : (billingInformation?.proceed_to_pay_text || 'Submit payment')}
                               </button>
                             ) : (
                               <button
                                 type="submit"
-                                onClick={handlePayment}
-                                className="bg-blue-600 text-white px-6 py-3 rounded-md w-full text-base font-medium hover:bg-blue-700 transition-colors"
+                                onClick={handleCCAvenuePayment}
+                                disabled={isLoading || !(selectedPaymentMethod && selectedOrderLicenseId && selectedOrderCurrency)}
+                                className="bg-blue-600 text-white px-6 py-3 rounded-md w-full text-base font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                                disabled={!(selectedPaymentMethod && selectedOrderLicenseId && selectedOrderCurrency)}
                               >
-                                {billingInformation?.proceed_to_pay_text || 'Submit payment'}
+                                {isLoading ? 'Processing...' : (billingInformation?.proceed_to_pay_text || 'Submit payment')}
                               </button>
                             )}
                             <div className="mt-3 flex items-center gap-2 text-gray-500 text-xs">
