@@ -17,15 +17,20 @@ export default function ReportCard({ report, viewReportLabel, baseYearLabel, for
   const { language } = useLanguageStore();
   const currentLangId = codeToId[language as keyof typeof codeToId];
 
-  // Logic for Japanese(5), Chinese(6), Korean(7), Arabic(8)
-  // For target languages (Asian/Arabic), we use report_reference_title (English) for the URL slug.
-  // This allows for SEO-friendly URLs even on localized pages.
-  const useReferenceTitle = targetLanguageIds.includes(currentLangId);
-  const titleForSlug = useReferenceTitle
-    ? (report.report_reference_title || "") // Use English reference title if available, otherwise fallback to ID-only (via empty string)
+  // Logic for All Non-English Languages
+  // We use report_reference_title (English) for the URL slug to improve SEO and consistency.
+  const isEnglish = currentLangId === "1";
+  // If not English, use Reference Title (English) if available, otherwise fallback to title
+  const titleForSlug = !isEnglish && report.report_reference_title
+    ? report.report_reference_title
     : report.title;
 
-  const titleSlug = slugify(titleForSlug, report.id);
+  // Use Reference ID if using Reference Title (and it exists), otherwise use regular ID
+  const idForSlug = !isEnglish && report.report_identity?.report_reference_id
+    ? report.report_identity.report_reference_id
+    : report.id;
+
+  const titleSlug = slugify(titleForSlug, idForSlug);
 
   const reportUrl = `/${language}/reports/${titleSlug}`;
 

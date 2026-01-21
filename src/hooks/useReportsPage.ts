@@ -43,12 +43,11 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
 
   // Create FormData with the validated category
   const formData = new FormData();
-  // Use category_reference_id as primary if available, fallback to category_id
-  if (category.category_reference_id) {
-    formData.append('category_reference_id', String(category.category_reference_id));
-  } else {
-    formData.append('category_id', String(category.category_id));
-  }
+
+  // Always use category_reference_id. If missing/null, fallback to category_id.
+  const refId = category.category_reference_id || category.category_id;
+  formData.append('category_reference_id', String(refId));
+
   formData.append('language_id', String(category.language_id));
 
   // Add search parameter - try different parameter names

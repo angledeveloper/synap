@@ -103,6 +103,24 @@ export interface ReportDetail {
   forecast_period?: string;
   share_at?: string;
   report_identity?: ReportIdentity;
+  // Market Scope Fields
+  study_period_description?: string;
+  market_base_year?: string;
+  estimated_year?: string;
+  forcast_period?: string; // Note: 'forcast' typo in API
+  historical_period?: string;
+  growth_rate?: string;
+  market_size_value_title_1?: string;
+  market_size_value_description_1?: string;
+  market_size_value_title_2?: string;
+  market_size_value_description_2?: string;
+  segmentation_covered?: string;
+  market_leaders?: string;
+  regions_and_countries_covered?: string;
+  // Recent Developments
+  recent_developments?: string;
+  // FAQ
+  [key: string]: any; // To handle question_1, answer_1, etc. and other dynamic fields
 }
 
 export interface ReportSection {
@@ -118,6 +136,7 @@ export interface ReportDetailResponse {
   success: boolean;
   share_at?: string;
   report_reference_title?: string;
+  report_meta_fields?: any; // Define a more specific type if needed
   data: {
     report: ReportDetail;
     sections: ReportSection[];

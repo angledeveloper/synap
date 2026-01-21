@@ -53,7 +53,8 @@ export async function generateMetadata({
 
   // id is the slug
   const languageId = (codeToId[lang as keyof typeof codeToId] || codeToId['en']).toString();
-  const referenceId = typeof ref_id === 'string' ? ref_id : undefined;
+  const idFromSlug = extractIdFromSlug(id);
+  const referenceId = typeof ref_id === 'string' ? ref_id : idFromSlug;
 
   const data = await getReportData(id, languageId, referenceId);
   const report = data?.data?.report;
@@ -104,7 +105,15 @@ export default async function Page({
   const { ref_id } = await searchParams;
 
   const languageId = (codeToId[lang as keyof typeof codeToId] || codeToId['en']).toString();
-  const referenceId = typeof ref_id === 'string' ? ref_id : undefined;
+
+  // Extract ID from slug (works for both old ID and new Reference ID style URLs)
+  const idFromSlug = extractIdFromSlug(id);
+
+  // Use provided ref_id OR fall back to extracted ID from slug
+  // This supports both ?ref_id=123 (old/secure way) AND /title-123 (new SEO way)
+  // For English, extracted ID is effectively the reference ID (usually).
+  // For non-English with new URLs, extracted ID IS the reference ID.
+  const referenceId = typeof ref_id === 'string' ? ref_id : idFromSlug;
 
   // We reuse getReportData to fetch the data for the client component
   // This avoids double-fetching and ensures consistency.

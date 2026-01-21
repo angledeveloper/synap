@@ -18,6 +18,10 @@ import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import dynamic from 'next/dynamic';
+import MarketScopeAnalysis from '@/components/reports/MarketScopeAnalysis';
+import RecentDevelopments from '@/components/reports/RecentDevelopments';
+import ReportFAQ from '@/components/reports/ReportFAQ';
+import CommonLayoutSection from '@/components/reports/CommonLayoutSection';
 
 // Dynamically import form components with no SSR
 const SampleReportForm = dynamic(() => import('@/components/common/SampleReportForm'), {
@@ -29,6 +33,16 @@ const CustomReportForm = dynamic(() => import('@/components/common/CustomReportF
 });
 import useSWR from 'swr';
 
+const decodeHtml = (html: string) => {
+    if (!html) return "";
+    return html
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, " ");
+};
 
 interface ReportDetailPageProps {
     initialData?: any;
@@ -112,7 +126,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
         reportId: reportId,
         categoryId: defaultCategoryId,
         languageId: languageId.toString(),
-        reportReferenceId: searchParams?.get('ref_id') || initialReferenceId, // specific priority
+        reportReferenceId: searchParams?.get('ref_id') || initialReferenceId || reportId, // specific priority
         slug: params.id as string,
         initialData: initialData, // Pass server-side data
     });
@@ -342,7 +356,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
         <div className="min-h-screen bg-white pt-20">
             {/* Breadcrumbs */}
             <div className="pt-11 pb-4">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <nav className="flex" aria-label="Breadcrumb">
                         <ol
                             className="flex items-center space-x-2 justify-start sm:justify-center min-w-0"
@@ -375,7 +389,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
             </div>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4 sm:py-6 lg:py-8">
+            <div className="max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4 sm:py-6 lg:py-8">
                 {/* Content and Sidebar: mobile full width, desktop grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 relative">
                     {/* Main Content Area: full width on mobile, 2/3 on desktop */}
@@ -575,7 +589,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
 
                             {/* Social Media Sharing */}
                             <div className="w-full p-2">
-                                <div className="flex items-center justify-between">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-1">
                                     <h3
                                         className="text-black text-[14px] font-normal whitespace-nowrap"
                                         style={{ fontFamily: 'Space Mono, monospace' }}
@@ -630,6 +644,8 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                 </div>
                             </div>
                         </div>
+
+
 
                         {/* Introduction Section */}
                         <div className="mb-5 sm:mb-12 mt-10">
@@ -726,6 +742,8 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                             </div>
                         </div>
 
+
+
                         {/* Tab Navigation and Content - Connected */}
                         <div className="mb-6 sm:mb-8">
                             {/* Mobile Dropdown */}
@@ -784,15 +802,15 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
 
                                 // Combine Why This Report content with FAQs
                                 const combinedContent = section.section_name === 'Why This Report?' && faqContent
-                                    ? section.section_description + faqContent
-                                    : section.section_description;
+                                    ? decodeHtml(section.section_description + faqContent)
+                                    : decodeHtml(section.section_description);
 
                                 return (
                                     <div
                                         key={section.id}
                                         className={`${activeTab === index ? 'block' : 'hidden'}`}
                                     >
-                                        <div className="bg-gray-100 rounded-br-2xl rounded-bl-2xl border border-gray-200 border-t-0 p-4 sm:p-6 lg:p-8 -mt-px relative">
+                                        <div className="bg-gray-100 border border-gray-200 border-t-0 p-4 sm:p-6 lg:p-8 -mt-px relative">
                                             <div className="absolute top-0 left-0 right-0 h-px bg-black hidden sm:block"></div>
                                             <h2
                                                 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2 sm:mb-3"
@@ -810,6 +828,18 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                 );
                             })}
                         </div>
+
+                        {/* Market Scope and Analysis */}
+                        <MarketScopeAnalysis report={report} headings={data?.report_meta_fields} />
+
+                        {/* Key Recent Developments */}
+                        <RecentDevelopments
+                            heading={data?.report_meta_fields?.recent_developments_heading}
+                            content={report.recent_developments}
+                        />
+
+                        {/* FAQ */}
+                        <ReportFAQ heading={data?.report_meta_fields?.faq_heading} report={report} />
                     </div>
 
                     {/* Sidebar: desktop only */}
@@ -906,7 +936,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
 
                                 {/* Social Media Sharing */}
                                 <div className="w-full p-2">
-                                    <div className="flex items-center justify-between gap-1 ">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-1">
                                         <h3
                                             className="text-black text-[18px] font-normal whitespace-nowrap"
                                             style={{ fontFamily: 'Space Mono, monospace' }}
@@ -967,110 +997,29 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
 
                 </div>
 
-                {/* Common Layout Section */}
-                {commonLayout && (
-                    <div className="bg-white py-12 sm:py-16 lg:py-20">
-                        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-                            {/* API-provided Heading, split to two lines at colon */}
-                            <h2
-                                className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8"
-                                style={{
-                                    fontFamily: 'var(--font-orbitron)',
-                                    background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    backgroundClip: 'text',
-                                    lineHeight: '1.2',
-                                    padding: '0.2em 0'  // Add vertical padding
-                                }}
-                            >
-                                {(() => {
-                                    if (!commonLayout.title) return null;
-                                    const words = commonLayout.title.split(/\s+/);
-                                    if (words.length <= 3) return commonLayout.title;
-                                    return (
-                                        <>
-                                            <div style={{ lineHeight: '1.4' }}>{words.slice(0, 3).join(' ')}</div>
-                                            <div style={{ lineHeight: '1.4' }}>{words.slice(3).join(' ')}</div>
-                                        </>
-                                    );
-                                })()}
-                            </h2>
+            </div>
 
-                            {/* API-provided Conclusion Description, as HTML */}
-                            <div
-                                className="text-base sm:text-lg text-gray-700 text-center max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed"
-                                style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                                dangerouslySetInnerHTML={{ __html: commonLayout.report_conclusion || '' }}
-                            />
-
-                            {/* Cards using API titles */}
-                            <div className="w-full">
-                                <div className="flex flex-col sm:flex-row justify-center items-center sm:items-start gap-6 sm:gap-8">
-                                    {/* Card 1 */}
-                                    <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
-                                        <div
-                                            className="flex items-center justify-center"
-                                            style={{
-                                                background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                                                width: '100%', height: '39px'
-                                            }}
-                                        >
-                                            <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                                                {commonLayout.card_one_title || null}
-                                            </h3>
-                                        </div>
-                                        <div className="bg-gray-900 flex-1" />
-                                    </div>
-
-                                    {/* Card 2 */}
-                                    <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
-                                        <div
-                                            className="flex items-center justify-center"
-                                            style={{
-                                                background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                                                width: '100%', height: '39px'
-                                            }}
-                                        >
-                                            <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                                                {commonLayout.card_two_title || null}
-                                            </h3>
-                                        </div>
-                                        <div className="bg-gray-900 flex-1" />
-                                    </div>
-
-                                    {/* Card 3 */}
-                                    <div className="bg-[#010912] overflow-hidden shadow-lg border border-gray-200 flex-shrink-0 w-[350px] h-[290px] sm:w-[471px] sm:h-[468px]">
-                                        <div
-                                            className="flex items-center justify-center"
-                                            style={{
-                                                background: 'linear-gradient(to right, #1160C9, #08D2B8)',
-                                                width: '100%', height: '39px'
-                                            }}
-                                        >
-                                            <h3 className="text-sm sm:text-base font-medium text-white text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                                                {commonLayout.card_three_title || null}
-                                            </h3>
-                                        </div>
-                                        <div className="bg-gray-900 flex-1" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+            {/* Common Layout Section */}
+            {
+                commonLayout && (
+                    <CommonLayoutSection data={commonLayout} />
+                )
+            }
 
 
-                {/* Popups */}
-                {isPopupOpen && (
+            {/* Popups */}
+            {
+                isPopupOpen && (
                     <CustomReportForm
                         isOpen={isPopupOpen}
                         onClose={closePopup}
                         reportTitle={report.title}
                     />
-                )}
-                {/* Sample Report Form Popup */}
-                {isSampleFormOpen && (
+                )
+            }
+            {/* Sample Report Form Popup */}
+            {
+                isSampleFormOpen && (
                     <SampleReportForm
                         isOpen={isSampleFormOpen}
                         onClose={() => setIsSampleFormOpen(false)}
@@ -1078,8 +1027,8 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                         reportId={report.report_id}
                         reportImage={report.image}
                     />
-                )}
-            </div>
-        </div>
+                )
+            }
+        </div >
     );
 }

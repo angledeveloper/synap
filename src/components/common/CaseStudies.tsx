@@ -64,18 +64,7 @@ export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
   // Duplicate data for testing if not enough items
   useEffect(() => {
     if (!caseStudies) return;
-    let data = [...caseStudies];
-    // If we have fewer than 10 items, duplicate them for carousel effect as requested
-    if (data.length > 0 && data.length < 10) {
-      // Duplicate 4 times more (total 5 copies) or until reasonable length
-      const copies = 4; // user said "add the same case studies 4 times more"
-      for (let i = 0; i < copies; i++) {
-        data = [...data, ...caseStudies];
-      }
-    }
-    // Assign unique IDs to avoid key errors
-    const uniqueData = data.map((item, index) => ({ ...item, id: index })); // Mock IDs
-    setDisplayData(uniqueData);
+    setDisplayData(caseStudies);
   }, [caseStudies]);
 
   // Responsive items per page
