@@ -157,6 +157,7 @@ export default function CheckoutPage() {
       USD: { suffix: 'USD', symbol: '$' },
       INR: { suffix: 'INR', symbol: '₹' },
       EUR: { suffix: 'EUR', symbol: '€' },
+      GBP: { suffix: 'GBP', symbol: '£' },
       // Support for test data
       '5': { suffix: 'USD', symbol: '$' },
       '6': { suffix: 'INR', symbol: '₹' },
@@ -394,6 +395,7 @@ export default function CheckoutPage() {
                   oneTimePurchaseText={bill_info_order_summary?.one_time_purchase}
                   offerCodePlaceholder={bill_info_order_summary?.have_offer_placeholder}
                   languageId={Number(languageId || 1)}
+                  initialCurrency={selectedCurrency}
                 />
               ) : null}
             </div>

@@ -39,9 +39,10 @@ export interface BillingFormProps {
     sgst: number;
     total: number;
   };
+  initialCurrency?: string;
 }
 
-export default function BillingForm({ selectedLicense, reportData, onContinue, onBack, billingInformation, billInfoOrderSummary, licenseOptions, checkoutPage, onOrderSuccess, oneTimePurchaseText, offerCodePlaceholder, languageId: propLanguageId, customPricing }: BillingFormProps) {
+export default function BillingForm({ selectedLicense, reportData, onContinue, onBack, billingInformation, billInfoOrderSummary, licenseOptions, checkoutPage, onOrderSuccess, oneTimePurchaseText, offerCodePlaceholder, languageId: propLanguageId, customPricing, initialCurrency }: BillingFormProps) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -62,7 +63,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   const isIndiaSelected = formData.country?.toLowerCase() === 'india';
 
   const [selectedOrderLicenseId, setSelectedOrderLicenseId] = useState(customPricing ? customPricing.licenseType.toLowerCase().includes('team') ? 'team' : customPricing.licenseType.toLowerCase().includes('enterprise') ? 'enterprise' : 'single' : (selectedLicense?.id || "single"));
-  const [selectedOrderCurrency, setSelectedOrderCurrency] = useState(customPricing ? customPricing.currency : "USD");
+  const [selectedOrderCurrency, setSelectedOrderCurrency] = useState(customPricing ? customPricing.currency : (initialCurrency || "USD"));
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("ccavenue");
   const [couponCode, setCouponCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -115,7 +116,8 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   // Get pricing data from API based on selected license and currency
   const getLicensePricing = () => {
     const currencySuffix = selectedOrderCurrency === 'INR' ? 'INR' :
-      selectedOrderCurrency === 'EUR' ? 'EUR' : 'USD';
+      selectedOrderCurrency === 'EUR' ? 'EUR' :
+        selectedOrderCurrency === 'GBP' ? 'GBP' : 'USD';
 
     let offerPrice = 0;
     let actualPrice = 0;
@@ -240,7 +242,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
     else if (type === 'enterprise') prefix = 'enterprise_license';
 
     let apiObj = checkoutPage;
-    const suffix = cur === 'INR' ? 'INR' : cur === 'EUR' ? 'EUR' : 'USD';
+    const suffix = cur === 'INR' ? 'INR' : cur === 'EUR' ? 'EUR' : cur === 'GBP' ? 'GBP' : 'USD';
     // Offer price (post-discount, pre-tax):
     const offerPriceKey = `${prefix}_offer_price_in_${suffix}`;
     const offerPriceStr = apiObj?.[offerPriceKey] || '';
@@ -262,7 +264,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
   const getCustomSummaryStrings = () => {
     if (!customPricing) return getSummaryStrings();
 
-    const symbol = customPricing.currency === 'USD' ? '$' : customPricing.currency === 'EUR' ? '€' : '₹';
+    const symbol = customPricing.currency === 'USD' ? '$' : customPricing.currency === 'EUR' ? '€' : customPricing.currency === 'GBP' ? '£' : '₹';
     const format = (val: number) => `${symbol}${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
     return {
@@ -1166,6 +1168,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                   <option value="USD">USD $</option>
                   <option value="INR">INR ₹</option>
                   <option value="EUR">EUR €</option>
+                  <option value="GBP">GBP £</option>
                 </select>
                 {isIndiaSelected && (
                   <div
@@ -1392,6 +1395,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                         <option value="USD">USD $</option>
                         <option value="INR">INR ₹</option>
                         <option value="EUR">EUR €</option>
+                        <option value="GBP">GBP £</option>
                       </select>
                     </div>
                   </div>

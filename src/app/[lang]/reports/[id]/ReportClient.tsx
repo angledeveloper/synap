@@ -246,6 +246,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
             USD: { suffix: 'USD', symbol: '$' },
             INR: { suffix: 'INR', symbol: '₹' },
             EUR: { suffix: 'EUR', symbol: '€' },
+            GBP: { suffix: 'GBP', symbol: '£' },
             '5': { suffix: 'USD', symbol: '$' },
             '6': { suffix: 'INR', symbol: '₹' },
             '7': { suffix: 'EUR', symbol: '€' },

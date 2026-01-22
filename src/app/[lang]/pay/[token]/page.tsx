@@ -180,7 +180,7 @@ export default function CustomPaymentPage() {
                                     description: "",
                                     price: String(customPricing.amount),
                                     actualPrice: String(customPricing.amount),
-                                    currencySymbol: customPricing.currency === 'USD' ? '$' : customPricing.currency === 'EUR' ? '€' : '₹',
+                                    currencySymbol: customPricing.currency === 'USD' ? '$' : customPricing.currency === 'EUR' ? '€' : customPricing.currency === 'GBP' ? '£' : '₹',
                                     discount: 0,
                                     features: [],
                                     disclaimer: "",
