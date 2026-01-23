@@ -25,6 +25,11 @@ interface TermsData {
   language_id: string;
   created_at: string;
   updated_at: string;
+  common_layout?: {
+    id: number;
+    common_title: string;
+    common_button: string;
+  };
 }
 
 export default function TermsOfServicePage() {
@@ -74,7 +79,8 @@ export default function TermsOfServicePage() {
             },
             language_id: data.language_id || '',
             created_at: data.created_at || '',
-            updated_at: data.updated_at || ''
+            updated_at: data.updated_at || '',
+            common_layout: data.common_layout
           });
         } else {
           throw new Error('Invalid response format from API');
@@ -172,8 +178,9 @@ export default function TermsOfServicePage() {
       </div>
 
       <CallToAction
-        title="Ready to Transform Your Market Strategy?"
-        buttonText="Check our Research"
+        title={termsData?.common_layout?.common_title || "Ready to Transform Your Market Strategy?"}
+        buttonText={termsData?.common_layout?.common_button || "Check our Research"}
+        buttonLink={`/${language}/reports`}
       />
     </div>
   );

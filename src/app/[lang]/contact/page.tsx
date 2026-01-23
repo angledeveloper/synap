@@ -24,6 +24,11 @@ interface ContactUsData {
   type: string;
   description: string;
   btn_text: string;
+  common_layout?: {
+    id: number;
+    common_title: string;
+    common_button: string;
+  };
 }
 
 export default function ContactPage() {
@@ -56,7 +61,10 @@ export default function ContactPage() {
         }
 
         const data = await response.json();
-        setContactData(data.contactus);
+        setContactData({
+          ...data.contactus,
+          common_layout: data.common_layout,
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load contact information');
         console.error('Error fetching contact data:', err);
@@ -348,8 +356,8 @@ export default function ContactPage() {
       </section>
 
       <CallToAction
-        title="Ready to Transform Your Market Strategy?"
-        buttonText="Check our Research"
+        title={contactData.common_layout?.common_title || "Ready to Transform Your Market Strategy?"}
+        buttonText={contactData.common_layout?.common_button || "Check our Research"}
         buttonLink={`/${language}/reports`}
       />
     </>

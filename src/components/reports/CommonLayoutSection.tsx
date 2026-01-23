@@ -51,22 +51,22 @@ const CommonLayoutSection: React.FC<CommonLayoutProps> = ({ data }) => {
                 </div>
 
                 {/* Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full ml-0 md:w-[110%] md:-ml-[5%]">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full items-stretch">
                     {/* Card 1: Top Selling Reports */}
-                    <div className="flex flex-col rounded-lg overflow-hidden bg-[#1C1C1C] text-white h-[449px] relative group w-full">
+                    <div className="flex flex-col rounded-lg overflow-hidden bg-[#1C1C1C] text-white h-full relative group w-full">
                         {/* Header */}
                         <div className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] p-6 h-[72px] flex items-center">
-                            <h3 className="text-xl font-bold font-space-grotesk truncate w-full">
+                            <h3 className="text-xl font-bold font-space-grotesk w-full">
                                 {parsedCards.card1?.title || 'Our Top Selling Reports'}
                             </h3>
                         </div>
                         {/* Content */}
-                        <div className="p-6 pb-24 flex-grow overflow-y-auto">
+                        <div className="p-6 flex-grow">
                             <ul className="space-y-4">
                                 {parsedCards.card1?.items?.map((item: any, idx: number) => (
                                     <li key={idx} className="flex items-start">
                                         <span className="mr-2 flex-shrink-0">•</span>
-                                        <a href={item.report_link || '#'} className="hover:underline text-sm sm:text-base text-gray-200 hover:text-white transition-colors line-clamp-2">
+                                        <a href={item.report_link || '#'} className="hover:underline text-sm sm:text-base text-gray-200 hover:text-white transition-colors">
                                             {item.report_title}
                                         </a>
                                     </li>
@@ -74,74 +74,74 @@ const CommonLayoutSection: React.FC<CommonLayoutProps> = ({ data }) => {
                             </ul>
                         </div>
                         {/* Button */}
-                        <div className="absolute bottom-6 left-6 right-6">
+                        <div className="p-6 mt-auto">
                             <Button
-                                className="w-full h-[50px] bg-white text-black hover:bg-gray-100 font-bold justify-between group"
+                                className="w-full min-h-[50px] h-auto py-2 bg-white text-black hover:bg-gray-100 font-bold justify-between group whitespace-normal text-left"
                                 onClick={() => router.push(data.btn_1_link || '#')}
                             >
-                                <span className="truncate mr-2">{data.btn_1 || 'Request Bulk Purchase'}</span>
+                                <span className="mr-2">{data.btn_1 || 'Request Bulk Purchase'}</span>
                                 <img src="/barrow.svg" alt="Arrow" className="w-[32px] h-[12.67px] flex-shrink-0" />
                             </Button>
                         </div>
                     </div>
 
                     {/* Card 2: Personalize This Report */}
-                    <div className="flex flex-col rounded-lg overflow-hidden bg-[#1C1C1C] text-white h-[449px] relative group w-full">
+                    <div className="flex flex-col rounded-lg overflow-hidden bg-[#1C1C1C] text-white h-full relative group w-full">
                         {/* Header */}
                         <div className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] p-6 h-[72px] flex items-center">
-                            <h3 className="text-xl font-bold font-space-grotesk truncate w-full">
+                            <h3 className="text-xl font-bold font-space-grotesk w-full">
                                 {parsedCards.card2?.title || 'Personalize This Report'}
                             </h3>
                         </div>
                         {/* Content */}
-                        <div className="p-6 pb-24 flex-grow overflow-y-auto">
+                        <div className="p-6 flex-grow">
                             <ul className="space-y-4">
                                 {parsedCards.card2?.items?.map((item: any, idx: number) => (
                                     <li key={idx} className="flex items-start text-sm sm:text-base text-gray-200">
                                         <span className="mr-2 flex-shrink-0">•</span>
-                                        <span className="line-clamp-2">{item.report_title}</span>
+                                        <span>{item.report_title}</span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                         {/* Button */}
-                        <div className="absolute bottom-6 left-6 right-6">
+                        <div className="p-6 mt-auto">
                             <Button
-                                className="w-full h-[50px] bg-white text-black hover:bg-gray-100 font-bold justify-between group"
+                                className="w-full min-h-[50px] h-auto py-2 bg-white text-black hover:bg-gray-100 font-bold justify-between group whitespace-normal text-left"
                                 onClick={() => router.push(data.btn_2_link || '#')}
                             >
-                                <span className="truncate mr-2">{data.btn_2 || 'Request A Free Customisation'}</span>
+                                <span className="mr-2">{data.btn_2 || 'Request A Free Customisation'}</span>
                                 <img src="/barrow.svg" alt="Arrow" className="w-[32px] h-[12.67px] flex-shrink-0" />
                             </Button>
                         </div>
                     </div>
 
                     {/* Card 3: Let Us Help You */}
-                    <div className="flex flex-col rounded-lg overflow-hidden bg-[#1C1C1C] text-white h-[449px] relative group w-full">
+                    <div className="flex flex-col rounded-lg overflow-hidden bg-[#1C1C1C] text-white h-full relative group w-full">
                         {/* Header */}
                         <div className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] p-6 h-[72px] flex items-center">
-                            <h3 className="text-xl font-bold font-space-grotesk truncate w-full">
+                            <h3 className="text-xl font-bold font-space-grotesk w-full">
                                 {parsedCards.card3?.title || 'Let Us Help You'}
                             </h3>
                         </div>
                         {/* Content */}
-                        <div className="p-6 pb-24 flex-grow overflow-y-auto">
+                        <div className="p-6 flex-grow">
                             <ul className="space-y-4">
                                 {parsedCards.card3?.items?.map((item: any, idx: number) => (
                                     <li key={idx} className="flex items-start text-sm sm:text-base text-gray-200">
                                         <span className="mr-2 flex-shrink-0">•</span>
-                                        <span className="line-clamp-3">{item.report_title}</span>
+                                        <span>{item.report_title}</span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                         {/* Button */}
-                        <div className="absolute bottom-6 left-6 right-6">
+                        <div className="p-6 mt-auto">
                             <Button
-                                className="w-full h-[50px] bg-white text-black hover:bg-gray-100 font-bold justify-between group"
+                                className="w-full min-h-[50px] h-auto py-2 bg-white text-black hover:bg-gray-100 font-bold justify-between group whitespace-normal text-left"
                                 onClick={() => router.push(data.btn_3_link || '#')}
                             >
-                                <span className="truncate mr-2">{data.btn_3 || 'Customized Workshop Request'}</span>
+                                <span className="mr-2">{data.btn_3 || 'Customized Workshop Request'}</span>
                                 <img src="/barrow.svg" alt="Arrow" className="w-[32px] h-[12.67px] flex-shrink-0" />
                             </Button>
                         </div>

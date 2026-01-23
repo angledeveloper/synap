@@ -44,6 +44,33 @@ const decodeHtml = (html: string) => {
         .replace(/&nbsp;/g, " ");
 };
 
+const injectImages = (html: string, data: any) => {
+    if (!html) return "";
+
+    // Regex to match <p><i>image_X_goes_here</i></p>
+    // Handles potential whitespace or slight variations
+    const regex = /<p>\s*<i>\s*image_(\d+)_goes_here\s*<\/i>\s*<\/p>/gi;
+
+    return html.replace(regex, (match, index) => {
+        const linkKey = `image_${index}_link`;
+        const altKey = `image_${index}_alt`;
+
+        const src = data[linkKey];
+        const alt = data[altKey] || `Image ${index}`;
+
+        if (src) {
+            return `
+                <div class="my-6">
+                    <img src="${src}" alt="${alt}" class="w-full h-auto rounded-lg shadow-sm" />
+                </div>
+            `;
+        }
+
+        // Return empty string if no image found, effectively removing the placeholder
+        return "";
+    });
+};
+
 interface ReportDetailPageProps {
     initialData?: any;
     initialReferenceId?: string;
@@ -373,15 +400,15 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                             </li>
                             <li className="flex-shrink-0">
                                 <a href={`/${language}/reports`} className="text-gray-500 hover:text-gray-700 whitespace-nowrap font-normal text-sm">
-                                    {t.breadcrumbCategory}
+                                    {data?.report_identity?.category_name || categoryData?.name || t.breadcrumbCategory}
                                 </a>
                             </li>
                             <li className="flex-shrink-0">
                                 <Icon icon="mdi:chevron-right" className="text-gray-500 text-sm" />
                             </li>
                             <li className="min-w-0 flex-1">
-                                <span className="text-gray-500 font-normal text-sm truncate block">
-                                    {report.title.split(' ').slice(0, 5).join(' ') + (report.title.split(' ').length > 5 ? '...' : '')}
+                                <span className="text-gray-500 font-normal text-sm block">
+                                    {report.breadcrumb}
                                 </span>
                             </li>
                         </ol>
@@ -451,14 +478,15 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                 {/* Column 1 */}
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center">
-                                        <span>{t.lastUpdated}:</span>
+                                        <span>{data?.report_meta_fields?.last_updated_at || t.lastUpdated}</span>
                                         <span className="ml-1">{new Date(report.modify_at).toLocaleDateString()}</span>
                                     </div>
                                     <div className="flex items-center">
-                                        <span>{new Date(report.created_at).toLocaleDateString()}</span>
+                                        <span>{data?.report_meta_fields?.publish_date || 'Publish Date:'}</span>
+                                        <span className="ml-1">{new Date(report.created_at).toLocaleDateString()}</span>
                                     </div>
                                     <div className="flex items-center">
-                                        <span>{t.baseYear}:</span>
+                                        <span>{data?.report_meta_fields?.base_year || t.baseYear}</span>
                                         <span className="ml-1">{report.base_year}</span>
                                     </div>
                                 </div>
@@ -466,14 +494,14 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                 {/* Column 2 */}
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center">
-                                        <span>{t.format}:</span>
+                                        <span>{data?.report_meta_fields?.format || t.format}</span>
                                         <span className="ml-1">{report.format}</span>
                                     </div>
                                     <div className="flex items-center">
-                                        <span>{t.industry} - {categoryData?.name || 'Technology & Software'}</span>
+                                        <span>{data?.report_meta_fields?.report_industry || t.industry} - {data?.report_identity?.category_name || categoryData?.name || 'Technology & Software'}</span>
                                     </div>
                                     <div className="flex items-center">
-                                        <span>{t.forecastPeriod}:</span>
+                                        <span>{data?.report_meta_fields?.forecast_period || t.forecastPeriod}</span>
                                         <span className="ml-1">{report.forecast_period}</span>
                                     </div>
                                 </div>
@@ -481,15 +509,15 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                 {/* Column 3 */}
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center">
-                                        <span>{t.reportId}:</span>
+                                        <span>{data?.report_meta_fields?.report_id || t.reportId}</span>
                                         <span className="ml-1">{report.report_id}</span>
                                     </div>
                                     <div className="flex items-center">
-                                        <span>{t.numberOfPages} -</span>
+                                        <span>{data?.report_meta_fields?.number_of_pages || t.numberOfPages}</span>
                                         <span className="ml-1">{report.number_of_pages}</span>
                                     </div>
                                     <div className="flex items-center">
-                                        <span>{t.tocIncluded}</span>
+                                        <span>{report.toc_included ? (data?.report_meta_fields?.toc_included || t.tocIncluded) : ''}</span>
                                     </div>
                                 </div>
                             </div>
@@ -526,7 +554,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                             className="text-black text-[14px] font-normal mb-3"
                                             style={{ fontFamily: 'Space Mono, monospace' }}
                                         >
-                                            {report.free_sample}
+                                            {report.free_sample || 'Get A Free Sample'}
                                         </h3>
                                         <p
                                             className="hidden sm:block text-[#595959] text-base font-normal mb-4"
@@ -544,7 +572,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                             }}
                                             onClick={() => setIsSampleFormOpen(true)}
                                         >
-                                            <span className="truncate">{report.download_button}</span>
+                                            <span className="truncate">{data?.report_meta_fields?.request_pdf_btn || report.download_button}</span>
                                             <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
                                         </Button>
                                     </div>
@@ -677,9 +705,8 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                 dangerouslySetInnerHTML={{ __html: highlightText(report.key_report_description) }}
                             />
 
-                            {/* 4-Quadrant Highlights Grid */}
                             <div className="relative">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 h-auto sm:h-80 w-screen sm:w-full gap-0 sm:gap-0 -mx-4 sm:mx-0">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 w-screen sm:w-full gap-0 sm:gap-0 -mx-4 sm:mx-0">
                                     {/* Top Left - #1D1F54 Background */}
                                     <div className="bg-black text-white p-4 sm:p-6 flex flex-col justify-start min-h-[120px] sm:min-h-0">
                                         <h3
@@ -806,6 +833,8 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                     ? decodeHtml(section.section_description + faqContent)
                                     : decodeHtml(section.section_description);
 
+                                const contentWithImages = injectImages(combinedContent, section);
+
                                 return (
                                     <div
                                         key={section.id}
@@ -822,7 +851,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                             <div
                                                 className="text-gray-700 leading-relaxed prose prose-sm max-w-none prose-headings:font-[Space_Grotesk] prose-p:font-[Space_Grotesk] prose-li:font-[Space_Grotesk] prose-strong:font-[Space_Grotesk] prose-em:font-[Space_Grotesk] prose-ul:font-[Space_Grotesk] prose-ol:font-[Space_Grotesk] prose-blockquote:font-[Space_Grotesk] prose-img:font-[Space_Grotesk] prose-table:font-[Space_Grotesk] prose-headings:my-2 prose-p:my-2 prose-img:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 [&_h1]:font-[Space_Grotesk] [&_h1]:my-2 [&_h2]:font-[Space_Grotesk] [&_h2]:my-2 [&_h3]:font-[Space_Grotesk] [&_h3]:my-2 [&_h4]:font-[Space_Grotesk] [&_h4]:my-2 [&_h5]:font-[Space_Grotesk] [&_h5]:my-2 [&_h6]:font-[Space_Grotesk] [&_h6]:my-2 [&_p]:font-[Space_Grotesk] [&_p]:my-2 [&_li]:font-[Space_Grotesk] [&_li]:my-1 [&_span]:font-[Space_Grotesk] [&_div]:font-[Space_Grotesk] [&_strong]:font-[Space_Grotesk] [&_b]:font-[Space_Grotesk] [&_em]:font-[Space_Grotesk] [&_i]:font-[Space_Grotesk] [&_ul]:font-[Space_Grotesk] [&_ol]:font-[Space_Grotesk] [&_blockquote]:font-[Space_Grotesk] [&_img]:font-[Space_Grotesk] [&_img]:my-2 [&_table]:font-[Space_Grotesk] [&_th]:font-[Space_Grotesk] [&_td]:font-[Space_Grotesk]"
                                                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-                                                dangerouslySetInnerHTML={{ __html: highlightText(combinedContent) }}
+                                                dangerouslySetInnerHTML={{ __html: highlightText(contentWithImages) }}
                                             />
                                         </div>
                                     </div>
@@ -848,8 +877,8 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                         <div className="sticky top-32">
                             <div className="flex flex-col items-center gap-4" style={{ width: '322px', margin: '0 auto' }}>
                                 {/* One Time Cost */}
-                                <div className="w-[322px] h-[85px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
-                                    <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                                <div className="w-[322px] min-h-[85px] h-auto rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+                                    <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center p-4">
                                         <Button
                                             className="h-[50px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
                                             style={{
@@ -866,7 +895,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                 </div>
 
                                 {/* Free Sample */}
-                                <div className="w-[322px] h-[239px] rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
+                                <div className="w-[322px] min-h-[239px] h-auto rounded-lg" style={{ background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #1160C9, #08D2B8) border-box', border: '1px solid transparent' }}>
                                     <div className="w-full h-full bg-gray-100 rounded-lg flex flex-col justify-between p-6">
                                         <div>
                                             <h3

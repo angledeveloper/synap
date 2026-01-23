@@ -57,6 +57,7 @@ export interface ReportDetail {
   created_at: string;
   modify_at: string;
   share_at?: string;
+  breadcrumb?: string;
   report_identity?: ReportIdentity;
 }
 
@@ -130,12 +131,14 @@ export interface ReportSection {
   section_name: string;
   section_title: string;
   section_description: string;
+  [key: string]: any;
 }
 
 export interface ReportDetailResponse {
   success: boolean;
   share_at?: string;
   report_reference_title?: string;
+  report_identity?: ReportIdentity;
   report_meta_fields?: any; // Define a more specific type if needed
   data: {
     report: ReportDetail;

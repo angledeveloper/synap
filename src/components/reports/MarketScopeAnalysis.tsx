@@ -82,9 +82,9 @@ const MarketScopeAnalysis: React.FC<MarketScopeAnalysisProps> = ({ report, headi
                     {rows.map((row, index) => {
                         const isLastThree = index >= lastThreeStartIndex;
                         // User requested market size fields in attribute column to be rgb(127, 255, 110) = #7FFF6E
-                        const attributeBg = row.isMarketSize ? '#7FFF6E' : '#FFFFFF';
+                        const attributeBg = row.isMarketSize ? '#FFFFFF' : '#FFFFFF';
                         const attributeColor = '#000000'; // Always black text now since BG is light
-                        const detailsBg = isLastThree ? '#00FFCC' : '#7FFF6E';
+                        const detailsBg = isLastThree ? '#FFFFFF' : '#FFFFFF';
 
                         // Using flex for the row
                         return (
