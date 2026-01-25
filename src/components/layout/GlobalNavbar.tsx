@@ -147,24 +147,34 @@ export default function GlobalNavbar() {
   useEffect(() => {
     const handleDropdownClickOutside = (event: MouseEvent) => {
       const dropdownContainer = document.getElementById('dropdown-container');
+      const mobileDropdownContainer = document.getElementById('mobile-dropdown-container');
       const dropdownButton = document.getElementById('dropdown-button');
       const mobileDropdownButton = document.getElementById('mobile-dropdown-button');
 
       const caseStudiesDropdownContainer = document.getElementById('case-studies-dropdown-container');
+      const mobileCaseStudiesDropdownContainer = document.getElementById('mobile-case-studies-dropdown-container');
       const caseStudiesDropdownButton = document.getElementById('case-studies-dropdown-button');
       const mobileCaseStudiesDropdownButton = document.getElementById('mobile-case-studies-dropdown-button');
 
-      if (dropdownContainer &&
-        !dropdownContainer.contains(event.target as Node) &&
+      // Check if click is outside BOTH desktop and mobile dropdown containers
+      const isOutsideDropdown =
+        (!dropdownContainer || !dropdownContainer.contains(event.target as Node)) &&
+        (!mobileDropdownContainer || !mobileDropdownContainer.contains(event.target as Node)) &&
         !dropdownButton?.contains(event.target as Node) &&
-        !mobileDropdownButton?.contains(event.target as Node)) {
+        !mobileDropdownButton?.contains(event.target as Node);
+
+      if (isOutsideDropdown) {
         setShowDropdown(false);
       }
 
-      if (caseStudiesDropdownContainer &&
-        !caseStudiesDropdownContainer.contains(event.target as Node) &&
+      // Check if click is outside BOTH desktop and mobile case studies containers
+      const isOutsideCaseStudies =
+        (!caseStudiesDropdownContainer || !caseStudiesDropdownContainer.contains(event.target as Node)) &&
+        (!mobileCaseStudiesDropdownContainer || !mobileCaseStudiesDropdownContainer.contains(event.target as Node)) &&
         !caseStudiesDropdownButton?.contains(event.target as Node) &&
-        !mobileCaseStudiesDropdownButton?.contains(event.target as Node)) {
+        !mobileCaseStudiesDropdownButton?.contains(event.target as Node);
+
+      if (isOutsideCaseStudies) {
         setShowCaseStudiesDropdown(false);
       }
     };
@@ -621,9 +631,9 @@ export default function GlobalNavbar() {
                     </div>
                   )}
                 </div>
-                <GlobalLanguageSwitch />
+
               </div>
-              <Link href={getLocalizedPath('/about', language)} className="hover:text-white transition-colors">{HomePage?.navbar?.item_one_name ?? 'About Us'}</Link>
+              <Link href={getLocalizedPath('/about', language)} className="hover:text-white transition-colors" onClick={() => setShowMenu(false)}>{HomePage?.navbar?.item_one_name ?? 'About Us'}</Link>
               <div
                 id="mobile-case-studies-dropdown-button"
                 className="flex cursor-pointer items-center gap-1 hover:text-white transition-colors"
@@ -639,7 +649,7 @@ export default function GlobalNavbar() {
                   </h2>
                   <div className="grid grid-cols-1 gap-y-3">
                     {HomePage.case_studies?.map((caseStudy: any) => (
-                      <Link href={caseStudy.file_url || "#"} target={caseStudy.file_url ? "_blank" : undefined} key={caseStudy.id} className="group">
+                      <Link href={caseStudy.file_url || "#"} target={caseStudy.file_url ? "_blank" : undefined} key={caseStudy.id} className="group" onClick={() => setShowMenu(false)}>
                         <div className="hover:bg-gray-50 p-3 rounded-lg transition-colors">
                           <h3 className="text-[14px] font-normal text-gray-900 leading-snug group-hover:text-blue-600 transition-colors" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
                             {caseStudy.title}
@@ -659,13 +669,13 @@ export default function GlobalNavbar() {
                 <Icon icon="mdi:chevron-down" className={`text-gray-300 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
               </div>
               {showDropdown && (
-                <div id="dropdown-container" className="relative w-full bg-white text-black shadow-sm px-4 sm:px-6 py-8">
+                <div id="mobile-dropdown-container" className="relative w-full bg-white text-black shadow-sm px-4 sm:px-6 py-8">
                   <h2 className="text-left text-xl font-medium text-gray-900 mb-6" style={{ fontFamily: 'var(--font-geist-mono)' }}>
                     Reports Based On Industries
                   </h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-6 gap-x-6">
                     {HomePage.report_store_dropdown.slice(0, 4).map((item: any, idx: number) => (
-                      <Link href={getLocalizedPath(`/reports?category=${item.category_id}`, language)} key={`m-top-${idx}`} className="group">
+                      <Link href={getLocalizedPath(`/reports?category=${item.category_id}`, language)} key={`m-top-${idx}`} className="group" onClick={() => setShowMenu(false)}>
                         <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                           <div className="w-6 h-6 relative flex-shrink-0">
                             <Image src={item.icon} alt={item.category_name} width={24} height={24} className="w-full h-full object-contain" />
@@ -690,7 +700,7 @@ export default function GlobalNavbar() {
                   }, []).map((row: any[], rowIdx: number) => (
                     <div key={`m-row-${rowIdx}`} className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6 mt-6">
                       {row.map((item: any) => (
-                        <Link href={getLocalizedPath(`/reports?category=${item.category_id}`, language)} key={`m-item-${item.originalIndex}`} className="group">
+                        <Link href={getLocalizedPath(`/reports?category=${item.category_id}`, language)} key={`m-item-${item.originalIndex}`} className="group" onClick={() => setShowMenu(false)}>
                           <div className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                             <div className="w-6 h-6 relative flex-shrink-0">
                               <Image src={item.icon} alt={item.category_name} width={24} height={24} className="w-full h-full object-contain" />
@@ -714,7 +724,7 @@ export default function GlobalNavbar() {
               {/* Mobile User Menu */}
 
 
-              <Link href={`/${language}/contact`}>
+              <Link href={`/${language}/contact`} onClick={() => setShowMenu(false)}>
                 <Button className="w-full bg-gradient-to-r from-[#1160C9] to-[#08D2B8] hover:opacity-90 text-white font-normal rounded-lg px-6 py-2 transition-opacity">
                   {HomePage?.navbar?.button_text ?? 'Contact Us'}
                 </Button>

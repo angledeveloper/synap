@@ -213,6 +213,24 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
         }
     };
 
+    // Helper to format date consistent across languages
+    const formatDate = (dateString: string | undefined, locale: string) => {
+        if (!dateString) return '';
+        // Handle SQL timestamp "YYYY-MM-DD HH:MM:SS" -> "YYYY-MM-DDTHH:MM:SS" for safe parsing
+        // (Chrome parses space fine, but Safari/others might prefer T)
+        const safeDate = dateString.replace(' ', 'T');
+        try {
+            const date = new Date(safeDate);
+            if (isNaN(date.getTime())) {
+                // If parsing fails, return just the date part string "YYYY-MM-DD"
+                return dateString.split(' ')[0];
+            }
+            return date.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
+        } catch (e) {
+            return dateString;
+        }
+    };
+
     // Effect to handle auto-scrolling and tab switching for search results
     useEffect(() => {
         if (!highlight || !report || sections.length === 0) return;
@@ -479,11 +497,11 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center">
                                         <span>{data?.report_meta_fields?.last_updated_at || t.lastUpdated}</span>
-                                        <span className="ml-1">{new Date(report.modify_at).toLocaleDateString()}</span>
+                                        <span className="ml-1">{formatDate(report.updated_at || report.modify_at, language)}</span>
                                     </div>
                                     <div className="flex items-center">
                                         <span>{data?.report_meta_fields?.publish_date || 'Publish Date:'}</span>
-                                        <span className="ml-1">{new Date(report.created_at).toLocaleDateString()}</span>
+                                        <span className="ml-1">{formatDate(report.created_at, language)}</span>
                                     </div>
                                     <div className="flex items-center">
                                         <span>{data?.report_meta_fields?.base_year || t.baseYear}</span>
@@ -540,7 +558,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                         onClick={() => router.push(`/${params?.lang}/reports/${params?.id}/checkout`)}
                                         aria-label="Buy License Now"
                                     >
-                                        <span className="truncate">Buy License Now</span>
+                                        <span className="truncate">{data?.report_meta_fields?.buy_now_btn || 'Buy License Now'}</span>
                                         <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
                                     </Button>
                                 </div>
@@ -565,14 +583,14 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                     </div>
                                     <div className="w-full flex justify-center">
                                         <Button
-                                            className="h-[40px] bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
+                                            className="min-h-[40px] h-auto bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 py-2 text-[18px]"
                                             style={{
                                                 fontFamily: 'Space Grotesk, sans-serif',
                                                 width: '274px',
                                             }}
                                             onClick={() => setIsSampleFormOpen(true)}
                                         >
-                                            <span className="truncate">{data?.report_meta_fields?.request_pdf_btn || report.download_button}</span>
+                                            <span className="text-left mr-2 whitespace-normal leading-tight" onClick={() => setIsSampleFormOpen(true)}>{data?.report_meta_fields?.request_pdf_btn || report.download_button}</span>
                                             <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
                                         </Button>
                                     </div>
@@ -598,14 +616,14 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                     </div>
                                     <Button
                                         variant="outline"
-                                        className="w-[300px] h-[50px] border-[#000000] text-black font-bold rounded-[10px] relative bg-white hover:bg-gray-50 text-[14px] mt-0"
+                                        className="w-[300px] min-h-[50px] h-auto border-[#000000] text-black font-bold rounded-[10px] flex items-center justify-between bg-white hover:bg-gray-50 text-[14px] mt-0 px-5 py-2"
                                         style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                                         onClick={openPopup}
                                     >
-                                        <span className="absolute left-5 text-[14px] font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                                            {report.custom_report_button}
+                                        <span className="text-[14px] font-medium text-left mr-2 whitespace-normal leading-tight" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                                            {data?.report_meta_fields?.request_custom_btn || report.custom_report_button}
                                         </span>
-                                        <div className="absolute right-4">
+                                        <div className="flex-shrink-0">
                                             <img
                                                 src="/barrow.svg"
                                                 alt="Arrow"
@@ -833,7 +851,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                     ? decodeHtml(section.section_description + faqContent)
                                     : decodeHtml(section.section_description);
 
-                                const contentWithImages = injectImages(combinedContent, section);
+                                const contentWithImages = injectImages(combinedContent, report);
 
                                 return (
                                     <div
@@ -888,7 +906,7 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                             onClick={() => router.push(`/${params?.lang}/reports/${params?.id}/checkout`)}
                                             aria-label="Buy License Now"
                                         >
-                                            <span className="truncate">Buy License Now</span>
+                                            <span className="truncate">{data?.report_meta_fields?.buy_now_btn || 'Buy License Now'}</span>
                                             <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
                                         </Button>
                                     </div>
@@ -913,14 +931,14 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                         </div>
                                         <div className="w-full flex justify-center">
                                             <Button
-                                                className="h-[50px] bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 text-[18px]"
+                                                className="min-h-[50px] h-auto bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 py-2 text-[18px]"
                                                 style={{
                                                     fontFamily: 'Space Grotesk, sans-serif',
                                                     width: '297px',
 
                                                 }}
                                             >
-                                                <span className="truncate" onClick={() => setIsSampleFormOpen(true)}>{report.download_button}</span>
+                                                <span className="text-left mr-2 whitespace-normal leading-tight" onClick={() => setIsSampleFormOpen(true)}>{data?.report_meta_fields?.request_pdf_btn || report.download_button}</span>
                                                 <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
                                             </Button>
                                         </div>
@@ -946,14 +964,14 @@ export default function ReportDetailPage({ initialData, initialReferenceId }: Re
                                         </div>
                                         <Button
                                             variant="outline"
-                                            className="w-full h-[50px] border-gray-800 text-black font-bold rounded-lg relative bg-white hover:bg-gray-50 text-[18px]"
+                                            className="w-full min-h-[50px] h-auto border-gray-800 text-black font-bold rounded-lg flex items-center justify-between bg-white hover:bg-gray-50 text-[18px] px-5 py-2"
                                             style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                                             onClick={openPopup}
                                         >
-                                            <span className="absolute left-5 text-[20px] font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                                                {report.custom_report_button}
+                                            <span className="text-[20px] font-medium text-left mr-2 whitespace-normal leading-tight" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                                                {data?.report_meta_fields?.request_custom_btn || report.custom_report_button}
                                             </span>
-                                            <div className="absolute right-4">
+                                            <div className="flex-shrink-0">
                                                 <img
                                                     src="/barrow.svg"
                                                     alt="Arrow"

@@ -26,7 +26,7 @@ export default function GlobalFooter() {
         backgroundRepeat: "repeat",
         backgroundSize: "150px",
       }}
-      className="w-full bg-[#010912] px-3 pb-3 pl-12 text-white"
+      className="w-full bg-[#010912] px-4 pb-6 md:px-3 md:pb-3 md:pl-12 text-white"
     >
       <div className="m-auto flex w-full max-w-[1440px] flex-col gap-4 pt-18 md:flex-row">
         <div className="flex w-full flex-col justify-between gap-2 md:flex-row">

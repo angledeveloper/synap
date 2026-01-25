@@ -99,6 +99,7 @@ export interface ReportDetail {
   custom_report_description: string;
   custom_report_button: string;
   created_at: string;
+  updated_at?: string;
   modify_at: string;
   base_year?: string;
   forecast_period?: string;

@@ -51,26 +51,24 @@ const MarketScopeAnalysis: React.FC<MarketScopeAnalysisProps> = ({ report, headi
             </h2>
 
             <div className="overflow-x-auto pb-2">
-                <div className="w-full border-t border-l border-r border-[#999999] min-w-[600px]">
+                <div className="w-full border-t border-l border-r border-[#999999] md:min-w-[600px]">
                     {/* Header Row */}
                     <div className="flex">
                         <div
-                            className="w-[40%] text-white font-medium p-4 border-b border-r border-[#999999]"
+                            className="w-[40%] text-white font-medium p-2 md:p-4 border-b border-r border-[#999999] text-base md:text-[24px]"
                             style={{
                                 backgroundColor: '#1553A5',
                                 border: '1px solid #034D44',
-                                fontSize: '24px',
                                 fontFamily: 'Space Grotesk, sans-serif'
                             }}
                         >
                             {headings?.attribute_heading?.toUpperCase() || 'ATTRIBUTE'}
                         </div>
                         <div
-                            className="w-[60%] text-white font-medium p-4 border-b border-[#999999]"
+                            className="w-[60%] text-white font-medium p-2 md:p-4 border-b border-[#999999] text-base md:text-[24px]"
                             style={{
                                 backgroundColor: '#06A591',
                                 border: '1px solid #103566',
-                                fontSize: '24px',
                                 fontFamily: 'Space Grotesk, sans-serif'
                             }}
                         >
@@ -91,12 +89,11 @@ const MarketScopeAnalysis: React.FC<MarketScopeAnalysisProps> = ({ report, headi
                             <div key={index} className="flex">
                                 {/* Attribute Column */}
                                 <div
-                                    className="w-[40%] p-4 border-b border-r border-[#999999] flex items-center"
+                                    className="w-[40%] p-2 md:p-4 border-b border-r border-[#999999] flex items-center text-sm md:text-[20px]"
                                     style={{
                                         backgroundColor: attributeBg,
                                         color: attributeColor,
                                         fontFamily: 'Space Grotesk, sans-serif',
-                                        fontSize: '20px',
                                         fontWeight: 400
                                     }}
                                 >
@@ -105,12 +102,11 @@ const MarketScopeAnalysis: React.FC<MarketScopeAnalysisProps> = ({ report, headi
 
                                 {/* Details Column */}
                                 <div
-                                    className="w-[60%] p-4 border-b border-[#999999] flex items-center"
+                                    className="w-[60%] p-2 md:p-4 border-b border-[#999999] flex items-center text-sm md:text-[20px]"
                                     style={{
                                         backgroundColor: detailsBg,
                                         color: '#000000',
                                         fontFamily: 'Space Grotesk, sans-serif',
-                                        fontSize: '20px',
                                         fontWeight: 400 // Not bold (Normal)
                                     }}
                                 >
