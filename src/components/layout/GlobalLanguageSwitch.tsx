@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useLanguageStore, useHomePageStore } from "@/store";
 import { supportedLanguages } from "../../lib/utils";
@@ -26,14 +26,17 @@ export default function GlobalLanguageSwitch() {
 
   const currentLang = supportedLanguages.find((l) => l.code === lang) || supportedLanguages[0];
   const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const dropdownContainer = document.getElementById('language-dropdown-container');
-      const languageButton = document.getElementById('language-button');
-      if (dropdownContainer &&
-        !dropdownContainer.contains(event.target as Node) &&
-        !languageButton?.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
@@ -50,7 +53,7 @@ export default function GlobalLanguageSwitch() {
   return (
     <div className="relative">
       <div
-        id="language-button"
+        ref={buttonRef}
         className="flex h-[36px] cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-gray-300 hover:text-white transition-colors"
         onClick={() => setShowDropdown(!showDropdown)}
       >
@@ -61,8 +64,8 @@ export default function GlobalLanguageSwitch() {
 
       {showDropdown && (
         <div
-          id="language-dropdown-container"
-          className="absolute right-0 top-full mt-2 w-48 rounded-lg bg-white shadow-lg border border-gray-200 py-2 z-50"
+          ref={dropdownRef}
+          className="absolute right-0 top-full mt-2 w-48 rounded-lg bg-white shadow-lg border border-gray-200 py-2 z-[60]"
         >
           {supportedLanguages.map((l) => (
             <button

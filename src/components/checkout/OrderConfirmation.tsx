@@ -125,13 +125,15 @@ export default function OrderConfirmation(props: OrderConfirmationProps) {
 
                 <div className="space-y-3">
                   <Button
-                    onClick={onCallAnalyst}
+                    asChild
                     variant="outline"
-                    className="w-full border border-[#242424] text-[#242424] hover:bg-[#242424]"
+                    className="w-full border border-[#242424] text-[#242424] hover:bg-gray-100 cursor-pointer"
                     style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                   >
-                    <Phone className="w-4 h-4 mr-2" />
-                    {orderConfirmation?.call_anaylyst_btn_text || 'Call Anlyst'}
+                    <a href={`tel:${orderConfirmation?.call_anyalyst_phone_number || ''}`}>
+                      <Phone className="w-4 h-4 mr-2" />
+                      {orderConfirmation?.call_anaylyst_btn_text || 'Call Analyst'}
+                    </a>
                   </Button>
 
                   <Button

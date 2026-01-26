@@ -6,9 +6,10 @@ import type { ReportData } from "@/types/checkout";
 interface CheckoutHeaderProps {
   report: ReportData | null;
   labels?: any;
+  metaFields?: any;
 }
 
-export default function CheckoutHeader({ report, labels }: CheckoutHeaderProps) {
+export default function CheckoutHeader({ report, labels, metaFields }: CheckoutHeaderProps) {
   // Default labels if not provided
   const t = labels || {
     lastUpdated: "Last Updated",
@@ -112,14 +113,15 @@ export default function CheckoutHeader({ report, labels }: CheckoutHeaderProps) 
                 {/* Column 1 */}
                 <div className="flex flex-col space-y-1 sm:space-y-2">
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span className="font-medium">{t.lastUpdated}:</span>
+                    <span className="font-medium">{metaFields?.last_updated_at || t.lastUpdated}:</span>
                     <span className="ml-1 sm:ml-2">{report.last_updated}</span>
                   </div>
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span>{new Date(report.last_updated).toLocaleDateString()}</span>
+                    <span className="font-medium">{metaFields?.publish_date || 'Publish Date'}:</span>
+                    <span className="ml-1 sm:ml-2">{report.publish_date || '-'}</span>
                   </div>
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span className="font-medium">{t.baseYear}:</span>
+                    <span className="font-medium">{metaFields?.base_year || t.baseYear}:</span>
                     <span className="ml-1 sm:ml-2">{report.base_year || '-'}</span>
                   </div>
                 </div>
@@ -127,14 +129,15 @@ export default function CheckoutHeader({ report, labels }: CheckoutHeaderProps) 
                 {/* Column 2 */}
                 <div className="flex flex-col space-y-1 sm:space-y-2">
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span className="font-medium">{t.format}:</span>
+                    <span className="font-medium">{metaFields?.format || t.format}:</span>
                     <span className="ml-1 sm:ml-2">{String(report.format).toUpperCase()}</span>
                   </div>
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span>{t.industry}: {report.industry}</span>
+                    <span className="font-medium">{metaFields?.report_industry || t.industry}:</span>
+                    <span className="ml-1 sm:ml-2">{report.industry}</span>
                   </div>
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span className="font-medium">{t.forecastPeriod}:</span>
+                    <span className="font-medium">{metaFields?.forecast_period || t.forecastPeriod}:</span>
                     <span className="ml-1 sm:ml-2">{report.forecast_period || '-'}</span>
                   </div>
                 </div>
@@ -142,14 +145,16 @@ export default function CheckoutHeader({ report, labels }: CheckoutHeaderProps) 
                 {/* Column 3 */}
                 <div className="flex flex-col space-y-1 sm:space-y-2">
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span className="font-medium">{t.reportId}:</span>
+                    <span className="font-medium">{metaFields?.report_id || t.reportId}:</span>
                     <span className="ml-1 sm:ml-2">{report.report_id}</span>
                   </div>
                   <div className="flex items-center text-xs sm:text-sm">
-                    <span>{t.numberOfPages}: {report.pages}</span>
+                    <span className="font-medium">{metaFields?.number_of_pages || t.numberOfPages}:</span>
+                    <span className="ml-1 sm:ml-2">{report.pages}</span>
                   </div>
                   <div className="flex items-center">
-                    <span>{t.tocIncluded}</span>
+                    <span className="font-medium">{metaFields?.toc || 'TOC'}:</span>
+                    <span className="ml-1 sm:ml-2">{report.toc || '-'}</span>
                   </div>
                 </div>
               </div>

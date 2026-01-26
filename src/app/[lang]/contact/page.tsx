@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import GlobalFooter from '@/components/layout/GlobalFooter';
 import phoneCodes from '@/utils/phoneCodes.json';
+import SearchablePhoneSelect from '@/components/common/SearchablePhoneSelect';
 
 interface ContactUsData {
   id: number;
@@ -242,22 +243,11 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-4 gap-2">
                   <div className="col-span-1 relative">
-                    <select
-                      name="phoneCode"
+                    <SearchablePhoneSelect
                       value={formData.phoneCode}
-                      onChange={handleChange}
-                      className="w-full h-[40px] rounded-[7px] bg-[#242424] px-2 md:px-3 text-white text-[15px] focus:outline-none appearance-none"
-                    >
-                      <option value="" disabled>Code</option>
-                      {phoneCodes.map((p: any) => (
-                        <option key={p.dial_code + p.name} value={p.dial_code}>{p.dial_code}</option>
-                      ))}
-                    </select>
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <svg width="10" height="6" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 1.5L6 6.5L11 1.5" stroke="#969696" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
+                      onChange={(code) => setFormData(prev => ({ ...prev, phoneCode: code }))}
+                      className="relative w-full h-[40px] rounded-[7px] bg-[#242424] px-2 md:px-3 text-white text-[15px] focus-within:outline-none focus-within:ring-1 focus-within:ring-white"
+                    />
                   </div>
                   <div className="col-span-3">
                     <input

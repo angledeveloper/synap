@@ -139,8 +139,9 @@ export interface ReportDetailResponse {
   success: boolean;
   share_at?: string;
   report_reference_title?: string;
+  buy_license_button?: string; // Added field
   report_identity?: ReportIdentity;
-  report_meta_fields?: any; // Define a more specific type if needed
+  report_meta_fields?: any;
   data: {
     report: ReportDetail;
     sections: ReportSection[];

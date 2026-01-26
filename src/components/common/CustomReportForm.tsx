@@ -5,6 +5,7 @@ import { useLanguageStore } from '@/store';
 import ReCAPTCHA from "react-google-recaptcha";
 import { codeToId } from "@/lib/utils";
 import phoneCodes from "@/utils/phoneCodes.json";
+import SearchablePhoneSelect from "@/components/common/SearchablePhoneSelect";
 
 interface CustomReportFormData {
   id: number;
@@ -249,16 +250,11 @@ export default function CustomReportForm({ isOpen, onClose }: CustomReportFormPr
 
                 {/* Row 2: Phone & Country */}
                 <div className="col-span-1 flex gap-2">
-                  <select
+                  <SearchablePhoneSelect
                     value={formData.phoneCode}
-                    onChange={(e) => setFormData({ ...formData, phoneCode: e.target.value })}
-                    className="w-[30%] px-0 py-2 text-sm border border-[#D3D3D3] rounded-md focus:ring-1 focus:ring-blue-500 text-[#969696] bg-white text-center"
-                  >
-                    {/* Map over imported phoneCodes */}
-                    {phoneCodes.map((p: any) => (
-                      <option key={p.dial_code + p.name} value={p.dial_code}>{p.dial_code}</option>
-                    ))}
-                  </select>
+                    onChange={(code) => setFormData({ ...formData, phoneCode: code })}
+                    className="relative w-[30%] px-0 py-2 text-sm border border-[#D3D3D3] rounded-md focus-within:ring-1 focus-within:ring-blue-500 text-[#969696] bg-white text-center"
+                  />
                   <input
                     type="tel"
                     id="phoneNumber"

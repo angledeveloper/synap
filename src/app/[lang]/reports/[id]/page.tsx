@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
-import ReportDetailPage from './ReportClient';
+import { notFound } from 'next/navigation';
+import ReportView from './ReportView';
 import { extractIdFromSlug, codeToId } from '@/lib/utils';
 import { supportedLanguages } from '@/lib/utils';
 
@@ -111,13 +112,13 @@ export default async function Page({
 
   // Use provided ref_id OR fall back to extracted ID from slug
   // This supports both ?ref_id=123 (old/secure way) AND /title-123 (new SEO way)
-  // For English, extracted ID is effectively the reference ID (usually).
-  // For non-English with new URLs, extracted ID IS the reference ID.
   const referenceId = typeof ref_id === 'string' ? ref_id : idFromSlug;
 
-  // We reuse getReportData to fetch the data for the client component
-  // This avoids double-fetching and ensures consistency.
-  const initialData = await getReportData(id, languageId, referenceId);
+  const reportData = await getReportData(id, languageId, referenceId);
 
-  return <ReportDetailPage initialData={initialData || undefined} initialReferenceId={initialData?.data?.report?.report_identity?.report_reference_id} />;
+  if (!reportData || !reportData.data || !reportData.data.report) {
+    return notFound();
+  }
+
+  return <ReportView data={reportData} lang={lang} id={id} refId={referenceId} />;
 }

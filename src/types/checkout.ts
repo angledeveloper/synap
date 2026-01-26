@@ -11,6 +11,8 @@ export interface ReportData {
     report_reference_title?: string;
     base_year?: string;
     forecast_period?: string;
+    publish_date?: string;
+    toc?: string;
 }
 
 export interface LicenseOption {

@@ -64,20 +64,43 @@ export default function CheckoutPage() {
     categoryId: defaultCategoryId,
     languageId: languageId?.toString() || "1",
   });
+  // Date formatter helper
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return '';
+    if (dateString === 'Invalid Date' || !dateString) return '';
+    try {
+      const safeDate = dateString.replace(' ', 'T');
+      const date = new Date(safeDate);
+      if (isNaN(date.getTime())) {
+        return dateString.split(' ')[0]; // Fallback to raw string if parsing fails, or part of it
+      }
+      return date.toLocaleDateString(language || 'en', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const metaFields = data?.data?.report_meta_fields;
   const report = data?.data?.report;
+
+  // Use metaFields keys if available or fallback to hardcoded
+  // Also pass metaFields to header
+
   const reportData = report ? {
     id: report.id,
     title: report.title,
-    subtitle: "", // ReportDetail doesn't have subtitle field
+    subtitle: "",
     report_id: report.report_id,
     format: report.format,
-    industry: "Technology & Software",
+    industry: report.category_name || "Technology & Software", // Use category name from report if available
     pages: parseInt(report.number_of_pages) || 0,
-    last_updated: new Date(report.modify_at).toLocaleDateString(),
+    last_updated: formatDate(report.modify_at || report.updated_at),
+    publish_date: formatDate(report.created_at),
     image: report.image,
     report_reference_title: data?.report_reference_title,
     base_year: report.base_year,
-    forecast_period: report.forecast_period
+    forecast_period: report.forecast_period,
+    toc: report.toc
   } : null;
 
   // Get dynamic translations
@@ -112,6 +135,9 @@ export default function CheckoutPage() {
       setSelectedCurrency(list?.[0] || "");
     }
   }, [checkout_page]);
+
+  // Override Buy Button Text from Report API if available
+  const buyButtonLabel = data?.buy_license_button;
 
   // Handle CCAvenue Payment Return
   const searchParams = useSearchParams();
@@ -182,7 +208,7 @@ export default function CheckoutPage() {
         disclaimer: checkout_page[`${type}_license_disclaimer`],
         icon: checkout_page[`${type}_license_icon_image`],
         discountPercent: checkout_page[`${type}_license_discount_percent`],
-        buyButtonText: checkout_page.buy_license_button,
+        buyButtonText: buyButtonLabel || checkout_page.buy_license_button, // Use override from Report API
         buyButtonIcon: checkout_page.buy_license_button_icon_image,
         highlight: type === 'team',
         disclaimerHeading: checkout_page[`${type}_license_disclaimer_heading`],
@@ -190,7 +216,7 @@ export default function CheckoutPage() {
       };
     };
     return [mapLicensePrices('single'), mapLicensePrices('team'), mapLicensePrices('enterprise')];
-  }, [selectedCurrency, checkout_page]);
+  }, [selectedCurrency, checkout_page, buyButtonLabel]);
 
   // --- after this begin conditional returns ONLY ---
   if (!checkoutApi) {
@@ -310,7 +336,7 @@ export default function CheckoutPage() {
 
         {/* Checkout Header */}
         <div className="w-full mt-6">
-          <CheckoutHeader report={reportData} labels={t} />
+          <CheckoutHeader report={reportData} labels={t} metaFields={metaFields} />
         </div>
 
         {/* Main Content Container */}

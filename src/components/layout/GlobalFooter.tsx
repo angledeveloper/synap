@@ -112,9 +112,30 @@ export default function GlobalFooter() {
           </Link>
         </div>
         <span className="w-[200px] text-sm">
-          {HomePage.footer.section.credit_text}
+          {(() => {
+            const text = HomePage.footer.section.credit_text || "";
+            const startStr = "Website Credits. ";
+            const brand = "Angle";
+            const url = "https://angle.services/";
+
+            // Check if text contains the brand "Angle"
+            if (text.includes(brand)) {
+              const parts = text.split(brand);
+              return (
+                <>
+                  {parts[0]}
+                  <a href={url} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors underline">
+                    {brand}
+                  </a>
+                  {parts.slice(1).join(brand)}
+                </>
+              );
+            }
+            return text;
+          })()}
         </span>
+
       </div>
-    </footer>
+    </footer >
   );
 }

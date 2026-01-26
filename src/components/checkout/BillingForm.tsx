@@ -10,6 +10,7 @@ import type { LicenseOption, ReportData } from "@/types/checkout";
 import countries from '@/utils/countries.json';
 import phoneCodes from '@/utils/phoneCodes.json';
 import states from '@/utils/states.json';
+import SearchablePhoneSelect from '@/components/common/SearchablePhoneSelect';
 
 declare global {
   interface Window {
@@ -850,23 +851,11 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
                         onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
                         required
                       />
-                      <select
+                      <SearchablePhoneSelect
                         value={formData.phoneCode}
-                        onChange={(e) => handleInputChange("phoneCode", e.target.value)}
-                        className="absolute m-1 sm:m-2 left-0 top-0 border border-[#DBDBDB] rounded-[7px] bg-[#E8E8E8] text-[#767676] w-[65px] sm:w-[75px] h-8 sm:h-[30px] px-2 text-sm sm:text-base z-10 shadow-none outline-1 focus:ring-0 focus:border-[#232323] appearance-none cursor-pointer"
-                        style={{
-                          fontFamily: 'Space Grotesk, sans-serif',
-                          backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")',
-                          backgroundPosition: 'right 4px center',
-                          backgroundRepeat: 'no-repeat',
-                          backgroundSize: '12px'
-                        }}
-                      >
-                        <option value="" disabled style={{ color: '#888888' }}>Code</option>
-                        {phoneCodes.map((p: any) => (
-                          <option key={p.dial_code + p.name} value={p.dial_code}>{p.dial_code}</option>
-                        ))}
-                      </select>
+                        onChange={(code) => handleInputChange("phoneCode", code)}
+                        className="absolute m-1 sm:m-2 left-0 top-0 rounded-[7px] w-[65px] sm:w-[75px] h-8 sm:h-[30px] z-10 text-sm sm:text-base border border-[#DBDBDB] bg-[#E8E8E8] text-[#767676]"
+                      />
                     </div>
                   </div>
                 </div>
