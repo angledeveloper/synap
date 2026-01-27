@@ -15,6 +15,7 @@ interface ActionButtonsProps {
     reportImage: string;
     downloadLabel?: string;
     customLabel?: string;
+    label?: string; // Added to fix DownloadSampleButton prop type
     variant?: "mobile" | "desktop";
 }
 

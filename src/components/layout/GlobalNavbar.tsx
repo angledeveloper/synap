@@ -404,7 +404,10 @@ export default function GlobalNavbar() {
                                 break;
                               case 'report':
                                 if (result.id) {
-                                  targetUrl = getLocalizedPath(`/reports/${result.id}${queryParam}`, language);
+                                  const refIdParam = result.report_reference_id ? `&ref_id=${result.report_reference_id}` : '';
+                                  // queryParam already starts with ? or empty. If it starts with ?, append &ref_id
+                                  // Wait, queryParam is constructed as `?highlight=...` so we should use &
+                                  targetUrl = getLocalizedPath(`/reports/${result.id}${queryParam}${refIdParam}`, language);
                                 } else {
                                   // Fallback if ID is missing despite backend fix (should ideally not happen)
                                   console.warn('Report ID missing for:', result.title);
@@ -586,7 +589,8 @@ export default function GlobalNavbar() {
                                     targetUrl = getLocalizedPath(`/about${queryParam}`, language);
                                     break;
                                   case 'report':
-                                    targetUrl = getLocalizedPath(`/reports/${result.id}${queryParam}`, language);
+                                    const refIdParam = result.report_reference_id ? `&ref_id=${result.report_reference_id}` : '';
+                                    targetUrl = getLocalizedPath(`/reports/${result.id}${queryParam}${refIdParam}`, language);
                                     break;
                                   case 'legal':
                                     const page = result.page_name === 'terms' ? 'terms-of-service' : 'privacy';

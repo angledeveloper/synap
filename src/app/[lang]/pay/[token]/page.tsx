@@ -102,15 +102,17 @@ export default function CustomPaymentPage() {
         id: stringToNumber(params.token), // Unique ID derived from token
         title: tokenData.report_title,
         subtitle: "-",
-        report_id: "-", // Placeholder
-        format: "-", // Placeholder
-        industry: "-", // Placeholder
-        pages: 0,
-        last_updated: "-",
-        image: "", // Placeholder
+        report_id: tokenData.report_id || "-",
+        format: tokenData.format || "-",
+        industry: tokenData.industry || "-",
+        pages: tokenData.number_of_pages ? parseInt(String(tokenData.number_of_pages).replace(/,/g, '')) : 0,
+        last_updated: tokenData.last_updated || "-",
+        image: tokenData.report_image || "",
         report_reference_title: tokenData.report_title,
         base_year: tokenData.base_year || "-",
-        forecast_period: tokenData.forecast_period || "-"
+        forecast_period: tokenData.forecast_period || "-",
+        publish_date: tokenData.publish_date || "-",
+        toc: tokenData.toc_included ? "Included" : "Not Included"
     };
 
     const safeParseFloat = (val: any) => {

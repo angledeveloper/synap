@@ -218,6 +218,10 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                                         <span className="ml-1">{report.report_id}</span>
                                     </div>
                                     <div className="flex items-center">
+                                        <span>{metaFields?.number_of_pages || t.numberOfPages}</span>
+                                        <span className="ml-1">{report.number_of_pages}</span>
+                                    </div>
+                                    <div className="flex items-center">
                                         <span>{metaFields?.toc || 'TOC'}:</span>
                                         <span className="ml-1">{report.toc || '-'}</span>
                                     </div>
@@ -391,9 +395,7 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                                 return (
                                     <div className="bg-gray-100 border border-gray-200 border-t-0 p-4 sm:p-6 lg:p-8 -mt-px relative" key={section.id}>
                                         <div className="absolute top-0 left-0 right-0 h-px bg-black hidden sm:block"></div>
-                                        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2 sm:mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                                            {section.section_name}
-                                        </h2>
+
                                         <div
                                             className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
                                             style={{ fontFamily: 'Space Grotesk, sans-serif' }}

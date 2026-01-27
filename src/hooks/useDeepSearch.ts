@@ -13,6 +13,7 @@ export interface DeepSearchResult {
   image?: string;
   category?: string;
   industry?: string;
+  report_reference_id?: string;
   type: 'home' | 'about' | 'report' | 'legal';
   page_name?: string; // For legal docs
 }
@@ -73,6 +74,7 @@ const fetchDeepSearch = async (query: string, languageId: number): Promise<DeepS
     const reportResults = data.reports.map((item: any) => ({
       ...item,
       id: item.id, // Ensure ID is captured
+      report_reference_id: item.report_reference_id, // Capture report_reference_id
       language_id: item.language_id, // Capture language_id
       type: 'report' as const,
       description: item.introduction_description // Map for consistency

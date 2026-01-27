@@ -66,6 +66,7 @@ export async function generateMetadata({
   supportedLanguages.forEach((l) => {
     alternates[l.code] = l.code === 'en' ? '/' : `/${l.code}`;
   });
+  alternates['x-default'] = '/';
 
   return {
     metadataBase: new URL(`https://www.synapseaglobal.com`),

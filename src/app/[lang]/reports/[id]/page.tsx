@@ -72,6 +72,7 @@ export async function generateMetadata({
   supportedLanguages.forEach((l) => {
     alternates[l.code] = `/${l.code}/reports/${id}`;
   });
+  alternates['x-default'] = `/reports/${id}`;
 
   return {
     title: `${report.title} | SynapSEA`,
