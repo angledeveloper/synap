@@ -13,6 +13,7 @@ interface CaseStudy {
 
 interface CaseStudiesProps {
   caseStudies: CaseStudy[];
+  title?: string;
 }
 
 // Function to safely parse and clean HTML content
@@ -30,7 +31,7 @@ const CaseStudyCard = ({
 }) => {
   return (
     <div
-      className={`relative flex h-[309px] flex-col justify-between p-6 ${variant === 'teal' ? 'bg-[#06A591]' : 'bg-[#0B0B0B]'
+      className={`relative flex h-[309px] flex-col justify-between p-6 transition-colors duration-300 ${variant === 'teal' ? 'bg-[#06A591]' : 'bg-[#0B0B0B]'
         }`}
     >
       <div>
@@ -55,9 +56,11 @@ const CaseStudyCard = ({
   );
 };
 
-export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
+export default function CaseStudiesSection({ caseStudies, title }: CaseStudiesProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [itemsPerPage, setItemsPerPage] = useState(1);
   const [displayData, setDisplayData] = useState<CaseStudy[]>([]);
 
@@ -70,9 +73,7 @@ export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
   // Responsive items per page
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1440) setItemsPerPage(4); // Fits roughly 1440 / 4 ~ 360, but user wants 473px width.
-      // If user wants EXACTLY 473px width, 1440px / 473px = ~3 items.
-      // Let's adjust breakpoints to fit fixed width cards better.
+      if (window.innerWidth >= 1440) setItemsPerPage(4);
       else if (window.innerWidth >= 1024) setItemsPerPage(3);
       else if (window.innerWidth >= 640) setItemsPerPage(2);
       else setItemsPerPage(1);
@@ -83,6 +84,59 @@ export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Center detection logic
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (!displayData.length) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const containerCenter = containerRect.left + containerRect.width / 2;
+
+      // Calculate distance for all cards
+      const distances = displayData.map((_, index) => {
+        const card = cardsRef.current[index];
+        if (!card) return { index, distance: Number.MAX_VALUE };
+        const cardRect = card.getBoundingClientRect();
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        return { index, distance: Math.abs(containerCenter - cardCenter) };
+      });
+
+      // Sort by distance
+      distances.sort((a, b) => a.distance - b.distance);
+
+      // Determine how many to highlight
+      // If mobile (itemsPerPage === 1), highlight 1. Otherwise highlight 2.
+      const highlightCount = itemsPerPage > 1 ? 2 : 1;
+
+      // Get top N indices
+      const newHighlightedIndices = distances.slice(0, highlightCount).map(d => d.index);
+
+      // Simple array comparison to avoid infinite loops if generic
+      // (Using Set or JSON.stringify for simplicity here, or just simple check)
+      setHighlightedIndices(prev => {
+        if (prev.length !== newHighlightedIndices.length) return newHighlightedIndices;
+        const sortedPrev = [...prev].sort();
+        const sortedNew = [...newHighlightedIndices].sort();
+        return sortedPrev.every((val, i) => val === sortedNew[i]) ? prev : newHighlightedIndices;
+      });
+    };
+
+    // Initial check
+    handleScroll();
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll); // Recalculate on resize
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [displayData.length, itemsPerPage]);
+
+
   // Auto-scroll logic
   useEffect(() => {
     if (displayData.length <= itemsPerPage) return;
@@ -90,8 +144,6 @@ export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
     const interval = setInterval(() => {
       setActiveIndex((prev) => {
         const nextIndex = prev + 1;
-        // Logic for infinite loop or reset
-        // With smooth scroll, resetting to 0 jumps back. Use simple loop for now.
         if (nextIndex > displayData.length - itemsPerPage) {
           return 0;
         }
@@ -105,13 +157,6 @@ export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
   // Smooth scroll to active index
   useEffect(() => {
     if (scrollContainerRef.current) {
-      // We want strict card width?
-      // If we use flex-basis with 100/itemsPerPage, the width is dynamic.
-      // User requested 473px width.
-      // If we force 473px, we might overflow the container or have gaps.
-      // Better to check if the container is flex or grid.
-      // Let's try to match the DESIGN width 473px on large screens.
-
       const containerWidth = scrollContainerRef.current.clientWidth;
       const itemWidth = containerWidth / itemsPerPage;
 
@@ -132,7 +177,7 @@ export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
           className="mb-12 text-center text-[40px] text-black md:mb-16 md:text-[64px]"
           style={{ fontFamily: 'var(--font-orbitron)' }}
         >
-          Case Studies
+          {title || "Case Studies"}
         </h2>
       </div>
 
@@ -145,6 +190,7 @@ export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
           {displayData.map((cs, index) => (
             <div
               key={cs.id}
+              ref={(el) => { cardsRef.current[index] = el; }}
               className="flex-shrink-0 px-3 snap-start"
               style={{
                 // Fixed width for consistent look, allow them to flow off-screen
@@ -154,7 +200,7 @@ export default function CaseStudiesSection({ caseStudies }: CaseStudiesProps) {
             >
               <CaseStudyCard
                 caseStudy={cs}
-                variant={index % 4 === 2 ? 'teal' : 'dark'}
+                variant={highlightedIndices.includes(index) ? 'teal' : 'dark'}
               />
             </div>
           ))}

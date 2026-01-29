@@ -416,7 +416,10 @@ export default function Home() {
 
           {/* === CASE STUDIES SECTION BELOW === */}
           <div id="casestudiessection" className="w-full">
-            <CaseStudiesSection caseStudies={HomePage.case_studies} />
+            <CaseStudiesSection
+              caseStudies={HomePage.case_studies}
+              title={HomePage.navbar?.casestudy}
+            />
           </div>
 
         </div>
