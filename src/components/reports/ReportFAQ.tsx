@@ -1,72 +1,115 @@
-import React from 'react';
+"use client";
+
+import React from "react";
 
 interface ReportFAQProps {
-    heading: string;
-    report: any; // Using any for flexible API data access
+  heading: string;
+  report: any; // Using any for flexible API data access
 }
 
 const ReportFAQ: React.FC<ReportFAQProps> = ({ heading, report }) => {
-    // Extract Q&A pairs 1 to 6
-    const faqs = [];
-    for (let i = 1; i <= 6; i++) {
-        const question = report[`question_${i}`];
-        const answer = report[`answer_${i}`];
+  const [openIndex, setOpenIndex] = React.useState<number | null>(null);
 
-        if (question && answer) {
-            faqs.push({ question, answer });
-        }
+  // Extract Q&A pairs 1 to 6
+  const faqs = [];
+  for (let i = 1; i <= 6; i++) {
+    const question = report[`question_${i}`];
+    const answer = report[`answer_${i}`];
+
+    if (question && answer) {
+      faqs.push({ question, answer });
     }
+  }
 
-    if (faqs.length === 0) return null;
+  if (faqs.length === 0) return null;
 
-    return (
-        <div className="mb-12 font-space-grotesk">
-            <h2
-                className="font-bold text-black mb-6"
-                style={{
-                    fontFamily: 'Space Grotesk, sans-serif',
-                    fontSize: '32px',
-                    lineHeight: '40.83px'
-                }}
+  return (
+    <div className="font-space-grotesk mb-12">
+      <h2
+        className="mb-6 font-bold text-black"
+        style={{
+          fontFamily: "Space Grotesk, sans-serif",
+          fontSize: "32px",
+          lineHeight: "40.83px",
+        }}
+      >
+        {heading || "Frequently Asked Questions"}
+      </h2>
+
+      <div className="space-y-3">
+        {faqs.map((faq, index) => (
+          <div key={index} className="bg-white">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left"
+              onClick={() =>
+                setOpenIndex((prev) => (prev === index ? null : index))
+              }
+              aria-expanded={openIndex === index}
+              aria-controls={`faq-panel-${index}`}
             >
-                {heading || 'Frequently Asked Questions'}
-            </h2>
+              <span
+                className="text-sm font-bold text-gray-700 sm:text-base"
+                style={{
+                  fontFamily: "Space Grotesk, sans-serif",
+                  color: "#464646",
+                }}
+              >
+                Q{index + 1}: {faq.question}
+              </span>
+              <span
+                className={`0 grid h-6 w-6 place-items-center text-gray-600 transition-transform duration-300 ${
+                  openIndex === index ? "rotate-180" : "rotate-0"
+                }`}
+                aria-hidden="true"
+              >
+                <svg
+                  width="14"
+                  height="8"
+                  viewBox="0 0 14 8"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M1 1L7 7L13 1"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            </button>
 
-            <div className="space-y-6">
-                {faqs.map((faq, index) => (
-                    <div key={index} className="flex flex-col gap-2">
-                        <h3
-                            className="font-bold text-"
-                            style={{
-                                fontFamily: 'Space Grotesk, sans-serif',
-                                fontSize: '20px', // "main data have size 20"
-                                color: '#464646',
-                                fontWeight: 'bold'
-                            }}
-                        >
-                            Q{index + 1}: {faq.question}
-                        </h3>
-                        <p
-                            className="text-gray-700"
-                            style={{
-                                fontFamily: 'Space Grotesk, sans-serif',
-                                fontSize: '20px',
-                                lineHeight: '1.6',
-                                color: '#464646',
-                                fontWeight: 'normal'
-                            }}
-                            dangerouslySetInnerHTML={{ __html: faq.answer.startsWith('A:') ? faq.answer : `A${index + 1}: ${faq.answer}` }}
-                        />
-                        {/* Note: The screenshot shows "A1: ...". If API provides raw text, we might want to prepend "A: " or similar if not present.
-                             The API example shows "answer_1": "Provident et irure". It doesn't have "A1:".
-                             So I will prepend the label for clarity matching the design style "Q1: ... A1: ...".
-                             Actually, let's just use "A: " or "A{index+1}: "
-                         */}
-                    </div>
-                ))}
+            <div
+              id={`faq-panel-${index}`}
+              className={`grid transition-all duration-300 ease-out ${
+                openIndex === index
+                  ? "grid-rows-[1fr] opacity-100"
+                  : "grid-rows-[0fr] opacity-0"
+              }`}
+            >
+              <div className="overflow-hidden px-4 pb-4">
+                <p
+                  className="text-sm leading-relaxed text-gray-700 sm:text-base"
+                  style={{
+                    fontFamily: "Space Grotesk, sans-serif",
+                    color: "#464646",
+                    fontWeight: "normal",
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: faq.answer.startsWith("A:")
+                      ? faq.answer
+                      : `A${index + 1}: ${faq.answer}`,
+                  }}
+                />
+              </div>
             </div>
-        </div>
-    );
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default ReportFAQ;

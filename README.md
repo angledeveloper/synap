@@ -1,17 +1,43 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Project overview
+
+This repository powers the Synapsea Global reports website, where customers can browse and purchase reports. The site is multilingual (eight languages) and must deliver strong SEO, especially for report detail pages. Most content is retrieved from a Laravel backend API, so reliable data fetching and rendering are core to the app.
+
+## Project structure
+
+- `src/app/[lang]`: Language-scoped App Router pages (e.g., `/<lang>/reports`, `/<lang>/contact`).
+- `src/app/sitemaps`: SEO sitemaps and alternate language link generation.
+- `src/components`: Shared UI components (layout, report cards, forms, etc.).
+- `src/hooks`: Data-fetching hooks for reports, translations, navbar data, and more.
+- `src/lib`: Cross-cutting utilities and translation fallbacks.
+
+## Multilingual setup
+
+- **Supported locales** live in `src/lib/utils.ts` via `supportedLanguages` and `codeToId` (English is the default). These codes map to backend `language_id` values for Laravel API requests.
+- **Routing** is handled by the `[lang]` App Router segment. A `middleware.ts` rewrite/redirect keeps `/` as English while `/fr`, `/es`, etc. use the localized routes.
+- **Language state** is managed in `src/store.tsx` (`useLanguageStore`) and read by components to render localized navigation and content.
+- **Translations** are fetched per page via `useTranslations` with a fallback dictionary in `src/lib/translations.ts` if the API data is missing.
+
 ## Getting Started
+
+### Prerequisites
+
+- Node.js 20.x LTS
+- npm (preferred package manager)
+
+### Setup
+
+Install dependencies:
+
+```bash
+npm ci
+```
 
 First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -19,6 +45,19 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+### Useful commands
+
+```bash
+npm run lint
+npm run build
+npm run start
+```
+
+### Troubleshooting
+
+- If installs fail, make sure you are on Node.js 20.x LTS and retry `npm ci`.
+- If the dev server fails to start, confirm port `3000` is available or set `PORT=3000`.
 
 ## Learn More
 
@@ -34,4 +73,3 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
