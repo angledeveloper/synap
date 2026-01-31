@@ -96,7 +96,22 @@ export default async function RootLayout({
   const languageId = codeToId[langCode as keyof typeof codeToId] || codeToId['en'];
   // Fetch homepage server-side
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
-  const homepageData = baseUrl ? await fetch(`${baseUrl}homepage/${languageId}`).then(res => res.json()) : null;
+  let homepageData = null;
+  if (baseUrl) {
+    try {
+      const res = await fetch(`${baseUrl}homepage/${languageId}`);
+      const contentType = res.headers.get("content-type") || "";
+      if (res.ok && contentType.includes("application/json")) {
+        homepageData = await res.json();
+      } else {
+        console.error(
+          `Homepage fetch returned ${res.status} with content-type ${contentType} for language ${languageId}`,
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching homepage data:", error);
+    }
+  }
 
   return (
     <html lang={langCode}>

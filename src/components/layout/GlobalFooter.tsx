@@ -7,6 +7,7 @@ import ArrowIcon from "@/components/common/ArrowIcon";
 import GlobalLanguageSwitch from "./GlobalLanguageSwitch";
 import FullLogo from "./FullLogo";
 import { getRouteFromSlug } from "@/lib/routeMapping";
+import { getLocalizedPath } from "@/lib/utils";
 
 export default function GlobalFooter() {
   const { HomePage } = useHomePageStore();
@@ -53,7 +54,11 @@ export default function GlobalFooter() {
                 <span className="text-[20px] underline">{HomePage.footer.section?.solutions ?? ''}</span>
                 <ul className="mt-6 flex flex-col gap-2 text-[14px]">
                   {HomePage.footer.menu.Solution?.map((link: any, index: number) => (
-                    <li key={index}><Link href={`/${language}${getRouteFromSlug(link.slug)}`}>{link.menu_name}</Link></li>
+                    <li key={index}>
+                      <Link href={getLocalizedPath(getRouteFromSlug(link.slug), language)}>
+                        {link.menu_name}
+                      </Link>
+                    </li>
                   ))}
 
                 </ul>
@@ -63,7 +68,11 @@ export default function GlobalFooter() {
                 <span className="text-[20px] underline">{HomePage.footer.section?.resources ?? ''}</span>
                 <ul className="mt-6 flex flex-col gap-2 text-[14px]">
                   {HomePage.footer.menu.Resources?.map((link: any, index: number) => (
-                    <li key={index}><Link href={`/${language}${getRouteFromSlug(link.slug)}`}>{link.menu_name}</Link></li>
+                    <li key={index}>
+                      <Link href={getLocalizedPath(getRouteFromSlug(link.slug), language)}>
+                        {link.menu_name}
+                      </Link>
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -73,7 +82,9 @@ export default function GlobalFooter() {
                 <ul className="mt-6 flex flex-col gap-2 text-[14px]">
                   {HomePage.footer.menu.Company?.map((link: any, index: number) => (
                     <li key={index}>
-                      <Link href={`/${language}${getRouteFromSlug(link.slug)}`}>{link.menu_name}</Link>
+                      <Link href={getLocalizedPath(getRouteFromSlug(link.slug), language)}>
+                        {link.menu_name}
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -84,7 +95,9 @@ export default function GlobalFooter() {
                 <ul className="mt-6 flex flex-col gap-2 text-[14px]">
                   {HomePage.footer.menu.Legal?.map((link: any, index: number) => (
                     <li key={index}>
-                      <Link href={`/${language}${getRouteFromSlug(link.slug)}`}>{link.menu_name}</Link>
+                      <Link href={getLocalizedPath(getRouteFromSlug(link.slug), language)}>
+                        {link.menu_name}
+                      </Link>
                     </li>
                   ))}
                 </ul>
