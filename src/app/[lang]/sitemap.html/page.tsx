@@ -6,7 +6,11 @@ import {
 } from "@/lib/categoryMappings";
 
 export const dynamic = "force-static";
-export const revalidate = 3600;
+export const revalidate = false;
+
+export async function generateStaticParams() {
+  return supportedLanguages.map((lang) => ({ lang: lang.code }));
+}
 
 type Category = MappingCategory & {
   category_reference_id?: string | number;
@@ -172,7 +176,7 @@ async function getHomepageData(
     const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
     if (!baseUrl) return null;
     const res = await fetch(`${baseUrl}homepage/${languageId}`, {
-      next: { revalidate: 3600 },
+      cache: "force-cache",
     });
     return (await res.json()) as HomePageData;
   } catch (error) {
@@ -190,7 +194,7 @@ async function getAllCategories(): Promise<Category[]> {
       supportedLanguages.map(async (lang) => {
         const languageId = getLanguageId(lang.code);
         const res = await fetch(`${baseUrl}homepage/${languageId}`, {
-          next: { revalidate: 3600 },
+          cache: "force-cache",
         });
         const data = await res.json();
         return Array.isArray(data?.report_store_dropdown)
