@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Report } from "@/types/reports";
 import { useLanguageStore, useHomePageStore } from "@/store";
 import ArrowIcon from "@/components/common/ArrowIcon";
-import { codeToId, targetLanguageIds, slugify } from "@/lib/utils";
+import { buildCanonicalReportSlug } from "@/lib/reportUtils";
 
 interface ReportCardProps {
   report: Report;
@@ -15,24 +15,11 @@ interface ReportCardProps {
 
 export default function ReportCard({ report, viewReportLabel, baseYearLabel, forecastPeriodLabel }: ReportCardProps) {
   const { language } = useLanguageStore();
-  const currentLangId = codeToId[language as keyof typeof codeToId];
+  const canonicalSlug = buildCanonicalReportSlug(report);
 
-  // Logic for All Non-English Languages
-  // We use report_reference_title (English) for the URL slug to improve SEO and consistency.
-  const isEnglish = currentLangId === "1";
-  // If not English, use Reference Title (English) if available, otherwise fallback to title
-  const titleForSlug = !isEnglish && report.report_reference_title
-    ? report.report_reference_title
-    : report.title;
-
-  // Use Reference ID if using Reference Title (and it exists), otherwise use regular ID
-  const idForSlug = !isEnglish && report.report_identity?.report_reference_id
-    ? report.report_identity.report_reference_id
-    : report.id;
-
-  const titleSlug = slugify(titleForSlug, idForSlug);
-
-  const reportUrl = `/${language}/reports/${titleSlug}`;
+  const reportUrl = canonicalSlug
+    ? `/${language}/reports/${canonicalSlug}`
+    : `/${language}/reports`;
 
   const formatDate = (dateString: string) => {
     // Handle different date formats from API

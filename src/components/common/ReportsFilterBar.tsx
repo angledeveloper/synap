@@ -8,7 +8,10 @@ import { useLanguageStore } from "@/store";
 import { Filters } from "@/types/reports";
 import { useFilterOptions } from "@/hooks/useFilterOptions";
 import { useDeepSearch } from "@/hooks/useDeepSearch";
-import { fetchReportIdByTitle } from "@/lib/reportUtils";
+import {
+  fetchReportBackendSlugByReferenceId,
+  fetchReportSlugByTitle,
+} from "@/lib/reportUtils";
 import { codeToId } from "@/lib/utils";
 
 interface FilterOption {
@@ -115,18 +118,42 @@ export default function ReportsFilterBar({
     const queryParam = `?highlight=${encodeURIComponent(result.title)}`;
     let targetUrl = `/${language}/reports${queryParam}`;
 
-    if (result.id) {
-      targetUrl = `/${language}/reports/${result.id}${queryParam}`;
-    } else {
-      // Use helper to find ID
-      const id = await fetchReportIdByTitle(result.title, language);
-      if (id) {
-        targetUrl = `/${language}/reports/${id}${queryParam}`;
-      } else {
-        console.error('Could not find report ID for:', result.title);
-        // Fallback to just filtering the list (which is already happening via debounced search)
-        return;
+    const stableId = result.report_reference_id || result.id;
+    const trimmedBackendSlug =
+      typeof result.slug === "string" ? result.slug.trim() : "";
+    let canonicalSlug =
+      trimmedBackendSlug && stableId
+        ? `${trimmedBackendSlug}-${stableId}`
+        : "";
+
+    if (!canonicalSlug && stableId) {
+      const backendSlug = await fetchReportBackendSlugByReferenceId(
+        stableId,
+        codeToId[language as keyof typeof codeToId] || "1",
+      );
+      if (backendSlug) {
+        canonicalSlug = `${backendSlug}-${stableId}`;
       }
+    }
+
+    if (!canonicalSlug) {
+      const resolved = await fetchReportSlugByTitle(result.title, language);
+      if (resolved?.stableId) {
+        canonicalSlug = resolved.slug
+          ? `${resolved.slug}-${resolved.stableId}`
+          : `${resolved.stableId}`;
+      }
+    }
+
+    if (!canonicalSlug && stableId) {
+      canonicalSlug = `${stableId}`;
+    }
+
+    if (canonicalSlug) {
+      targetUrl = `/${language}/reports/${canonicalSlug}${queryParam}`;
+    } else {
+      console.error('Could not resolve report slug for:', result.title);
+      return;
     }
 
     window.location.href = targetUrl;

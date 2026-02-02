@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useLanguageStore, useHomePageStore } from "@/store";
 import { useQuery } from "@tanstack/react-query";
 import { codeToId, getLocalizedPath } from "@/lib/utils";
+import { fetchReportBackendSlugByReferenceId } from "@/lib/reportUtils";
 
 
 interface CategoryItem {
@@ -209,6 +210,35 @@ export default function GlobalNavbar() {
 
   if (!HomePage) return null; // or loading state if HomePage isn't ready yet
 
+  const resolveReportSearchPath = async (
+    result: any,
+    queryParam: string,
+  ) => {
+    const stableId = result.report_reference_id || result.id;
+    const trimmedBackendSlug =
+      typeof result.slug === "string" ? result.slug.trim() : "";
+
+    if (trimmedBackendSlug && stableId) {
+      return getLocalizedPath(
+        `/reports/${trimmedBackendSlug}-${stableId}${queryParam}`,
+        language,
+      );
+    }
+
+    if (stableId) {
+      const backendSlug = await fetchReportBackendSlugByReferenceId(stableId, id);
+      if (backendSlug) {
+        return getLocalizedPath(
+          `/reports/${backendSlug}-${stableId}${queryParam}`,
+          language,
+        );
+      }
+      return getLocalizedPath(`/reports/${stableId}${queryParam}`, language);
+    }
+
+    return getLocalizedPath(`/reports${queryParam}`, language);
+  };
+
   return (
     <nav className="fixed top-0 left-0 z-50 w-full">
       <div className="relative flex h-20 w-full items-center bg-[#060606]/90 lg:justify-center justify-between">
@@ -403,16 +433,7 @@ export default function GlobalNavbar() {
                                 targetUrl = getLocalizedPath(`/about${queryParam}`, language);
                                 break;
                               case 'report':
-                                if (result.id) {
-                                  const refIdParam = result.report_reference_id ? `&ref_id=${result.report_reference_id}` : '';
-                                  // queryParam already starts with ? or empty. If it starts with ?, append &ref_id
-                                  // Wait, queryParam is constructed as `?highlight=...` so we should use &
-                                  targetUrl = getLocalizedPath(`/reports/${result.id}${queryParam}${refIdParam}`, language);
-                                } else {
-                                  // Fallback if ID is missing despite backend fix (should ideally not happen)
-                                  console.warn('Report ID missing for:', result.title);
-                                  targetUrl = getLocalizedPath(`/reports${queryParam}`, language);
-                                }
+                                targetUrl = await resolveReportSearchPath(result, queryParam);
                                 break;
                               case 'legal':
                                 const page = result.page_name === 'terms' ? 'terms-of-service' : 'privacy';
@@ -420,7 +441,7 @@ export default function GlobalNavbar() {
                                 break;
                               default:
                                 // Fallback to reports if type is missing (legacy)
-                                targetUrl = getLocalizedPath(`/reports/${result.id || ''}${queryParam}`, language);
+                                targetUrl = await resolveReportSearchPath(result, queryParam);
                             }
 
                             window.location.href = targetUrl;
@@ -573,7 +594,7 @@ export default function GlobalNavbar() {
                             <div
                               key={`mobile-search-result-${index}`}
                               className="block px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 cursor-pointer"
-                              onClick={() => {
+                              onClick={async () => {
                                 setSearchValue('');
                                 setShowSearchResults(false);
                                 setShowMenu(false);
@@ -589,15 +610,14 @@ export default function GlobalNavbar() {
                                     targetUrl = getLocalizedPath(`/about${queryParam}`, language);
                                     break;
                                   case 'report':
-                                    const refIdParam = result.report_reference_id ? `&ref_id=${result.report_reference_id}` : '';
-                                    targetUrl = getLocalizedPath(`/reports/${result.id}${queryParam}${refIdParam}`, language);
+                                    targetUrl = await resolveReportSearchPath(result, queryParam);
                                     break;
                                   case 'legal':
                                     const page = result.page_name === 'terms' ? 'terms-of-service' : 'privacy';
                                     targetUrl = getLocalizedPath(`/${page}${queryParam}`, language);
                                     break;
                                   default:
-                                    targetUrl = getLocalizedPath(`/reports/${result.id || ''}${queryParam}`, language);
+                                    targetUrl = await resolveReportSearchPath(result, queryParam);
                                 }
 
                                 window.location.href = targetUrl;

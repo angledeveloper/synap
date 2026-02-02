@@ -85,7 +85,7 @@ export default function GlobalLanguageSwitch() {
                 }
 
                 // Identify if we are on a report page or category page
-                const isReportDetail = pathname.match(/\/reports\/\d+/);
+                const isReportDetail = pathname.match(/\/reports\/[^/]+$/);
                 const isReportsPage = pathname.includes('/reports');
                 const searchParams = new URLSearchParams(window.location.search);
                 const hasCategory = searchParams.has('category');
@@ -110,30 +110,19 @@ export default function GlobalLanguageSwitch() {
                       const data = await res.json();
                       const report = data.data?.report;
                       if (report) {
-                        // Construct proper slug
-                        // Logic for Japanese(5), Chinese(6), Korean(7), Arabic(8)
-                        const targetLangId = l.id;
-                        const useReferenceTitle = ['5', '6', '7', '8'].includes(String(targetLangId));
-                        // Access slugify (need import? No, simpler logic here or just title)
-                        // Note: slugify is not imported in this file. 
-                        // We can just use the ID if we want to be safe, or implement simple slugify.
-                        // Let's rely on ID since extractIdFromSlug handles it, and we append ref_id.
-                        // Ideally we import slugify or copy it. 
-                        // To allow page.tsx to extracting ID correctly, format should be title-id or just id.
-
-                        // Simple slugify replacement or just use ID if simple.
-                        // But user wants SEO so title is good.
-                        // Start with just ID to be safe or try to keep title.
-                        const title = useReferenceTitle ? (report.report_reference_title || report.title) : report.title;
-
-                        // Basic slugify: lowercase, replace spaces with dashes, remove special chars
-                        const simpleSlug = title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-                        const slug = `${simpleSlug}-${report.id}`;
+                        const stableId =
+                          report.report_identity?.report_reference_id ||
+                          report.report_reference_id ||
+                          report.id;
+                        const trimmedBackendSlug =
+                          typeof report.slug === "string"
+                            ? report.slug.trim()
+                            : "";
+                        const slug = trimmedBackendSlug
+                          ? `${trimmedBackendSlug}-${stableId}`
+                          : `${stableId}`;
 
                         newPath = getLocalizedPath(`/reports/${slug}`, targetLang);
-
-                        // Append ref_id for server-side fetching
-                        newPath += `?ref_id=${currentIdentity.report_reference_id}`;
                       }
                     }
                   } else if (isReportsPage && hasCategory && currentIdentity.category_reference_id) {

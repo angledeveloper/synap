@@ -4,6 +4,8 @@ export interface Report {
   introduction_description: string;
   cost: string;
   report_date: string;
+  slug?: string;
+  report_reference_id?: string;
   // Additional fields for detailed report view
   last_updated?: string;
   base_year?: string;
@@ -30,6 +32,8 @@ export interface ReportDetail {
   language_id: number;
   title: string;
   image: string;
+  slug?: string;
+  report_reference_id?: string;
   category_id: number;
   report_id: string;
   number_of_pages: string;

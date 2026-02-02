@@ -194,10 +194,14 @@ async function buildReportsXml(lang: string) {
 
   const nodes = Array.from(uniqueReports.values())
     .map((report) => {
-      const titleVal = report.report_reference_title || report.title;
-      const refId = report.report_reference_id || report.id;
-      if (!refId || !titleVal) return "";
-      const slug = slugify(titleVal, refId);
+      const refId =
+        report.report_reference_id ||
+        report.report_identity?.report_reference_id ||
+        report.id;
+      const trimmedBackendSlug =
+        typeof report.slug === "string" ? report.slug.trim() : "";
+      if (!refId) return "";
+      const slug = trimmedBackendSlug ? `${trimmedBackendSlug}-${refId}` : `${refId}`;
       const loc = buildLoc(`reports/${slug}`, lang);
       return buildUrlNode(loc, "daily");
     })

@@ -1,6 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { Filters, ReportsResponse } from '@/types/reports';
+import {
+  fetchReportBackendSlugByReferenceId,
+  getReportStableId,
+} from '@/lib/reportUtils';
 import { useHomePageStore } from '@/store';
 
 const fetchReports = async (filters: Filters, allCategories: any[]): Promise<ReportsResponse> => {
@@ -110,8 +114,22 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
     reports = [];
   }
 
-  // Deduplicate reports by ID
-  let uniqueReports = Array.from(new Map(reports.map(report => [report.id, report])).values());
+  // Deduplicate reports by ID, prefer records that include a backend slug
+  const reportMap = new Map<string | number, any>();
+  reports.forEach((report: any) => {
+    const key = report.id;
+    const existing = reportMap.get(key);
+    if (!existing) {
+      reportMap.set(key, report);
+      return;
+    }
+    const existingSlug = typeof existing.slug === 'string' ? existing.slug.trim() : '';
+    const nextSlug = typeof report.slug === 'string' ? report.slug.trim() : '';
+    if (!existingSlug && nextSlug) {
+      reportMap.set(key, report);
+    }
+  });
+  let uniqueReports = Array.from(reportMap.values());
 
   // Client-side filtering
   if (filters.base_year && filters.base_year !== 'all') {
@@ -129,7 +147,27 @@ const fetchReports = async (filters: Filters, allCategories: any[]): Promise<Rep
   // Apply client-side pagination as a fallback if not done by the server
   const startIndex = (filters.page - 1) * filters.per_page;
   const endIndex = startIndex + filters.per_page;
-  const paginatedReports = uniqueReports.slice(startIndex, endIndex);
+  let paginatedReports = uniqueReports.slice(startIndex, endIndex);
+
+  // Ensure backend slug is present for the current page (used for canonical report URLs)
+  paginatedReports = await Promise.all(
+    paginatedReports.map(async (report: any) => {
+      const existingSlug =
+        typeof report.slug === 'string' ? report.slug.trim() : '';
+      if (existingSlug) return report;
+
+      const stableId = getReportStableId(report);
+      if (!stableId) return report;
+
+      const backendSlug = await fetchReportBackendSlugByReferenceId(
+        stableId,
+        category.language_id,
+      );
+      if (!backendSlug) return report;
+
+      return { ...report, slug: backendSlug };
+    }),
+  );
 
   // Calculate total pages based on unique reports count
   const totalPages = Math.ceil(uniqueReports.length / filters.per_page);

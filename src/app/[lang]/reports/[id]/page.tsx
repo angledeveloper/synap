@@ -42,6 +42,33 @@ async function getReportData(id: string, languageId: string, referenceId?: strin
   return null;
 }
 
+function buildCanonicalSlug({
+  report,
+  data,
+  referenceId,
+  fallbackId,
+}: {
+  report: any;
+  data: any;
+  referenceId?: string;
+  fallbackId: string;
+}): string | null {
+  const reportSeo = data?.data?.seo;
+  const backendSlug = report?.slug ?? reportSeo?.slug ?? data?.slug;
+  const reportIdentity = report?.report_identity ?? data?.report_identity;
+  const reportReferenceId =
+    reportIdentity?.report_reference_id ?? report?.report_reference_id;
+  const stableId = reportReferenceId ?? report?.id ?? referenceId;
+  const trimmedBackendSlug =
+    typeof backendSlug === 'string' ? backendSlug.trim() : '';
+
+  if (trimmedBackendSlug && stableId) {
+    return `${trimmedBackendSlug}-${stableId}`;
+  }
+
+  return null;
+}
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -67,12 +94,24 @@ export async function generateMetadata({
     };
   }
 
-  const canonicalUrl = `/${lang}/reports/${id}`;
+  const canonicalSlug = buildCanonicalSlug({
+    report,
+    data,
+    referenceId,
+    fallbackId: id,
+  });
+  if (!canonicalSlug) {
+    return {
+      title: 'Report Not Found | SynapSEA',
+      description: 'The requested market research report could not be found.',
+    };
+  }
+  const canonicalUrl = `/${lang}/reports/${canonicalSlug}`;
   const alternates: Record<string, string> = {};
   supportedLanguages.forEach((l) => {
-    alternates[l.code] = `/${l.code}/reports/${id}`;
+    alternates[l.code] = `/${l.code}/reports/${canonicalSlug}`;
   });
-  alternates['x-default'] = `/reports/${id}`;
+  alternates['x-default'] = `/reports/${canonicalSlug}`;
 
   return {
     title: `${report.title} | SynapSEA`,
@@ -104,7 +143,8 @@ export default async function Page({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { lang, id } = await params;
-  const { ref_id } = await searchParams;
+  const search = await searchParams;
+  const { ref_id } = search;
 
   const languageId = (codeToId[lang as keyof typeof codeToId] || codeToId['en']).toString();
 
@@ -118,6 +158,17 @@ export default async function Page({
   const reportData = await getReportData(id, languageId, referenceId);
 
   if (!reportData || !reportData.data || !reportData.data.report) {
+    return notFound();
+  }
+
+  const canonicalSlug = buildCanonicalSlug({
+    report: reportData.data.report,
+    data: reportData,
+    referenceId,
+    fallbackId: id,
+  });
+
+  if (!canonicalSlug || canonicalSlug !== id) {
     return notFound();
   }
 
