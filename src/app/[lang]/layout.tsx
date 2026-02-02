@@ -1,13 +1,22 @@
 import { Metadata } from "next";
+import Script from "next/script";
 import { supportedLanguages } from "@/lib/utils";
-import { Geist, Geist_Mono, Orbitron, Space_Grotesk, Noto_Sans_Arabic, Noto_Sans_JP, Noto_Sans_KR, Noto_Sans_SC } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Orbitron,
+  Space_Grotesk,
+  Noto_Sans_Arabic,
+  Noto_Sans_JP,
+  Noto_Sans_KR,
+  Noto_Sans_SC,
+} from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/components/common/QueryProvider";
 
 import GlobalNavbar from "@/components/layout/GlobalNavbar";
 import GlobalFooter from "@/components/layout/GlobalFooter";
 import HomepageHydrator from "@/components/common/HomepageHydrator";
-
 
 import { codeToId } from "@/lib/utils";
 
@@ -60,20 +69,21 @@ export async function generateMetadata({
   const { lang } = (await params) || ({} as any);
   const langCode = lang || "en";
   const langObj =
-    supportedLanguages.find((l) => l.code === langCode) || supportedLanguages[0];
+    supportedLanguages.find((l) => l.code === langCode) ||
+    supportedLanguages[0];
 
   const alternates: Record<string, string> = {};
   supportedLanguages.forEach((l) => {
-    alternates[l.code] = l.code === 'en' ? '/' : `/${l.code}`;
+    alternates[l.code] = l.code === "en" ? "/" : `/${l.code}`;
   });
-  alternates['x-default'] = '/';
+  alternates["x-default"] = "/";
 
   return {
     metadataBase: new URL(`https://www.synapseaglobal.com`),
     title: `Home | ${langObj.label}`,
     description: `Welcome to the ${langObj.label} version of our site.`,
     alternates: {
-      canonical: langCode === 'en' ? '/' : `/${langCode}`,
+      canonical: langCode === "en" ? "/" : `/${langCode}`,
       languages: alternates,
     },
     openGraph: {
@@ -93,7 +103,8 @@ export default async function RootLayout({
 }) {
   const { lang } = (await params) || ({} as any);
   const langCode = lang || "en";
-  const languageId = codeToId[langCode as keyof typeof codeToId] || codeToId['en'];
+  const languageId =
+    codeToId[langCode as keyof typeof codeToId] || codeToId["en"];
   // Fetch homepage server-side
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
   let homepageData = null;
@@ -115,7 +126,27 @@ export default async function RootLayout({
 
   return (
     <html lang={langCode}>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable} ${notoSansArabic.variable} ${notoSansJP.variable} ${notoSansKR.variable} ${notoSansSC.variable} bg-black text-white antialiased`}>
+      <head>
+        <meta
+          name="google-site-verification"
+          content="aPd1gzb6sohn1LKvKuQrtOlN8XAkSpn4ee4Sxmj3J2k"
+        />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-YNH1SG5DHK"
+          strategy="beforeInteractive"
+        />
+        <Script id="ga4" strategy="beforeInteractive">
+          {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-YNH1SG5DHK');
+        `}
+        </Script>
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable} ${notoSansArabic.variable} ${notoSansJP.variable} ${notoSansKR.variable} ${notoSansSC.variable} bg-black text-white antialiased`}
+      >
         <QueryProvider>
           {/* Hydrate Zustand store for HomePage on client */}
           <HomepageHydrator homepageData={homepageData} />
