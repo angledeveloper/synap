@@ -16,7 +16,7 @@ export default function CallToAction({ title, buttonText, buttonLink = "#" }: Ca
           </h2>
           <a 
             href={buttonLink}
-            className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-black p-4 text-[18px] md:text-[20px] outline-white hover:opacity-85 hover:outline-2 w-full md:w-auto"
+            className="flex h-[105px] min-w-0 cursor-pointer flex-col items-start justify-between rounded-[10px] bg-black p-4 text-[18px] md:text-[20px] outline-white hover:opacity-85 hover:outline-2 w-full md:w-auto sm:min-w-[300px]"
           >
             <span className="flex w-full justify-end">
               <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" className="text-white">

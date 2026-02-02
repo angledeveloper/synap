@@ -9,6 +9,7 @@ interface BuyButtonProps {
   id: string; // Report ID or Slug
   label?: string;
   variant?: "mobile" | "desktop";
+  className?: string;
 }
 
 export default function BuyButton({
@@ -16,6 +17,7 @@ export default function BuyButton({
   id,
   label = "Buy License Now",
   variant = "mobile",
+  className,
 }: BuyButtonProps) {
   const router = useRouter();
 
@@ -38,7 +40,7 @@ export default function BuyButton({
 
   return (
     <Button
-      className="flex h-[40px] w-full items-center justify-between rounded-lg bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] px-4 text-[18px] font-bold text-white hover:bg-gray-700 md:w-[274px]"
+      className={`flex h-[40px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] px-4 text-[18px] font-bold text-white hover:bg-gray-700 md:w-[274px] ${className || ""}`}
       style={{
         fontFamily: "Space Grotesk, sans-serif",
       }}
@@ -46,7 +48,9 @@ export default function BuyButton({
       aria-label={label}
     >
       <span className="truncate">{label}</span>
-      <ArrowIcon variant="white" className="h-6 w-6 flex-shrink-0" />
+      {variant === "desktop" && (
+        <ArrowIcon variant="white" className="h-6 w-6 flex-shrink-0" />
+      )}
     </Button>
   );
 }

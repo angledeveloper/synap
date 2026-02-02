@@ -171,7 +171,7 @@ export default function About() {
           </p>
           <div className="flex w-full flex-wrap justify-between gap-10" style={{ marginBottom: '55px' }}>
             <div className="flex flex-wrap gap-4">
-              <Link href={`/${language}/reports`} className="inline-flex h-[105px] min-w-[300px] w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full">
+              <Link href={`/${language}/reports`} className="inline-flex h-[105px] min-w-0 w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full sm:min-w-[300px]">
                 <span className="flex w-full justify-end">
                   <ArrowIcon variant="gradient" />
                 </span>
@@ -179,7 +179,7 @@ export default function About() {
               </Link>
               <button
                 onClick={() => setIsCustomReportFormOpen(true)}
-                className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full"
+                className="flex h-[105px] min-w-0 cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full sm:min-w-[300px]"
               >
                 <span className="flex w-full justify-end">
                   <ArrowIcon variant="white" />

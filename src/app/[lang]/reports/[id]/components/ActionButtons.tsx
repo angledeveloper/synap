@@ -17,6 +17,7 @@ interface ActionButtonsProps {
     customLabel?: string;
     label?: string; // Added to fix DownloadSampleButton prop type
     variant?: "mobile" | "desktop";
+    className?: string;
 }
 
 export default function ActionButtons({
@@ -32,18 +33,24 @@ export default function ActionButtons({
 
     return (
         <>
-            <div className="w-full flex justify-center">
+            <div className="flex w-full justify-center">
                 {/* Download Sample Button */}
                 <Button
-                    className={`${variant === 'desktop' ? 'min-h-[50px]' : 'min-h-[40px]'} h-auto bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 py-2 text-[18px]`}
+                    className={`${variant === 'desktop' ? 'min-h-[50px] justify-between' : 'min-h-[40px] justify-center'} h-auto w-full bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center px-4 py-2 text-[18px]`}
                     style={{
                         fontFamily: 'Space Grotesk, sans-serif',
-                        width: variant === 'desktop' ? '297px' : '274px',
+                        width: variant === 'desktop' ? '297px' : '100%',
                     }}
                     onClick={() => setIsSampleFormOpen(true)}
                 >
-                    <span className="text-left mr-2 whitespace-normal leading-tight">{downloadLabel}</span>
-                    <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                    <span
+                        className={`${variant === "desktop" ? "text-left mr-2" : "text-center"} whitespace-normal leading-tight`}
+                    >
+                        {downloadLabel}
+                    </span>
+                    {variant === "desktop" && (
+                        <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                    )}
                 </Button>
             </div>
 
@@ -118,22 +125,29 @@ export function DownloadSampleButton({
     reportId,
     reportImage,
     label = "Download Sample",
-    variant = "mobile"
+    variant = "mobile",
+    className
 }: ActionButtonsProps) {
     const [isSampleFormOpen, setIsSampleFormOpen] = useState(false);
 
     return (
         <>
             <Button
-                className={`${variant === 'desktop' ? 'min-h-[50px]' : 'min-h-[40px]'} h-auto bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center justify-between px-4 py-2 text-[18px]`}
+                className={`${variant === 'desktop' ? 'min-h-[50px] justify-between' : 'min-h-[40px] justify-center'} h-auto w-full bg-gray-900 text-white hover:bg-gray-700 font-bold rounded-lg flex items-center px-4 py-2 text-[18px] ${className || ""}`}
                 style={{
                     fontFamily: 'Space Grotesk, sans-serif',
-                    width: variant === 'desktop' ? '297px' : '274px',
+                    width: variant === 'desktop' ? '297px' : '100%',
                 }}
                 onClick={() => setIsSampleFormOpen(true)}
             >
-                <span className="text-left mr-2 whitespace-normal leading-tight">{label}</span>
-                <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                <span
+                    className={`${variant === "desktop" ? "text-left mr-2" : "text-center"} whitespace-normal leading-tight`}
+                >
+                    {label}
+                </span>
+                {variant === "desktop" && (
+                    <ArrowIcon variant="white" className="w-6 h-6 flex-shrink-0" />
+                )}
             </Button>
 
             {isSampleFormOpen && (

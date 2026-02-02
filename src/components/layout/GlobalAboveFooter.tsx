@@ -112,7 +112,7 @@ export default function GlobalAboveFooter() {
           </div>
           <Link
             href={`/${language}/reports`}
-            className="mt-10 inline-flex h-[105px] min-w-[300px] w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] text-white font-bold hover:opacity-85 max-md:w-full border border-black"
+            className="mt-10 inline-flex h-[105px] min-w-0 w-fit cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] text-white font-bold hover:opacity-85 max-md:w-full sm:min-w-[300px] border border-black"
           >
             <span className="flex w-full justify-end">
               <ArrowIcon variant="gradient" />

@@ -9,19 +9,32 @@ import ReportCard from "@/components/common/ReportCard";
 import ReportsFilterBar from "@/components/common/ReportsFilterBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Icon } from "@iconify/react";
 import { Report, ReportsResponse } from "@/types/reports";
-import { getCategoryIdForLanguage, getLanguageId, type Category } from "@/lib/categoryMappings";
+import {
+  getCategoryIdForLanguage,
+  getLanguageId,
+  type Category,
+} from "@/lib/categoryMappings";
 
 export default function ReportsPage() {
   const { language } = useLanguageStore();
   const searchParams = useSearchParams();
 
   // Get category from URL parameters
-  const rawCategoryFromUrl = searchParams.get('category');
-  const categoryIdSanitized = rawCategoryFromUrl && rawCategoryFromUrl !== 'undefined' ? rawCategoryFromUrl : '1';
-  const languageId = codeToId[language as keyof typeof codeToId] || '1';
+  const rawCategoryFromUrl = searchParams.get("category");
+  const categoryIdSanitized =
+    rawCategoryFromUrl && rawCategoryFromUrl !== "undefined"
+      ? rawCategoryFromUrl
+      : "1";
+  const languageId = codeToId[language as keyof typeof codeToId] || "1";
 
   const [filters, setFilters] = useState({
     search: "",
@@ -34,15 +47,25 @@ export default function ReportsPage() {
   });
 
   const [reports, setReports] = useState<Report[]>([]);
-  const [categoryData, setCategoryData] = useState({ name: '', description: '' });
-  const [dynamicLabels, setDynamicLabels] = useState({ base_year: '', forecast_period: '' });
+  const [categoryData, setCategoryData] = useState({
+    name: "",
+    description: "",
+  });
+  const [dynamicLabels, setDynamicLabels] = useState({
+    base_year: "",
+    forecast_period: "",
+  });
 
   // Memoize the category data to prevent unnecessary re-renders
   const memoizedCategoryData = useMemo(() => categoryData, [categoryData]);
 
-  const { data: translations, isLoading: isTranslationsLoading, error: translationsError } = useTranslations({
+  const {
+    data: translations,
+    isLoading: isTranslationsLoading,
+    error: translationsError,
+  } = useTranslations({
     language,
-    page: 'reports'
+    page: "reports",
   });
 
   // Define the translation type to ensure type safety
@@ -95,8 +118,8 @@ export default function ReportsPage() {
         options: {
           "1-10": "1-10",
           "1-50": "1-50",
-          "1-100": "1-100"
-        }
+          "1-100": "1-100",
+        },
       },
       noReports: "No reports found",
       noReportsDescription: "Try adjusting your search criteria or filters.",
@@ -116,16 +139,16 @@ export default function ReportsPage() {
       // Ensure all required properties are present
       filters: {
         ...defaultTranslations.filters,
-        ...(translations.filters || {})
+        ...(translations.filters || {}),
       },
       pagination: {
         ...defaultTranslations.pagination,
-        ...(translations.pagination || {})
+        ...(translations.pagination || {}),
       },
       reportLimit: {
         ...defaultTranslations.reportLimit,
-        ...(translations.reportLimit || {})
-      }
+        ...(translations.reportLimit || {}),
+      },
     };
   }, [translations, memoizedCategoryData]);
 
@@ -136,13 +159,11 @@ export default function ReportsPage() {
   });
 
   const [isLoading, setIsLoading] = useState(true);
-  const [lastRenderedReports, setLastRenderedReports] = useState<string>('');
+  const [lastRenderedReports, setLastRenderedReports] = useState<string>("");
 
   const { mutate: fetchReports, isPending } = useReportsPage();
 
   const { HomePage } = useHomePageStore();
-
-
 
   const router = useRouter();
   const pathname = usePathname();
@@ -154,7 +175,7 @@ export default function ReportsPage() {
   const currentLangCategories = useMemo(() => {
     if (!HomePage?.report_store_dropdown?.length) return [];
     return (HomePage.report_store_dropdown as Category[]).filter(
-      cat => String(cat.language_id) === currentLanguageId
+      (cat) => String(cat.language_id) === currentLanguageId,
     );
   }, [HomePage?.report_store_dropdown, currentLanguageId]);
 
@@ -163,13 +184,14 @@ export default function ReportsPage() {
     if (!currentLangCategories.length) return;
 
     // Get category from URL or default to first category in current language
-    let categoryId = rawCategoryFromUrl && rawCategoryFromUrl !== 'undefined'
-      ? rawCategoryFromUrl
-      : String(currentLangCategories[0]?.category_id);
+    let categoryId =
+      rawCategoryFromUrl && rawCategoryFromUrl !== "undefined"
+        ? rawCategoryFromUrl
+        : String(currentLangCategories[0]?.category_id);
 
     // Find the selected category in current language
     const selectedCategory = currentLangCategories.find(
-      cat => String(cat.category_id) === categoryId
+      (cat) => String(cat.category_id) === categoryId,
     );
 
     // If category not found in current language, use first category of current language
@@ -179,24 +201,35 @@ export default function ReportsPage() {
     // Update URL if needed
     if (finalCategoryId !== categoryId) {
       const newSearchParams = new URLSearchParams(searchParams.toString());
-      newSearchParams.set('category', finalCategoryId);
-      router.replace(`${pathname}?${newSearchParams.toString()}`, { scroll: false });
+      newSearchParams.set("category", finalCategoryId);
+      router.replace(`${pathname}?${newSearchParams.toString()}`, {
+        scroll: false,
+      });
     }
 
     // Update filters with the correct category ID and language
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       category_id: finalCategoryId,
       language_id: currentLanguageId,
-      page: 1
+      page: 1,
     }));
 
     // Update category data
     setCategoryData({
       name: targetCategory.category_name,
-      description: targetCategory.title || targetCategory.category_tagline || ''
+      description:
+        targetCategory.title || targetCategory.category_tagline || "",
     });
-  }, [rawCategoryFromUrl, language, HomePage, searchParams, pathname, router, currentLanguageId]);
+  }, [
+    rawCategoryFromUrl,
+    language,
+    HomePage,
+    searchParams,
+    pathname,
+    router,
+    currentLanguageId,
+  ]);
 
   // Memoize the entire translation object to prevent unnecessary re-renders
   const memoizedTranslations = useMemo(() => t, [t]);
@@ -209,7 +242,7 @@ export default function ReportsPage() {
       <ReportCard
         key={report.id}
         report={report}
-        viewReportLabel={memoizedTranslations.viewReport || 'View Report'}
+        viewReportLabel={memoizedTranslations.viewReport || "View Report"}
         baseYearLabel={dynamicLabels.base_year}
         forecastPeriodLabel={dynamicLabels.forecast_period}
       />
@@ -220,15 +253,18 @@ export default function ReportsPage() {
     if (!HomePage) return;
 
     // Fetch reports when filters change
-    console.log('Fetching reports with filters:', filters);
+    console.log("Fetching reports with filters:", filters);
     setIsLoading(true); // Set loading state when starting fetch
     fetchReports(filters, {
       onSuccess: (data: ReportsResponse) => {
-        console.log('API Response Data:', data);
+        console.log("API Response Data:", data);
 
         // Extract reports and update state
         const reportsToSet = data.reports || [];
-        const reportsKey = reportsToSet.map(r => r.id).sort().join(',');
+        const reportsKey = reportsToSet
+          .map((r) => r.id)
+          .sort()
+          .join(",");
 
         if (reportsKey !== lastRenderedReports) {
           setReports(reportsToSet);
@@ -240,24 +276,24 @@ export default function ReportsPage() {
         const apiCategoryDesc = (data as any).category_desc;
 
         if (apiCategoryName || apiCategoryDesc) {
-          console.log('Updating category data:', {
+          console.log("Updating category data:", {
             name: apiCategoryName,
-            description: apiCategoryDesc
+            description: apiCategoryDesc,
           });
 
-          setCategoryData(prev => ({
+          setCategoryData((prev) => ({
             name: apiCategoryName || prev.name,
-            description: apiCategoryDesc || prev.description
+            description: apiCategoryDesc || prev.description,
           }));
         } else {
-          console.log('No category data in response, using existing data');
+          console.log("No category data in response, using existing data");
         }
 
         // Update dynamic labels
         if (data.base_year || data.forecast_period) {
           setDynamicLabels({
-            base_year: data.base_year || '',
-            forecast_period: data.forecast_period || ''
+            base_year: data.base_year || "",
+            forecast_period: data.forecast_period || "",
           });
         }
 
@@ -295,25 +331,28 @@ export default function ReportsPage() {
     return () => clearTimeout(timeout);
   }, [isLoading]);
 
-  const handleFilterChange = useCallback((newFilters: Partial<typeof filters>) => {
-    setFilters(prev => ({
-      ...prev,
-      ...newFilters,
-      language_id: languageId,
-      page: 1,
-    }));
-  }, [languageId]);
+  const handleFilterChange = useCallback(
+    (newFilters: Partial<typeof filters>) => {
+      setFilters((prev) => ({
+        ...prev,
+        ...newFilters,
+        language_id: languageId,
+        page: 1,
+      }));
+    },
+    [languageId],
+  );
 
   const handlePageChange = (page: number) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       page,
     }));
   };
 
   const handlePerPageChange = (perPage: string) => {
-    const perPageValue = parseInt(perPage.split('-')[1]); // Extract the max number from "1-10", "1-50", etc.
-    setFilters(prev => ({
+    const perPageValue = parseInt(perPage.split("-")[1]); // Extract the max number from "1-10", "1-50", etc.
+    setFilters((prev) => ({
       ...prev,
       per_page: perPageValue,
       page: 1, // Reset to first page when changing per page
@@ -333,13 +372,14 @@ export default function ReportsPage() {
         <button
           key={i}
           onClick={() => handlePageChange(i)}
-          className={`px-4 py-2 text-sm font-medium border-r border-gray-300 last:border-r-0 ${i === currentPage
-            ? "bg-[#313131] text-white"
-            : "bg-white text-gray-600 hover:bg-gray-50"
-            }`}
+          className={`border-r border-gray-300 px-4 py-2 text-sm font-medium last:border-r-0 ${
+            i === currentPage
+              ? "bg-[#313131] text-white"
+              : "bg-white text-gray-600 hover:bg-gray-50"
+          }`}
         >
           {i}
-        </button>
+        </button>,
       );
     }
 
@@ -349,27 +389,26 @@ export default function ReportsPage() {
       options: {
         "1-10": t.reportLimit?.options?.["1-10"] || "1-10",
         "1-50": t.reportLimit?.options?.["1-50"] || "1-50",
-        "1-100": t.reportLimit?.options?.["1-100"] || "1-100"
-      }
+        "1-100": t.reportLimit?.options?.["1-100"] || "1-100",
+      },
     };
 
     // Ensure pagination exists with fallbacks
     const paginationLabels = {
       previous: t.pagination?.previous || "Previous",
-      next: t.pagination?.next || "Next"
+      next: t.pagination?.next || "Next",
     };
 
     return (
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-12 gap-4">
+      <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Pagination Controls */}
-        <div className="w-full flex justify-center sm:order-1 md:ml-50">
-          <div className="inline-flex bg-gray-100 border border-gray-300 overflow-hidden">
+        <div className="flex w-full justify-center sm:order-1 md:ml-50">
+          <div className="inline-flex overflow-hidden border border-gray-300 bg-gray-100">
             {/* Previous */}
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border-r border-gray-300 
-                 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border-r border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {paginationLabels.previous}
             </button>
@@ -381,31 +420,38 @@ export default function ReportsPage() {
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 
-                 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {paginationLabels.next}
             </button>
           </div>
         </div>
 
-
         {/* Report Limit Dropdown */}
         <div className="flex items-center gap-2 sm:order-2">
-          <label className="text-sm text-gray-600" style={{ fontFamily: 'Noto Sans, sans-serif' }}>
+          <label
+            className="text-sm text-gray-600"
+            style={{ fontFamily: "Noto Sans, sans-serif" }}
+          >
             {reportLimit.label}
           </label>
           <Select
             value={`1-${filters.per_page}`}
             onValueChange={handlePerPageChange}
           >
-            <SelectTrigger className="w-24 h-8 text-sm text-gray-900 bg-white border-gray-300">
+            <SelectTrigger className="h-8 w-24 border-gray-300 bg-white text-sm text-gray-900">
               <SelectValue placeholder="Select limit" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1-10" className="text-gray-900">{reportLimit.options["1-10"]}</SelectItem>
-              <SelectItem value="1-50" className="text-gray-900">{reportLimit.options["1-50"]}</SelectItem>
-              <SelectItem value="1-100" className="text-gray-900">{reportLimit.options["1-100"]}</SelectItem>
+              <SelectItem value="1-10" className="text-gray-900">
+                {reportLimit.options["1-10"]}
+              </SelectItem>
+              <SelectItem value="1-50" className="text-gray-900">
+                {reportLimit.options["1-50"]}
+              </SelectItem>
+              <SelectItem value="1-100" className="text-gray-900">
+                {reportLimit.options["1-100"]}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -416,16 +462,16 @@ export default function ReportsPage() {
   if (!HomePage) {
     return (
       <div className="min-h-screen bg-white pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Skeleton className="h-8 w-2/3 mb-4" />
-          <Skeleton className="h-4 w-full mb-6" />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <Skeleton className="mb-4 h-8 w-2/3" />
+          <Skeleton className="mb-6 h-4 w-full" />
+          <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 9 }).map((_, i) => (
               <Skeleton key={i} className="h-80 w-full" />
             ))}
@@ -439,17 +485,17 @@ export default function ReportsPage() {
     <div className="min-h-screen bg-white pt-20">
       {/* Breadcrumbs */}
       <div className="pt-11 pb-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2">
               <li>
                 <a
                   href={`/${language}`}
-                  className="text-gray-500 hover:text-gray-700 font-normal"
+                  className="font-normal text-gray-500 hover:text-gray-700"
                   style={{
-                    fontSize: '14px',
-                    lineHeight: '18px',
-                    letterSpacing: '0px'
+                    fontSize: "14px",
+                    lineHeight: "18px",
+                    letterSpacing: "0px",
                   }}
                 >
                   {t.breadcrumbHome}
@@ -460,11 +506,11 @@ export default function ReportsPage() {
               </li>
               <li>
                 <span
-                  className="text-gray-500 font-normal"
+                  className="font-normal text-gray-500"
                   style={{
-                    fontSize: '14px',
-                    lineHeight: '18px',
-                    letterSpacing: '0px'
+                    fontSize: "14px",
+                    lineHeight: "18px",
+                    letterSpacing: "0px",
                   }}
                 >
                   {t.breadcrumbCategory}
@@ -476,27 +522,36 @@ export default function ReportsPage() {
       </div>
 
       {/* Page Header */}
-      <div className="bg-white" style={{ paddingTop: '7px', paddingBottom: '15px' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="mb-6 bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent" style={{
-            fontFamily: 'Space Grotesk, sans-serif',
-            fontSize: '40px',
-            lineHeight: '59px',
-            letterSpacing: '0px',
-            fontWeight: '400',
-            overflow: 'visible',
-          }}>
+      <div
+        className="bg-white"
+        style={{ paddingTop: "7px", paddingBottom: "15px" }}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h1
+            className="mb-6 bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent"
+            style={{
+              fontFamily: "Space Grotesk, sans-serif",
+              fontSize: "40px",
+              lineHeight: "59px",
+              letterSpacing: "0px",
+              fontWeight: "400",
+              overflow: "visible",
+            }}
+          >
             {t.heading}
           </h1>
           <div className="w-full max-w-7xl">
-            <p className="text-lg text-left text-gray-800 leading-relaxed" style={{
-              maxWidth: '100%',
-              margin: '0.5rem 0',
-              whiteSpace: 'pre-line',
-              wordWrap: 'break-word',
-              overflowWrap: 'break-word',
-              hyphens: 'auto'
-            }}>
+            <p
+              className="text-left text-lg leading-relaxed text-gray-800"
+              style={{
+                maxWidth: "100%",
+                margin: "0.5rem 0",
+                whiteSpace: "pre-line",
+                wordWrap: "break-word",
+                overflowWrap: "break-word",
+                hyphens: "auto",
+              }}
+            >
               {t.description}
             </p>
           </div>
@@ -504,17 +559,17 @@ export default function ReportsPage() {
       </div>
 
       {/* Search and Filters */}
-      <div style={{ paddingTop: '20px', paddingBottom: '25px' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div style={{ paddingTop: "20px", paddingBottom: "25px" }}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <ReportsFilterBar
             filters={filters}
             onFilterChange={handleFilterChange}
             isLoading={isPending}
             translations={t}
-            categories={currentLangCategories.map(cat => ({
+            categories={currentLangCategories.map((cat) => ({
               id: String(cat.category_id),
               name: cat.category_name,
-              value: String(cat.category_id)
+              value: String(cat.category_id),
             }))}
             baseYearLabel={dynamicLabels.base_year}
             forecastPeriodLabel={dynamicLabels.forecast_period}
@@ -523,18 +578,29 @@ export default function ReportsPage() {
       </div>
 
       {/* Reports Grid */}
-      <div className="pb-12" style={{ paddingTop: '12px' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pb-12" style={{ paddingTop: "12px" }}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {isLoading || isPending ? (
-            <div className="bg-[#F0F0F0] pb-6" style={{ paddingTop: '61px', paddingLeft: '41px', paddingRight: '41px' }}>
+            <div
+              className="bg-[#F0F0F0] pb-6"
+              style={{
+                paddingTop: "60px",
+                paddingLeft: "20px",
+                paddingRight: "20px",
+              }}
+            >
               <div className="space-y-4">
                 {Array.from({ length: 12 }).map((_, index) => (
-                  <div key={index} className="bg-white  shadow-sm border border-blue-200 p-6" style={{ width: '471px', height: '468px' }}>
-                    <div className="flex justify-between items-start">
+                  <div
+                    key={index}
+                    className="border border-blue-200 bg-white p-6 shadow-sm"
+                    style={{ width: "471px", height: "468px" }}
+                  >
+                    <div className="flex items-start justify-between">
                       <div className="flex-1 pr-6">
-                        <Skeleton className="h-5 w-3/4 mb-3" />
-                        <Skeleton className="h-3 w-full mb-2" />
-                        <Skeleton className="h-3 w-2/3 mb-4" />
+                        <Skeleton className="mb-3 h-5 w-3/4" />
+                        <Skeleton className="mb-2 h-3 w-full" />
+                        <Skeleton className="mb-4 h-3 w-2/3" />
                         <div className="flex items-center gap-4">
                           <Skeleton className="h-4 w-24" />
                           <Skeleton className="h-4 w-16" />
@@ -548,17 +614,27 @@ export default function ReportsPage() {
             </div>
           ) : reports && reports.length > 0 ? (
             <>
-              <div className="bg-gray-100 pb-6" style={{ paddingTop: '61px', paddingLeft: '41px', paddingRight: '41px' }}>
-                <div className="space-y-4">
-                  {memoizedReports}
-                </div>
+              <div
+                className="bg-gray-100 pb-6"
+                style={{
+                  paddingTop: "60px",
+                  paddingLeft: "20px",
+                  paddingRight: "20px",
+                }}
+              >
+                <div className="space-y-4">{memoizedReports}</div>
               </div>
               {pagination.totalPages > 1 && renderPagination()}
             </>
           ) : (
-            <div className="text-center py-12">
-              <Icon icon="mdi:file-search-outline" className="text-6xl text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t.noReports}</h3>
+            <div className="py-12 text-center">
+              <Icon
+                icon="mdi:file-search-outline"
+                className="mx-auto mb-4 text-6xl text-gray-400"
+              />
+              <h3 className="mb-2 text-xl font-semibold text-gray-900">
+                {t.noReports}
+              </h3>
               <p className="text-gray-600">{t.noReportsDescription}</p>
             </div>
           )}

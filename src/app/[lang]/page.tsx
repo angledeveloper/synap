@@ -178,7 +178,7 @@ export default function Home() {
               <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
                 <button
                   onClick={() => handleReportClick(HomePage.home_section4_reports?.[0]?.category_id || HomePage.home_section4_reports?.[0]?.id || '1')}
-                  className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full"
+                  className="flex h-[105px] min-w-0 cursor-pointer flex-col items-start justify-between rounded-[10px] bg-gradient-to-r from-[#1160C9] from-0% to-[#08D2B8] p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full sm:min-w-[300px]"
                 >
                   <span className="flex w-full justify-end">
                     <ArrowIcon variant="gradient" />
@@ -187,7 +187,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setIsCustomReportFormOpen(true)}
-                  className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full"
+                  className="flex h-[105px] min-w-0 cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-transparent p-4 text-[20px] font-bold hover:opacity-85 max-md:w-full sm:min-w-[300px]"
                 >
                   <span className="flex w-full justify-end">
                     <ArrowIcon variant="white" />
@@ -280,7 +280,7 @@ export default function Home() {
           </div>
           <button
             onClick={() => handleReportClick(HomePage.home_section4_reports?.[0]?.category_id || HomePage.home_section4_reports?.[0]?.id || '1')}
-            className="flex h-[105px] min-w-[300px] cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-black/5 p-4 text-[20px] font-bold backdrop-blur-[5px] transition-all duration-300 hover:border-white/40 hover:text-neutral-400 max-md:w-full"
+            className="flex h-[105px] min-w-0 cursor-pointer flex-col items-start justify-between rounded-[10px] border border-white bg-black/5 p-4 text-[20px] font-bold backdrop-blur-[5px] transition-all duration-300 hover:border-white/40 hover:text-neutral-400 max-md:w-full sm:min-w-[300px]"
           >
             <span className="flex w-full justify-end">
               <ArrowIcon variant="white" />

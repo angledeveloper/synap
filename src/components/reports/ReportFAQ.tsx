@@ -36,12 +36,12 @@ const ReportFAQ: React.FC<ReportFAQProps> = ({ heading, report }) => {
         {heading || "Frequently Asked Questions"}
       </h2>
 
-      <div className="space-y-3">
+      <div className="">
         {faqs.map((faq, index) => (
           <div key={index} className="bg-white">
             <button
               type="button"
-              className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left"
+              className="flex w-full items-center justify-between gap-4 py-2 text-left"
               onClick={() =>
                 setOpenIndex((prev) => (prev === index ? null : index))
               }
@@ -89,7 +89,7 @@ const ReportFAQ: React.FC<ReportFAQProps> = ({ heading, report }) => {
                   : "grid-rows-[0fr] opacity-0"
               }`}
             >
-              <div className="overflow-hidden px-4 pb-4">
+              <div className="overflow-hidden pb-4">
                 <p
                   className="text-sm leading-relaxed text-gray-700 sm:text-base"
                   style={{

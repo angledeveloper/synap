@@ -10,7 +10,10 @@ import ReportFAQ from "@/components/reports/ReportFAQ";
 import CommonLayoutSection from "@/components/reports/CommonLayoutSection";
 import ReportClientWrapper from "./components/ReportClientWrapper";
 import BuyButton from "./components/BuyButton";
-import ActionButtons, { CustomReportButton } from "./components/ActionButtons";
+import ActionButtons, {
+  CustomReportButton,
+  DownloadSampleButton,
+} from "./components/ActionButtons";
 import LanguageSync from "./components/LanguageSync";
 import CopyLinkButton from "./components/CopyLinkButton";
 
@@ -94,7 +97,7 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
     "Technology & Software";
 
   return (
-    <main className="min-h-screen bg-white pt-24">
+    <main className="min-h-screen bg-white pt-24 pb-24 sm:pb-0">
       {/* Sync Language to Store (Client Component) */}
       <LanguageSync
         lang={lang}
@@ -103,7 +106,7 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
       />
 
       {/* Breadcrumb */}
-      <div className="pt-11 pb-4">
+      <div className="pt-2 pb-2">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 2xl:max-w-7xl">
           <nav className="flex" aria-label="Breadcrumb">
             <ol
@@ -196,7 +199,7 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
 
               {/* Metadata Grid */}
               <div
-                className="mb-6 grid w-full grid-cols-2 gap-x-6 gap-y-3 md:hidden"
+                className="mb-2 grid w-full grid-cols-2 gap-x-6 gap-y-3 md:hidden"
                 style={{
                   fontFamily: "Space Grotesk, sans-serif",
                   fontSize: "12px",
@@ -250,7 +253,7 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
               </div>
 
               <div
-                className="mb-6 hidden w-full flex-col justify-between gap-y-4 md:flex md:flex-row"
+                className="mb-2 hidden w-full flex-col justify-between gap-y-4 md:flex md:flex-row"
                 style={{
                   fontFamily: "Space Grotesk, sans-serif",
                   fontSize: "12px",
@@ -799,6 +802,38 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Fixed Action Bar */}
+      <div
+        className="fixed right-0 bottom-0 left-0 z-40 border-t border-gray-200 bg-white sm:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
+        <div className="rounded-0 grid w-full grid-cols-2 gap-0">
+          <DownloadSampleButton
+            reportTitle={report.title}
+            reportId={report.report_id}
+            reportImage={report.image}
+            label={
+              metaFields?.request_pdf_btn ||
+              report.download_button ||
+              "Download Sample PDF"
+            }
+            variant="mobile"
+            className="rounded-none"
+          />
+          <BuyButton
+            lang={lang}
+            id={id}
+            label={
+              data.buy_license_button ||
+              metaFields?.buy_now_btn ||
+              "Buy License Now"
+            }
+            variant="mobile"
+            className="rounded-none"
+          />
         </div>
       </div>
 

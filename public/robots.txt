@@ -1,0 +1,44 @@
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Anthropic-User-Agent
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: cohere-ai
+Allow: /
+User-agent: aicodebot
+Allow: /
+User-agent: YouBot
+Allow: /
+https://www.synapseaglobal.com/sitemaps/en-static-pages.xml
+https://www.synapseaglobal.com/sitemaps/en-categories.xml
+https://www.synapseaglobal.com/sitemaps/en-reports.xml
+https://www.synapseaglobal.com/sitemaps/fr-static-pages.xml
+https://www.synapseaglobal.com/sitemaps/fr-categories.xml
+https://www.synapseaglobal.com/sitemaps/fr-reports.xml
+https://www.synapseaglobal.com/sitemaps/es-static-pages.xml
+https://www.synapseaglobal.com/sitemaps/es-categories.xml
+https://www.synapseaglobal.com/sitemaps/es-reports.xml
+https://www.synapseaglobal.com/sitemaps/de-static-pages.xml
+https://www.synapseaglobal.com/sitemaps/de-categories.xml
+https://www.synapseaglobal.com/sitemaps/de-reports.xml
+https://www.synapseaglobal.com/sitemaps/ja-static-pages.xml
+https://www.synapseaglobal.com/sitemaps/ja-categories.xml
+https://www.synapseaglobal.com/sitemaps/ja-reports.xml
+https://www.synapseaglobal.com/sitemaps/zh-static-pages.xml
+https://www.synapseaglobal.com/sitemaps/zh-categories.xml
+https://www.synapseaglobal.com/sitemaps/zh-reports.xml
+https://www.synapseaglobal.com/sitemaps/ko-static-pages.xml
+https://www.synapseaglobal.com/sitemaps/ko-categories.xml
+https://www.synapseaglobal.com/sitemaps/ko-reports.xml
+https://www.synapseaglobal.com/sitemaps/ar-static-pages.xml
+https://www.synapseaglobal.com/sitemaps/ar-categories.xml
+https://www.synapseaglobal.com/sitemaps/ar-reports.xml
+
+Disallow: https://dashboard.synapseaglobal.com/*
