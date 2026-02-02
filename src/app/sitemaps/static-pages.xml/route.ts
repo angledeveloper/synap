@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 
 const BASE_URL = "https://www.synapseaglobal.com";
 
+export const dynamic = "force-static";
+export const revalidate = 86400;
+
 const languages = ["en", "fr", "es", "de", "ja", "zh", "ko", "ar"] as const;
 
 const staticPages = [

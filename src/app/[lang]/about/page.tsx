@@ -126,6 +126,8 @@ export default function About() {
           src="/about.png"
           alt={AboutPage.title}
           fill
+          priority
+          sizes="100vw"
           className="bg-no-repeat object-cover"
         />
         <div className="relative m-auto flex min-h-screen w-full max-w-[1440px] flex-col justify-start p-4 pt-24 lg:h-[80vh] lg:min-h-[500px] lg:justify-end lg:pt-4">

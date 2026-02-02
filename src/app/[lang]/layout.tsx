@@ -11,6 +11,13 @@ import HomepageHydrator from "@/components/common/HomepageHydrator";
 
 import { codeToId } from "@/lib/utils";
 
+export const revalidate = 3600;
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  return supportedLanguages.map((lang) => ({ lang: lang.code }));
+}
+
 const geistSans = Geist({
   subsets: ["latin"],
   variable: "--font-geist-sans",
@@ -99,7 +106,9 @@ export default async function RootLayout({
   let homepageData = null;
   if (baseUrl) {
     try {
-      const res = await fetch(`${baseUrl}homepage/${languageId}`);
+      const res = await fetch(`${baseUrl}homepage/${languageId}`, {
+        next: { revalidate: 3600 },
+      });
       const contentType = res.headers.get("content-type") || "";
       if (res.ok && contentType.includes("application/json")) {
         homepageData = await res.json();

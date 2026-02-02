@@ -6,6 +6,9 @@ import HomepageHydrator from "@/components/common/HomepageHydrator";
 import { codeToId } from "@/lib/utils";
 import "../[lang]/globals.css";
 
+export const dynamic = "force-static";
+export const revalidate = 3600;
+
 const geistSans = Geist({
   subsets: ["latin"],
   variable: "--font-geist-sans",
@@ -55,7 +58,9 @@ export default async function SitemapHtmlLayout({
   const languageId = codeToId.en;
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
   const homepageData = baseUrl
-    ? await fetch(`${baseUrl}homepage/${languageId}`).then((res) => res.json())
+    ? await fetch(`${baseUrl}homepage/${languageId}`, {
+        next: { revalidate: 3600 },
+      }).then((res) => res.json())
     : null;
 
   return (

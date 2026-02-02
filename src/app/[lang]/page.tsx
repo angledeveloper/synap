@@ -98,6 +98,8 @@ export default function Home() {
           src="/hero.jpg"
           alt={HomePage.home_section1?.title ?? ''}
           fill
+          priority
+          sizes="100vw"
           className="bg-no-repeat object-cover"
         />
         <div className="relative flex h-screen min-h-[500px] w-full flex-col items-center justify-end p-4">

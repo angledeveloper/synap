@@ -1,63 +1,59 @@
 import { Metadata } from 'next';
+import { unstable_cache } from "next/cache";
 import { notFound } from 'next/navigation';
 import ReportView from './ReportView';
+import RefIdTracker from "@/components/common/RefIdTracker";
 import { extractIdFromSlug, codeToId } from '@/lib/utils';
 import { supportedLanguages } from '@/lib/utils';
 
-// Helper to strictly fetch report by Reference ID
-async function fetchReportStrict(baseUrl: string, languageId: string, referenceId: string) {
-  try {
-    const formData = new FormData();
-    formData.append('report_reference_id', referenceId);
-    formData.append('language_id', languageId);
+export const revalidate = 3600;
 
-    const res = await fetch(`${baseUrl}reports_store`, {
-      method: "POST",
-      body: formData,
-      next: { revalidate: 3600 }
-    });
+const getReportDataCached = unstable_cache(
+  async (languageId: string, referenceId: string) => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
+      if (!baseUrl) return null;
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data?.data?.report) return data;
+      const formData = new FormData();
+      formData.append('report_reference_id', referenceId);
+      formData.append('language_id', languageId);
+
+      const res = await fetch(`${baseUrl}reports_store`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.data?.report) return data;
+      }
+    } catch (e) {
+      console.error("Error strictly fetching report:", e);
     }
-  } catch (e) {
-    console.error("Error strictly fetching report:", e);
-  }
-  return null;
-}
+    return null;
+  },
+  ["report-detail"],
+  { revalidate: 3600 },
+);
 
-async function getReportData(id: string, languageId: string, referenceId?: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
-  if (!baseUrl) return null;
-
-  // 1. Try with provided reference ID (Ideal case)
-  if (referenceId) {
-    const data = await fetchReportStrict(baseUrl, languageId, referenceId);
-    if (data) return data;
-  }
-
-  // Without a reference ID, we cannot securely find the report.
-  // Direct bootstrap search is forbidden.
-  return null;
+async function getReportData(languageId: string, referenceId?: string) {
+  if (!referenceId) return null;
+  return getReportDataCached(languageId, referenceId);
 }
 
 export async function generateMetadata({
   params,
-  searchParams,
 }: {
   params: Promise<{ lang: string; id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<Metadata> {
   const { lang, id } = await params;
-  const { ref_id } = await searchParams;
 
   // id is the slug
   const languageId = (codeToId[lang as keyof typeof codeToId] || codeToId['en']).toString();
   const idFromSlug = extractIdFromSlug(id);
-  const referenceId = typeof ref_id === 'string' ? ref_id : idFromSlug;
+  const referenceId = idFromSlug;
 
-  const data = await getReportData(id, languageId, referenceId);
+  const data = await getReportData(languageId, referenceId);
   const report = data?.data?.report;
 
   if (!report) {
@@ -98,28 +94,31 @@ export async function generateMetadata({
 
 export default async function Page({
   params,
-  searchParams,
 }: {
   params: Promise<{ lang: string; id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { lang, id } = await params;
-  const { ref_id } = await searchParams;
 
   const languageId = (codeToId[lang as keyof typeof codeToId] || codeToId['en']).toString();
 
   // Extract ID from slug (works for both old ID and new Reference ID style URLs)
   const idFromSlug = extractIdFromSlug(id);
 
-  // Use provided ref_id OR fall back to extracted ID from slug
-  // This supports both ?ref_id=123 (old/secure way) AND /title-123 (new SEO way)
-  const referenceId = typeof ref_id === 'string' ? ref_id : idFromSlug;
+  const referenceId = idFromSlug;
 
-  const reportData = await getReportData(id, languageId, referenceId);
+  const reportData = await getReportData(languageId, referenceId);
 
   if (!reportData || !reportData.data || !reportData.data.report) {
     return notFound();
   }
 
-  return <ReportView data={reportData} lang={lang} id={id} refId={referenceId} />;
+  const resolvedRefId =
+    reportData.report_identity?.report_reference_id?.toString() || referenceId;
+
+  return (
+    <>
+      <RefIdTracker />
+      <ReportView data={reportData} lang={lang} id={id} refId={resolvedRefId} />
+    </>
+  );
 }
