@@ -1,10 +1,5 @@
 import Link from "next/link";
-import {
-  codeToId,
-  getLocalizedPath,
-  slugify,
-  supportedLanguages,
-} from "@/lib/utils";
+import { codeToId, getLocalizedPath, supportedLanguages } from "@/lib/utils";
 import {
   getCategoryIdForLanguage,
   type Category as MappingCategory,
@@ -13,20 +8,8 @@ import {
 export const dynamic = "force-static";
 export const revalidate = 3600;
 
-const REPORT_PREVIEW_LIMIT = 100;
-
 type Category = MappingCategory & {
   category_reference_id?: string | number;
-};
-
-type Report = {
-  report_reference_id?: string | number;
-  report_reference_title?: string;
-  report_identity?: {
-    report_reference_id?: string | number;
-  };
-  id?: string | number;
-  title?: string;
 };
 
 type HomePageData = {
@@ -38,12 +21,138 @@ type HomePageData = {
   };
   footer?: {
     menu?: {
+      Company?: Array<{ slug?: string; menu_name?: string }>;
       Legal?: Array<{ slug?: string; menu_name?: string }>;
     };
   };
 };
 
 const languageCodes = supportedLanguages.map((lang) => lang.code);
+
+const sitemapCopy: Record<
+  string,
+  {
+    kicker: string;
+    heroTitle: string;
+    heroSubtitle: string;
+    mainPages: string;
+    categories: string;
+    categoriesSubtitle: string;
+    categoriesEmpty: string;
+    reports: string;
+    viewAllReports: string;
+    reportsEmpty: string;
+  }
+> = {
+  en: {
+    kicker: "Sitemap",
+    heroTitle: "Browse Synapsea Global",
+    heroSubtitle:
+      "Find the main pages, report categories, and report detail pages in one place.",
+    mainPages: "Main Pages",
+    categories: "Categories",
+    categoriesSubtitle: "Browse report collections by industry category.",
+    categoriesEmpty: "Categories are unavailable right now.",
+    reports: "Reports",
+    viewAllReports: "View all reports",
+    reportsEmpty: "Reports are unavailable right now.",
+  },
+  fr: {
+    kicker: "Plan du site",
+    heroTitle: "Parcourir Synapsea Global",
+    heroSubtitle:
+      "Retrouvez en un seul endroit les pages principales, les catégories de rapports et les pages de détails des rapports.",
+    mainPages: "Pages principales",
+    categories: "Catégories",
+    categoriesSubtitle:
+      "Consultez les collections de rapports par secteur d'activité.",
+    categoriesEmpty: "Les catégories ne sont pas disponibles pour le moment.",
+    reports: "Rapports",
+    viewAllReports: "Voir tous les rapports",
+    reportsEmpty: "Les rapports ne sont pas disponibles pour le moment.",
+  },
+  es: {
+    kicker: "Mapa del sitio",
+    heroTitle: "Explorar Synapsea Global",
+    heroSubtitle:
+      "Encuentre las páginas principales, categorías de informes y páginas de detalles de informes en un solo lugar.",
+    mainPages: "Páginas principales",
+    categories: "Categorías",
+    categoriesSubtitle:
+      "Explore colecciones de informes por categoría de industria.",
+    categoriesEmpty:
+      "Las categorías no están disponibles en este momento.",
+    reports: "Informes",
+    viewAllReports: "Ver todos los informes",
+    reportsEmpty: "Los informes no están disponibles en este momento.",
+  },
+  de: {
+    kicker: "Sitemap",
+    heroTitle: "Durchsuchen Sie Synapsea Global",
+    heroSubtitle:
+      "Hauptseiten, Berichtskategorien und Berichtsdetailseiten finden Sie an einem Ort.",
+    mainPages: "Hauptseiten",
+    categories: "Kategorien",
+    categoriesSubtitle:
+      "Durchsuchen Sie Berichtssammlungen nach Branchenkategorie.",
+    categoriesEmpty: "Kategorien sind momentan nicht verfügbar.",
+    reports: "Berichte",
+    viewAllReports: "Alle Berichte anzeigen",
+    reportsEmpty: "Berichte sind momentan nicht verfügbar.",
+  },
+  ja: {
+    kicker: "サイトマップ",
+    heroTitle: "Synapsea Globalを閲覧する",
+    heroSubtitle:
+      "メイン ページ、レポート カテゴリ、レポートの詳細ページを 1 か所で見つけます。",
+    mainPages: "メインページ",
+    categories: "カテゴリー",
+    categoriesSubtitle:
+      "業界カテゴリ別にレポート コレクションを参照します。",
+    categoriesEmpty: "カテゴリは現在利用できません。",
+    reports: "レポート",
+    viewAllReports: "すべてのレポートを表示",
+    reportsEmpty: "現在レポートは利用できません。",
+  },
+  zh: {
+    kicker: "网站地图",
+    heroTitle: "浏览 Synapsea Global",
+    heroSubtitle: "在一个地方查找主要页面、报告类别和报告详情页面。",
+    mainPages: "主页",
+    categories: "类别",
+    categoriesSubtitle: "按行业类别浏览报告合集。",
+    categoriesEmpty: "目前暂无分类选项。",
+    reports: "报告",
+    viewAllReports: "查看所有报告",
+    reportsEmpty: "目前暂无报告可供查阅。",
+  },
+  ko: {
+    kicker: "사이트맵",
+    heroTitle: "Synapsea Global을 살펴보세요",
+    heroSubtitle:
+      "주요 페이지, 보고서 범주 및 보고서 상세 페이지를 한 곳에서 찾아보세요.",
+    mainPages: "주요 페이지",
+    categories: "카테고리",
+    categoriesSubtitle: "산업 분야별 보고서 모음을 찾아보세요.",
+    categoriesEmpty: "현재 카테고리를 이용할 수 없습니다.",
+    reports: "보고서",
+    viewAllReports: "모든 보고서 보기",
+    reportsEmpty: "현재 보고서를 이용할 수 없습니다.",
+  },
+  ar: {
+    kicker: "خريطة الموقع",
+    heroTitle: "تصفح Synapsea Global",
+    heroSubtitle:
+      "اعثر على الصفحات الرئيسية وفئات التقارير وصفحات تفاصيل التقارير في مكان واحد.",
+    mainPages: "الصفحات الرئيسية",
+    categories: "فئات",
+    categoriesSubtitle: "تصفح مجموعات التقارير حسب فئة الصناعة.",
+    categoriesEmpty: "التصنيفات غير متاحة حاليًا.",
+    reports: "التقارير",
+    viewAllReports: "عرض جميع التقارير",
+    reportsEmpty: "التقارير غير متوفرة حالياً.",
+  },
+};
 
 function getLanguageParam(rawLang?: string) {
   if (rawLang && languageCodes.includes(rawLang)) {
@@ -157,113 +266,24 @@ function resolveCategoryForLanguage(
   return byMappedId || category;
 }
 
-async function getReportsPreview(
-  limit: number,
-  languageId: string,
-  categoryRefs: Array<string | number>,
-) {
-  const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
-  if (!baseUrl) {
-    return { reports: [] as Report[], isTruncated: false };
-  }
-
-  const uniqueReports = new Map<string, Report>();
-  const MAX_PAGES = 50;
-
-  for (const catId of categoryRefs) {
-    if (!catId) continue;
-
-    let page = 1;
-    const perPage = 100;
-    let hasMore = true;
-
-    while (hasMore && page <= MAX_PAGES) {
-      try {
-        const formData = new FormData();
-        formData.append("language_id", String(languageId));
-        formData.append("page", page.toString());
-        formData.append("per_page", perPage.toString());
-        formData.append("category_reference_id", String(catId));
-
-        const response = await fetch(`${baseUrl}reports_store_page`, {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) break;
-
-        const data = await response.json();
-
-        let pageReports: Report[] = [];
-        if (Array.isArray(data)) pageReports = data;
-        else if (data.reports) pageReports = data.reports;
-        else if (data.data && Array.isArray(data.data)) pageReports = data.data;
-
-        if (!pageReports || pageReports.length === 0) {
-          hasMore = false;
-          continue;
-        }
-
-        pageReports.forEach((report) => {
-          const refId =
-            report.report_reference_id ??
-            report.report_identity?.report_reference_id ??
-            report.id;
-          if (!refId) return;
-          const key = String(refId);
-          if (!uniqueReports.has(key)) {
-            uniqueReports.set(key, report);
-          }
-        });
-
-        if (uniqueReports.size >= limit) {
-          return {
-            reports: Array.from(uniqueReports.values()).slice(0, limit),
-            isTruncated: true,
-          };
-        }
-
-        const totalPages = data.totalPages || 0;
-        if (page >= totalPages || totalPages === 0) {
-          hasMore = false;
-        } else {
-          page += 1;
-        }
-      } catch (error) {
-        console.error(`Error fetching reports for category ${catId}:`, error);
-        hasMore = false;
-      }
-    }
-  }
-
-  return { reports: Array.from(uniqueReports.values()), isTruncated: false };
-}
-
-function buildReportSlug(report: Report, languageId: string) {
-  const isEnglish = String(languageId) === "1";
-  const titleForSlug =
-    !isEnglish && report.report_reference_title
-      ? report.report_reference_title
-      : report.title || report.report_reference_title || "report";
-  const fallbackId =
-    report.report_reference_id ??
-    report.report_identity?.report_reference_id ??
-    report.id ??
-    "0";
-  const idForSlug =
-    !isEnglish && report.report_identity?.report_reference_id
-      ? report.report_identity.report_reference_id
-      : fallbackId;
-  return slugify(titleForSlug, idForSlug);
-}
-
 function getStaticLabels(homepageData: HomePageData | null) {
+  const companyLinks = homepageData?.footer?.menu?.Company || [];
   const legalLinks = homepageData?.footer?.menu?.Legal || [];
+  const findCompanyLabel = (
+    predicate: (slug: string) => boolean,
+    fallback: string,
+  ) => {
+    const match = companyLinks.find((link: { slug?: string; menu_name?: string }) => {
+      const slug = (link.slug || "").toLowerCase();
+      return slug && predicate(slug);
+    });
+    return match?.menu_name || fallback;
+  };
   const findLegalLabel = (
     predicate: (slug: string) => boolean,
     fallback: string,
   ) => {
-    const match = legalLinks.find((link) => {
+    const match = legalLinks.find((link: { slug?: string; menu_name?: string }) => {
       const slug = (link.slug || "").toLowerCase();
       return slug && predicate(slug);
     });
@@ -271,10 +291,19 @@ function getStaticLabels(homepageData: HomePageData | null) {
   };
 
   return {
-    home: homepageData?.navbar?.home || "Home",
-    about: homepageData?.navbar?.item_one_name || "About",
+    home: findCompanyLabel(
+      (slug) => slug === "/" || slug === "" || slug.includes("home"),
+      homepageData?.navbar?.home || "Home",
+    ),
+    about: findCompanyLabel(
+      (slug) => slug.includes("about"),
+      homepageData?.navbar?.item_one_name || "About",
+    ),
     reports: homepageData?.navbar?.item_two || "Reports",
-    contact: homepageData?.navbar?.button_text || "Contact",
+    contact: findCompanyLabel(
+      (slug) => slug.includes("contact"),
+      homepageData?.navbar?.button_text || "Contact",
+    ),
     privacy: findLegalLabel((slug) => slug.includes("privacy"), "Privacy"),
     terms: findLegalLabel((slug) => slug.includes("terms"), "Terms"),
     sitemap: findLegalLabel((slug) => slug.includes("sitemap"), "Sitemap"),
@@ -296,6 +325,7 @@ export default async function SitemapHtmlPage({
   ]);
 
   const labels = getStaticLabels(homepageData);
+  const copy = sitemapCopy[language] || sitemapCopy.en;
 
   const baseCategories = dedupeBaseCategories(
     allCategories.filter((category) => String(category.language_id) === "1"),
@@ -305,34 +335,23 @@ export default async function SitemapHtmlPage({
     resolveCategoryForLanguage(category, languageId, allCategories),
   );
 
-  const categoryReferences = baseCategories
-    .map((category) => category.category_reference_id ?? category.category_id)
-    .filter(Boolean);
-
-  const { reports, isTruncated } = await getReportsPreview(
-    REPORT_PREVIEW_LIMIT,
-    languageId,
-    categoryReferences,
-  );
-
   return (
     <main className="min-h-screen bg-white pt-20 text-black">
       <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <header className="mb-10">
           <p className="text-xs tracking-[0.3em] text-gray-500 uppercase">
-            Sitemap
+            {copy.kicker}
           </p>
           <h1
             className="mt-3 text-[36px] font-medium md:text-[52px]"
             style={{ fontFamily: "Space Grotesk, sans-serif" }}
           >
             <span className="bg-gradient-to-r from-[#1160C9] to-[#08D2B8] bg-clip-text text-transparent">
-              Browse Synapsea Global
+              {copy.heroTitle}
             </span>
           </h1>
           <p className="mt-3 max-w-2xl text-base text-gray-700">
-            Find the main pages, report categories, and report detail pages in
-            one place.
+            {copy.heroSubtitle}
           </p>
         </header>
 
@@ -343,7 +362,7 @@ export default async function SitemapHtmlPage({
               className="text-2xl font-semibold md:text-3xl"
               style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
-              Main Pages
+              {copy.mainPages}
             </h2>
             <ul className="mt-4 grid gap-2 text-[16px] text-gray-800 sm:grid-cols-2 lg:grid-cols-3">
               <li className="leading-relaxed">
@@ -411,14 +430,14 @@ export default async function SitemapHtmlPage({
               className="text-2xl font-semibold md:text-3xl"
               style={{ fontFamily: "Space Grotesk, sans-serif" }}
             >
-              Categories
+              {copy.categories}
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-              Browse report collections by industry category.
+              {copy.categoriesSubtitle}
             </p>
             {mappedCategories.length === 0 ? (
               <p className="mt-4 text-sm text-gray-500">
-                Categories are unavailable right now.
+                {copy.categoriesEmpty}
               </p>
             ) : (
               <ul className="mt-4 grid gap-2 text-[16px] text-gray-800 sm:grid-cols-2 lg:grid-cols-3">
@@ -438,51 +457,6 @@ export default async function SitemapHtmlPage({
                           `/reports?category=${categoryId}`,
                           language,
                         )}
-                        className="text-[#0B4BAF] underline-offset-4 transition hover:text-[#0B3B86] hover:underline"
-                      >
-                        {label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-
-          <section aria-labelledby="sitemap-reports">
-            <h2
-              id="sitemap-reports"
-              className="text-2xl font-semibold md:text-3xl"
-              style={{ fontFamily: "Space Grotesk, sans-serif" }}
-            >
-              Reports
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              {isTruncated
-                ? `Showing the first ${REPORT_PREVIEW_LIMIT} reports.`
-                : "Explore the latest report detail pages."}{" "}
-              <Link
-                href={getLocalizedPath("/reports", language)}
-                className="font-medium text-[#0B4BAF] underline-offset-4 transition hover:text-[#0B3B86] hover:underline"
-              >
-                View all reports
-              </Link>
-              .
-            </p>
-            {reports.length === 0 ? (
-              <p className="mt-4 text-sm text-gray-500">
-                Reports are unavailable right now.
-              </p>
-            ) : (
-              <ul className="mt-4 grid gap-2 text-[16px] text-gray-800 sm:grid-cols-2 lg:grid-cols-3">
-                {reports.map((report) => {
-                  const slug = buildReportSlug(report, languageId);
-                  const label =
-                    report.title || report.report_reference_title || "Report";
-                  return (
-                    <li key={slug} className="leading-relaxed">
-                      <Link
-                        href={getLocalizedPath(`/reports/${slug}`, language)}
                         className="text-[#0B4BAF] underline-offset-4 transition hover:text-[#0B3B86] hover:underline"
                       >
                         {label}
