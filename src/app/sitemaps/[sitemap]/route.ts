@@ -19,6 +19,8 @@ const staticPages = [
 
 export const dynamic = "force-static";
 export const revalidate = 3600;
+const CACHE_CONTROL_HEADER =
+  "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400";
 
 type SitemapParams = {
   sitemap: string;
@@ -221,6 +223,9 @@ export async function GET(_: Request, { params }: { params: SitemapParams }) {
   }
 
   return new NextResponse(xml, {
-    headers: { "Content-Type": "application/xml" },
+    headers: {
+      "Content-Type": "application/xml",
+      "Cache-Control": CACHE_CONTROL_HEADER,
+    },
   });
 }

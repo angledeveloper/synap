@@ -5,6 +5,9 @@ const BASE_URL = "https://www.synapseaglobal.com";
 const SITEMAP_TYPES = ["static-pages", "categories", "reports"] as const;
 const languageCodes = supportedLanguages.map((lang) => lang.code);
 
+export const dynamic = "force-static";
+export const revalidate = 86400;
+
 export async function GET() {
   const nodes = languageCodes
     .flatMap((lang) =>
@@ -22,6 +25,10 @@ export async function GET() {
 </sitemapindex>`;
 
   return new NextResponse(xml, {
-    headers: { "Content-Type": "application/xml" },
+    headers: {
+      "Content-Type": "application/xml",
+      "Cache-Control":
+        "public, max-age=0, s-maxage=86400, stale-while-revalidate=86400",
+    },
   });
 }
