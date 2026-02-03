@@ -15,7 +15,7 @@ export async function generateMetadata({
     codeToId[langCode as keyof typeof codeToId] || codeToId["en"];
 
   const { seo } = await fetchSeoData({
-    endpoint: `https://dashboard.synapseaglobal.com/api/checkout/${languageId}`,
+    endpoint: `checkout/${languageId}`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });
@@ -43,7 +43,7 @@ export default async function Page({
     codeToId[langCode as keyof typeof codeToId] || codeToId["en"];
 
   const { schemas } = await fetchSeoData({
-    endpoint: `https://dashboard.synapseaglobal.com/api/checkout/${languageId}`,
+    endpoint: `checkout/${languageId}`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });
