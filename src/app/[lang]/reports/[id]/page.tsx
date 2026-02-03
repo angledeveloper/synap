@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import ReportView from './ReportView';
 import { extractIdFromSlug, codeToId } from '@/lib/utils';
 import { supportedLanguages } from '@/lib/utils';
+import { generateSeoMetadata, SeoJsonLd } from "@/lib/seo";
 
 // Helper to strictly fetch report by Reference ID
 async function fetchReportStrict(baseUrl: string, languageId: string, referenceId: string) {
@@ -106,6 +107,7 @@ export async function generateMetadata({
       description: 'The requested market research report could not be found.',
     };
   }
+  /*
   const canonicalUrl = `/${lang}/reports/${canonicalSlug}`;
   const alternates: Record<string, string> = {};
   supportedLanguages.forEach((l) => {
@@ -131,8 +133,32 @@ export async function generateMetadata({
       title: report.title,
       description: report.introduction_description?.substring(0, 160).replace(/<[^>]*>/g, '') || report.title,
       images: report.image ? [report.image] : [],
+      type: 'article',
     }
   };
+  */
+
+  // Update: Use Dynamic SEO from API
+  const seoData = data?.data?.seo;
+
+  const fallbackMetadata: Metadata = {
+    title: `${report.title} | SynapSEA`,
+    description: report.introduction_description?.substring(0, 160).replace(/<[^>]*>/g, '') || report.title,
+    openGraph: {
+      title: report.title,
+      description: report.introduction_description?.substring(0, 160).replace(/<[^>]*>/g, '') || report.title,
+      images: report.image ? [{ url: report.image }] : [],
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: report.title,
+      description: report.introduction_description?.substring(0, 160).replace(/<[^>]*>/g, '') || report.title,
+      images: report.image ? [report.image] : [],
+    }
+  }
+
+  return generateSeoMetadata(seoData, fallbackMetadata);
 }
 
 export default async function Page({
@@ -172,5 +198,10 @@ export default async function Page({
     return notFound();
   }
 
-  return <ReportView data={reportData} lang={lang} id={id} refId={referenceId} />;
+  return (
+    <>
+      <SeoJsonLd data={reportData?.data?.seo} />
+      <ReportView data={reportData} lang={lang} id={id} refId={referenceId} />
+    </>
+  );
 }
