@@ -2,7 +2,8 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import ReportView from './ReportView';
 import { extractIdFromSlug, codeToId } from '@/lib/utils';
-import { supportedLanguages } from '@/lib/utils';
+import SeoSchema from '@/components/seo/SeoSchema';
+import { buildSeoMetadata, getSeoSchemas } from '@/lib/seo';
 
 // Helper to strictly fetch report by Reference ID
 async function fetchReportStrict(baseUrl: string, languageId: string, referenceId: string) {
@@ -77,15 +78,17 @@ export async function generateMetadata({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<Metadata> {
   const { lang, id } = await params;
+  const langCode = lang || 'en';
   const { ref_id } = await searchParams;
 
   // id is the slug
-  const languageId = (codeToId[lang as keyof typeof codeToId] || codeToId['en']).toString();
+  const languageId = (codeToId[langCode as keyof typeof codeToId] || codeToId['en']).toString();
   const idFromSlug = extractIdFromSlug(id);
   const referenceId = typeof ref_id === 'string' ? ref_id : idFromSlug;
 
   const data = await getReportData(id, languageId, referenceId);
   const report = data?.data?.report;
+  const reportSeo = data?.data?.seo;
 
   if (!report) {
     return {
@@ -106,33 +109,22 @@ export async function generateMetadata({
       description: 'The requested market research report could not be found.',
     };
   }
-  const canonicalUrl = `/${lang}/reports/${canonicalSlug}`;
-  const alternates: Record<string, string> = {};
-  supportedLanguages.forEach((l) => {
-    alternates[l.code] = `/${l.code}/reports/${canonicalSlug}`;
-  });
-  alternates['x-default'] = `/reports/${canonicalSlug}`;
+  const fallbackDescription =
+    report.introduction_description?.substring(0, 160).replace(/<[^>]*>/g, '') || report.title;
 
-  return {
-    title: `${report.title} | SynapSEA`,
-    description: report.introduction_description?.substring(0, 160).replace(/<[^>]*>/g, '') || report.title,
-    alternates: {
-      canonical: canonicalUrl,
-      languages: alternates
+  return buildSeoMetadata({
+    seo: reportSeo,
+    lang: langCode,
+    path: `/reports/${canonicalSlug}`,
+    fallback: {
+      title: `${report.title} | SynapSEA`,
+      description: fallbackDescription,
     },
     openGraph: {
-      title: report.title,
-      description: report.introduction_description?.substring(0, 160).replace(/<[^>]*>/g, '') || report.title,
-      images: report.image ? [{ url: report.image }] : [],
       type: 'article',
+      images: report.image ? [report.image] : undefined,
     },
-    twitter: {
-      card: 'summary_large_image',
-      title: report.title,
-      description: report.introduction_description?.substring(0, 160).replace(/<[^>]*>/g, '') || report.title,
-      images: report.image ? [report.image] : [],
-    }
-  };
+  });
 }
 
 export default async function Page({
@@ -172,5 +164,12 @@ export default async function Page({
     return notFound();
   }
 
-  return <ReportView data={reportData} lang={lang} id={id} refId={referenceId} />;
+  const schemas = getSeoSchemas(reportData.data.seo, reportData.data);
+
+  return (
+    <>
+      <SeoSchema schemas={schemas} />
+      <ReportView data={reportData} lang={lang} id={id} refId={referenceId} />
+    </>
+  );
 }
