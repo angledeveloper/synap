@@ -1,28 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import { useLanguageStore } from "@/store";
 import { codeToId } from "@/lib/utils";
 import FaqContent from "@/components/common/FaqContent";
 import CallToAction from "@/components/common/CallToAction";
 
-interface PrivacyTab {
+interface FaqTab {
   id: number;
-  title: string;
-  description: string;
+  question: string;
+  answer: string;
 }
 
-interface PrivacyContent {
+interface FaqContentData {
   title: string;
   description: string;
-  tabs: PrivacyTab[];
+  faq_contact_title?: string;
+  contact_description?: string;
+  tabs: FaqTab[];
 }
 
-interface PrivacyData {
+interface FaqData {
   id: string;
-  content: PrivacyContent;
+  content: FaqContentData;
   language_id: string;
   created_at: string;
   updated_at: string;
@@ -35,22 +36,37 @@ interface PrivacyData {
 
 // metadata must be exported from a server component. Kept in parent layout.
 
-export default function PrivacyPage() {
+const formatFaqAnswer = (answer: string) => {
+  if (!answer) return "";
+  const normalized = answer.replace(/\r\n/g, "\n").trim();
+  const blocks = normalized.split(/\n\s*\n/);
+  return blocks
+    .map((block) => {
+      const withLabels = block
+        .replace(/(^|[\n])Q:/g, "$1<strong>Q:</strong>")
+        .replace(/(^|[\n])A:/g, "$1<strong>A:</strong>");
+      const withBreaks = withLabels.replace(/\n/g, "<br />");
+      return `<p>${withBreaks}</p>`;
+    })
+    .join("");
+};
+
+export default function FaqPage() {
   const { language } = useLanguageStore();
-  const { id } = useParams(); // Assuming 'id' might be used for a specific privacy document if routing supports it
+  const { id } = useParams(); // Keeping for consistency with other pages
   const searchParams = useSearchParams();
   const highlight = searchParams?.get("highlight");
-  const [privacyData, setPrivacyData] = useState<PrivacyData | null>(null);
+  const [faqData, setFaqData] = useState<FaqData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setPrivacyData(null);
+    setFaqData(null);
     setIsLoading(true);
   }, [language]);
 
   useEffect(() => {
-    const fetchPrivacyData = async () => {
+    const fetchFaqData = async () => {
       try {
         setIsLoading(true);
         setError(null);
@@ -63,25 +79,27 @@ export default function PrivacyPage() {
         // Get language ID from language code
         const languageId = codeToId[language] || codeToId["en"];
 
-        const response = await fetch(`${baseUrl}privacy/${languageId}`);
+        const response = await fetch(`${baseUrl}faq/${languageId}`);
 
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(
-            `Failed to fetch privacy data: ${response.status} ${errorText}`,
+            `Failed to fetch faq data: ${response.status} ${errorText}`,
           );
         }
 
         const data = await response.json();
-        console.log("Privacy API Response:", data);
+        console.log("FAQ API Response:", data);
 
         // Validate the response data structure
         if (data && typeof data === "object" && data.content) {
-          setPrivacyData({
+          setFaqData({
             id: data.id || "",
             content: {
-              title: data.content.title || "Privacy Policy",
+              title: data.content.title || "FAQs",
               description: data.content.description || "",
+              faq_contact_title: data.content.faq_contact_title || "",
+              contact_description: data.content.contact_description || "",
               tabs: data.content.tabs || [],
             },
             language_id: data.language_id || "",
@@ -93,16 +111,16 @@ export default function PrivacyPage() {
           throw new Error("Invalid response format from API");
         }
       } catch (err) {
-        console.error("Privacy data fetch error:", err);
+        console.error("FAQ data fetch error:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to fetch privacy data",
+          err instanceof Error ? err.message : "Failed to fetch faq data",
         );
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchPrivacyData();
+    fetchFaqData();
   }, [language, id]);
 
   // Helper function to highlight text
@@ -124,7 +142,7 @@ export default function PrivacyPage() {
 
   // Auto-scroll to highlight
   useEffect(() => {
-    if (!highlight || !privacyData) return;
+    if (!highlight || !faqData) return;
 
     const timer = setTimeout(() => {
       const marks = document.getElementsByTagName("mark");
@@ -134,7 +152,16 @@ export default function PrivacyPage() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [highlight, privacyData]);
+  }, [highlight, faqData]);
+
+  const faqTabs = useMemo(() => {
+    const rawTabs = faqData?.content?.tabs || [];
+    return rawTabs.map((tab) => ({
+      id: tab.id,
+      title: tab.question || "",
+      description: formatFaqAnswer(tab.answer || ""),
+    }));
+  }, [faqData]);
 
   if (isLoading) {
     return (
@@ -158,9 +185,9 @@ export default function PrivacyPage() {
       <div className="min-h-screen bg-black pt-20 text-white">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="mb-6 text-4xl font-bold">Privacy Policy</h1>
+            <h1 className="mb-6 text-4xl font-bold">FAQs</h1>
             <p className="mb-4 text-red-400">
-              Error loading privacy policy: {error}
+              Error loading FAQ: {error}
             </p>
             <p className="text-gray-400">
               Please try refreshing the page or contact support if the problem
@@ -173,8 +200,8 @@ export default function PrivacyPage() {
   }
 
   // Debug logging
-  console.log("Privacy Page State:", {
-    privacyData,
+  console.log("FAQ Page State:", {
+    faqData,
     isLoading,
     error,
     language,
@@ -184,70 +211,56 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-black pt-20 text-white">
       <div className="container mx-auto px-4 py-8">
         <h1 className="mb-6 text-4xl font-bold text-white">
-          {/* <span
+          <span
             dangerouslySetInnerHTML={{
-              __html: highlightText(
-                privacyData?.content?.title || "Privacy Policy",
-              ),
+              __html: highlightText(faqData?.content?.title || "FAQs"),
             }}
-          /> */}
-          <span>FAQs</span>
+          />
         </h1>
 
-        {privacyData?.content?.description && (
-          // <div
-          //   className="prose prose-invert mb-8 max-w-none leading-relaxed text-gray-300 [&_li]:leading-relaxed [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6"
-          //   dangerouslySetInnerHTML={{
-          //     __html: highlightText(privacyData.content.description),
-          //   }}
-          // />
-          <div className="prose prose-invert mb-8 max-w-none leading-relaxed text-gray-300 [&_li]:leading-relaxed [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6">
-            Have Questions? We’ve Got Answers. Whether you’re considering a
-            purchase, requesting a custom report, or just exploring what we
-            offer, this page answers the most common questions our clients and
-            visitors have.
-          </div>
+        {faqData?.content?.description && (
+          <div
+            className="prose prose-invert mb-8 max-w-none leading-normal text-gray-300 [&_a]:text-blue-400 [&_li]:leading-normal [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6"
+            dangerouslySetInnerHTML={{
+              __html: highlightText(faqData.content.description),
+            }}
+          />
         )}
 
-        {privacyData?.content?.tabs && privacyData.content.tabs.length > 0 && (
-          <FaqContent />
+        {faqTabs.length > 0 && (
+          <FaqContent tabs={faqTabs} highlight={highlight} />
         )}
 
         <h1 className="mt-12 mb-6 text-4xl font-bold text-white">
-          {/* <span
+          <span
             dangerouslySetInnerHTML={{
               __html: highlightText(
-                privacyData?.content?.title || "Privacy Policy",
+                faqData?.content?.faq_contact_title || "Still Have Questions?",
               ),
             }}
-          /> */}
-          <span>Still Have Questions?</span>
+          />
         </h1>
 
-        {privacyData?.content?.description && (
-          // <div
-          //   className="prose prose-invert mb-8 max-w-none leading-relaxed text-gray-300 [&_li]:leading-relaxed [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6"
-          //   dangerouslySetInnerHTML={{
-          //     __html: highlightText(privacyData.content.description),
-          //   }}
-          // />
-          <div className="prose prose-invert mb-8 max-w-none leading-relaxed text-gray-300 [&_li]:leading-relaxed [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6">
-            Contact our support team at support@synapsea.global or fill out our
-            Contact Us form. We're here to help, 24/5 across global time zones.
-          </div>
+        {faqData?.content?.contact_description && (
+          <div
+            className="prose prose-invert mb-8 max-w-none leading-normal text-gray-300 [&_a]:text-blue-400 [&_li]:leading-normal [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6"
+            dangerouslySetInnerHTML={{
+              __html: highlightText(faqData.content.contact_description),
+            }}
+          />
         )}
       </div>
 
-      {/* <CallToAction
+      <CallToAction
         title={
-          privacyData?.common_layout?.common_title ||
+          faqData?.common_layout?.common_title ||
           "Ready to Transform Your Market Strategy?"
         }
         buttonText={
-          privacyData?.common_layout?.common_button || "Check our Research"
+          faqData?.common_layout?.common_button || "Check our Research"
         }
         buttonLink={`/${language}/reports`}
-      /> */}
+      />
     </div>
   );
 }
