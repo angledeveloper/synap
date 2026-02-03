@@ -48,9 +48,6 @@ export default function BuyButton({
       aria-label={label}
     >
       <span className="truncate">{label}</span>
-      {variant === "desktop" && (
-        <ArrowIcon variant="white" className="h-6 w-6 flex-shrink-0" />
-      )}
     </Button>
   );
 }

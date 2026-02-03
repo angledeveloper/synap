@@ -3,7 +3,7 @@ import React from "react";
 export default function FullLogo() {
   return (
     <svg
-      className="h-full"
+      className="block h-full w-auto"
       viewBox="0 0 990 158"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

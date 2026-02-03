@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { slugify, supportedLanguages } from "@/lib/utils";
 
 const BASE_URL = "https://www.synapseaglobal.com";
@@ -211,8 +211,12 @@ async function buildReportsXml(lang: string) {
   return wrapUrlset(nodes);
 }
 
-export async function GET(_: Request, { params }: { params: SitemapParams }) {
-  const parsed = parseSitemapParam(params.sitemap);
+export async function GET(
+  _: NextRequest,
+  { params }: { params: Promise<SitemapParams> }
+) {
+  const { sitemap } = await params;
+  const parsed = parseSitemapParam(sitemap);
   if (!parsed) {
     return new NextResponse("Not found", { status: 404 });
   }
