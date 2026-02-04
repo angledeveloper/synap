@@ -5,7 +5,7 @@ import { extractIdFromSlug, codeToId } from '@/lib/utils';
 import SeoSchema from '@/components/seo/SeoSchema';
 import { buildSeoMetadata, getSeoSchemas } from '@/lib/seo';
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 export const dynamic = 'force-static';
 
 // Helper to strictly fetch report by Reference ID
@@ -18,7 +18,7 @@ async function fetchReportStrict(baseUrl: string, languageId: string, referenceI
     const res = await fetch(`${baseUrl}reports_store`, {
       method: "POST",
       body: formData,
-      next: { revalidate: 3600 }
+      next: { revalidate: 86400 }
     });
 
     if (res.ok) {

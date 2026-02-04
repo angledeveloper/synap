@@ -328,7 +328,7 @@ export async function fetchSeoData({
   method = "GET",
   body,
   headers,
-  revalidate = 3600,
+  revalidate = 86400,
 }: {
   endpoint: string;
   method?: string;

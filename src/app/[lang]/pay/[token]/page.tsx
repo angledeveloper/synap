@@ -3,6 +3,9 @@ import CustomPaymentClient from "./CustomPaymentClient";
 import SeoSchema from "@/components/seo/SeoSchema";
 import { buildSeoMetadata, fetchSeoData, extractSeoFromData } from "@/lib/seo";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({
   params,
 }: {
@@ -13,6 +16,7 @@ export async function generateMetadata({
 
   const tokenResponse = await fetchSeoData({
     endpoint: `https://dashboard.synapseaglobal.com/api/custom-payment/${token}`,
+    revalidate: 0,
   });
 
   const seo = tokenResponse.seo || extractSeoFromData(tokenResponse.data);
@@ -20,7 +24,7 @@ export async function generateMetadata({
   const reportTitle = typeof tokenData?.report_title === "string" ? tokenData.report_title : null;
   const reportImage = typeof tokenData?.report_image === "string" ? tokenData.report_image : null;
 
-  return buildSeoMetadata({
+  const metadata = buildSeoMetadata({
     seo,
     lang: langCode,
     path: `/pay/${token}`,
@@ -35,6 +39,15 @@ export async function generateMetadata({
       images: reportImage ? [reportImage] : undefined,
     },
   });
+
+  return {
+    ...metadata,
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+    },
+  };
 }
 
 export default async function Page({
@@ -45,6 +58,7 @@ export default async function Page({
   const { token } = (await params) || ({} as any);
   const { schemas } = await fetchSeoData({
     endpoint: `https://dashboard.synapseaglobal.com/api/custom-payment/${token}`,
+    revalidate: 0,
   });
 
   return (

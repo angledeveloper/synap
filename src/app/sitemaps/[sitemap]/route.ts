@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { slugify, supportedLanguages } from "@/lib/utils";
+import { supportedLanguages } from "@/lib/utils";
 
 const BASE_URL = "https://www.synapseaglobal.com";
 const languageCodes = supportedLanguages.map((lang) => lang.code);
@@ -18,9 +18,9 @@ const staticPages = [
 ];
 
 export const dynamic = "force-static";
-export const revalidate = 3600;
+export const revalidate = 86400;
 const CACHE_CONTROL_HEADER =
-  "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400";
+  "public, max-age=0, s-maxage=86400, stale-while-revalidate=86400";
 
 type SitemapParams = {
   sitemap: string;
@@ -68,11 +68,17 @@ function getStaticChangefreq(path: string) {
   return "monthly";
 }
 
-async function getCategories() {
+function getLanguageId(lang: string) {
+  const match = supportedLanguages.find((entry) => entry.code === lang);
+  return match?.id ?? supportedLanguages[0]?.id ?? "1";
+}
+
+async function getCategories(lang: string) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
     if (!baseUrl) return [];
-    const res = await fetch(`${baseUrl}homepage/1`, { next: { revalidate: 3600 } });
+    const languageId = getLanguageId(lang);
+    const res = await fetch(`${baseUrl}homepage/${languageId}`, { next: { revalidate: 86400 } });
     const data = await res.json();
     if (data && Array.isArray(data.report_store_dropdown)) {
       return data.report_store_dropdown;
@@ -96,7 +102,7 @@ function buildStaticPagesXml(lang: string) {
 }
 
 async function buildCategoriesXml(lang: string) {
-  const categories = await getCategories();
+  const categories = await getCategories(lang);
 
   const uniqueCategories = new Map<string, any>();
   categories.forEach((category: any) => {
@@ -109,11 +115,9 @@ async function buildCategoriesXml(lang: string) {
 
   const nodes = Array.from(uniqueCategories.values())
     .map((category) => {
-      const refId = category.category_reference_id || category.category_id;
-      if (!refId) return "";
-      const slugName = category.category_name || "category";
-      const slug = slugify(slugName, refId);
-      const loc = buildLoc(`reports/${slug}`, lang);
+      const categoryId = category.category_id || category.category_reference_id;
+      if (!categoryId) return "";
+      const loc = buildLoc(`reports?category=${encodeURIComponent(String(categoryId))}`, lang);
       return buildUrlNode(loc, "weekly");
     })
     .filter(Boolean)
@@ -122,13 +126,14 @@ async function buildCategoriesXml(lang: string) {
   return wrapUrlset(nodes);
 }
 
-async function getAllReports() {
+async function getAllReports(lang: string) {
   const reports: any[] = [];
   const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
   if (!baseUrl) return [];
 
-  const categories = await getCategories();
+  const categories = await getCategories(lang);
   const categoryIds = categories.map((category: any) => category.category_reference_id || category.category_id);
+  const languageId = getLanguageId(lang);
 
   const MAX_PAGES = 50;
 
@@ -140,7 +145,7 @@ async function getAllReports() {
     while (hasMore && page <= MAX_PAGES) {
       try {
         const formData = new FormData();
-        formData.append("language_id", "1");
+        formData.append("language_id", String(languageId));
         formData.append("page", page.toString());
         formData.append("per_page", perPage.toString());
         formData.append("category_reference_id", String(catId));
@@ -180,8 +185,49 @@ async function getAllReports() {
   return reports;
 }
 
+async function fetchReportSlugByReferenceId(referenceId: string | number, lang: string) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
+    if (!baseUrl) return null;
+    const languageId = getLanguageId(lang);
+    const formData = new FormData();
+    formData.append("report_reference_id", String(referenceId));
+    formData.append("language_id", String(languageId));
+
+    const response = await fetch(`${baseUrl}reports_store`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    const report = data?.data?.report;
+    const reportSeo = data?.data?.seo;
+    const backendSlug = report?.slug ?? reportSeo?.slug ?? data?.slug;
+    const trimmedBackendSlug = typeof backendSlug === "string" ? backendSlug.trim() : "";
+    return trimmedBackendSlug || null;
+  } catch (error) {
+    console.error("Error fetching report slug for sitemap:", error);
+    return null;
+  }
+}
+
+async function resolveReportSlug(report: any, lang: string, cache: Map<string, string | null>) {
+  const existingSlug = typeof report?.slug === "string" ? report.slug.trim() : "";
+  if (existingSlug) return existingSlug;
+
+  const refId = report?.report_reference_id || report?.report_identity?.report_reference_id || report?.id;
+  if (!refId) return null;
+
+  const key = String(refId);
+  if (cache.has(key)) return cache.get(key) || null;
+
+  const resolved = await fetchReportSlugByReferenceId(refId, lang);
+  cache.set(key, resolved);
+  return resolved;
+}
+
 async function buildReportsXml(lang: string) {
-  const reports = await getAllReports();
+  const reports = await getAllReports(lang);
 
   const uniqueReports = new Map<string, any>();
   reports.forEach((report: any) => {
@@ -192,23 +238,24 @@ async function buildReportsXml(lang: string) {
     }
   });
 
-  const nodes = Array.from(uniqueReports.values())
-    .map((report) => {
-      const refId =
-        report.report_reference_id ||
-        report.report_identity?.report_reference_id ||
-        report.id;
-      const trimmedBackendSlug =
-        typeof report.slug === "string" ? report.slug.trim() : "";
-      if (!refId) return "";
-      const slug = trimmedBackendSlug ? `${trimmedBackendSlug}-${refId}` : `${refId}`;
-      const loc = buildLoc(`reports/${slug}`, lang);
-      return buildUrlNode(loc, "daily");
-    })
-    .filter(Boolean)
-    .join("");
+  const slugCache = new Map<string, string | null>();
+  const nodes: string[] = [];
+  for (const report of Array.from(uniqueReports.values())) {
+    const refId =
+      report.report_reference_id ||
+      report.report_identity?.report_reference_id ||
+      report.id;
+    if (!refId) continue;
 
-  return wrapUrlset(nodes);
+    const resolvedSlug = await resolveReportSlug(report, lang, slugCache);
+    if (!resolvedSlug) continue;
+
+    const slug = `${resolvedSlug}-${refId}`;
+    const loc = buildLoc(`reports/${slug}`, lang);
+    nodes.push(buildUrlNode(loc, "daily"));
+  }
+
+  return wrapUrlset(nodes.join(""));
 }
 
 export async function GET(

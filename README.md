@@ -15,9 +15,34 @@ This repository powers the Synapsea Global reports website, where customers can 
 ## Multilingual setup
 
 - **Supported locales** live in `src/lib/utils.ts` via `supportedLanguages` and `codeToId` (English is the default). These codes map to backend `language_id` values for Laravel API requests.
+- **Edge-safe locale list** for middleware lives in `src/lib/i18n.ts`.
 - **Routing** is handled by the `[lang]` App Router segment. A `middleware.ts` rewrite/redirect keeps `/` as English while `/fr`, `/es`, etc. use the localized routes.
 - **Language state** is managed in `src/store.tsx` (`useLanguageStore`) and read by components to render localized navigation and content.
 - **Translations** are fetched per page via `useTranslations` with a fallback dictionary in `src/lib/translations.ts` if the API data is missing.
+
+## Report page caching (ISR)
+
+Report detail pages at `/<lang>/reports/[id]` are cached at the edge using ISR to reduce latency from the India-hosted backend. Caching is configured only for report detail pages and uses a 1-hour revalidate window.
+
+Key behaviors:
+- First request per report generates HTML and stores it at the edge.
+- Subsequent requests are served from cache (`X-Vercel-Cache: HIT`) globally.
+- Query params like `?ref_id=...` do not change server rendering, so cache is not fragmented.
+
+### Cache verification (live)
+
+Use GET requests for cache checks (HEAD often misses cache):
+
+```bash
+curl -s -D - -o NUL "https://synapseaglobal.com/reports/global-sustainable-aviation-fuels-market-outlook-28"
+curl -s -D - -o NUL "https://synapseaglobal.com/reports/global-sustainable-aviation-fuels-market-outlook-28"
+curl -s -D - -o NUL "https://synapseaglobal.com/reports/global-sustainable-aviation-fuels-market-outlook-28?ref_id=28"
+```
+
+Expected:
+- First request: `X-Vercel-Cache: MISS`
+- Repeat requests: `X-Vercel-Cache: HIT`
+- Same `ETag` and `Content-Length` across repeats
 
 ## Getting Started
 
