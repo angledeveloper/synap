@@ -5,6 +5,9 @@ import { extractIdFromSlug, codeToId } from '@/lib/utils';
 import SeoSchema from '@/components/seo/SeoSchema';
 import { buildSeoMetadata, getSeoSchemas } from '@/lib/seo';
 
+export const revalidate = 3600;
+export const dynamic = 'force-static';
+
 // Helper to strictly fetch report by Reference ID
 async function fetchReportStrict(baseUrl: string, languageId: string, referenceId: string) {
   try {
@@ -72,19 +75,16 @@ function buildCanonicalSlug({
 
 export async function generateMetadata({
   params,
-  searchParams,
 }: {
   params: Promise<{ lang: string; id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<Metadata> {
   const { lang, id } = await params;
   const langCode = lang || 'en';
-  const { ref_id } = await searchParams;
 
   // id is the slug
   const languageId = (codeToId[langCode as keyof typeof codeToId] || codeToId['en']).toString();
   const idFromSlug = extractIdFromSlug(id);
-  const referenceId = typeof ref_id === 'string' ? ref_id : idFromSlug;
+  const referenceId = idFromSlug;
 
   const data = await getReportData(id, languageId, referenceId);
   const report = data?.data?.report;
@@ -129,23 +129,18 @@ export async function generateMetadata({
 
 export default async function Page({
   params,
-  searchParams,
 }: {
   params: Promise<{ lang: string; id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { lang, id } = await params;
-  const search = await searchParams;
-  const { ref_id } = search;
 
   const languageId = (codeToId[lang as keyof typeof codeToId] || codeToId['en']).toString();
 
   // Extract ID from slug (works for both old ID and new Reference ID style URLs)
   const idFromSlug = extractIdFromSlug(id);
 
-  // Use provided ref_id OR fall back to extracted ID from slug
-  // This supports both ?ref_id=123 (old/secure way) AND /title-123 (new SEO way)
-  const referenceId = typeof ref_id === 'string' ? ref_id : idFromSlug;
+  // Only use the slug-derived ID for server render to avoid cache fragmentation by query params.
+  const referenceId = idFromSlug;
 
   const reportData = await getReportData(id, languageId, referenceId);
 
