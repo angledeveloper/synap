@@ -49,11 +49,17 @@ const injectImages = (html: string, report: any) => {
       const index = matchResult[1];
       const imageLink = report[`image_${index}_link`];
       const imageAlt = report[`image_${index}_alt`] || `Report Image ${index}`;
+      const imageWidth = report[`image_${index}_width`];
+      const imageHeight = report[`image_${index}_height`];
+      const ratio =
+        imageWidth && imageHeight
+          ? `${imageWidth} / ${imageHeight}`
+          : "16 / 9";
 
       if (imageLink) {
         return `
-                    <div class="my-6">
-                        <img src="${imageLink}" alt="${imageAlt}" class="w-full h-auto rounded-lg shadow-sm" />
+                    <div style="aspect-ratio: ${ratio}; width: 100%; margin: 24px 0; overflow: hidden; border-radius: 8px; background: #f3f4f6;">
+                        <img src="${imageLink}" alt="${imageAlt}" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
                     </div>
                  `;
       }
@@ -162,7 +168,7 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
               {/* Title and Image Container */}
               <div className="mb-6 flex flex-col gap-4 sm:gap-6 md:flex-row">
                 {/* Report Image */}
-                <div className="hidden w-full flex-shrink-0 overflow-hidden bg-gray-200 md:visible md:h-[93px] md:w-[93px]">
+                <div className="hidden w-full flex-shrink-0 overflow-hidden bg-gray-200 md:block md:h-[93px] md:w-[93px]">
                   {report.image ? (
                     <img
                       src={report.image}

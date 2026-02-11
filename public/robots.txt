@@ -1,63 +1,49 @@
 User-agent: *
-Allow: /
+Disallow: /api/
+Disallow: /search/
+Disallow: /?s=
+Disallow: /*?            
+Disallow: /config/
+Disallow: /private/
+Disallow: /dashboard/ 
+
+Allow: /static/js/*.js
+Allow: /static/css/*.css
+Allow: /assets/
+Allow: /images/
 
 User-agent: GPTBot
-Allow: /
-
 User-agent: ChatGPT-User
-Allow: /
-
 User-agent: Google-Extended
-Allow: /
-
 User-agent: ClaudeBot
-Allow: /
-
 User-agent: Anthropic-User-Agent
-Allow: /
-
 User-agent: PerplexityBot
-Allow: /
-
 User-agent: cohere-ai
-Allow: /
-
 User-agent: aicodebot
-Allow: /
-
 User-agent: YouBot
 Allow: /
 
 Sitemap: https://www.synapseaglobal.com/sitemaps/en-static-pages.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/en-categories.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/en-reports.xml
-
 Sitemap: https://www.synapseaglobal.com/sitemaps/fr-static-pages.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/fr-categories.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/fr-reports.xml
-
 Sitemap: https://www.synapseaglobal.com/sitemaps/es-static-pages.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/es-categories.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/es-reports.xml
-
 Sitemap: https://www.synapseaglobal.com/sitemaps/de-static-pages.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/de-categories.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/de-reports.xml
-
 Sitemap: https://www.synapseaglobal.com/sitemaps/ja-static-pages.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/ja-categories.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/ja-reports.xml
-
 Sitemap: https://www.synapseaglobal.com/sitemaps/zh-static-pages.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/zh-categories.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/zh-reports.xml
-
 Sitemap: https://www.synapseaglobal.com/sitemaps/ko-static-pages.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/ko-categories.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/ko-reports.xml
-
 Sitemap: https://www.synapseaglobal.com/sitemaps/ar-static-pages.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/ar-categories.xml
 Sitemap: https://www.synapseaglobal.com/sitemaps/ar-reports.xml
-
-Disallow: https://dashboard.synapseaglobal.com/*

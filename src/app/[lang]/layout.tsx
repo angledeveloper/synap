@@ -61,6 +61,16 @@ const notoSansSC = Noto_Sans_SC({
   variable: "--font-noto-sc",
 });
 
+const apiOrigin = (() => {
+  try {
+    return process.env.NEXT_PUBLIC_DB_URL
+      ? new URL(process.env.NEXT_PUBLIC_DB_URL).origin
+      : null;
+  } catch {
+    return null;
+  }
+})();
+
 export async function generateMetadata({
   params,
 }: {
@@ -130,6 +140,14 @@ export default async function RootLayout({
         <meta
           name="google-site-verification"
           content="aPd1gzb6sohn1LKvKuQrtOlN8XAkSpn4ee4Sxmj3J2k"
+        />
+        {apiOrigin && apiOrigin !== "https://www.synapseaglobal.com" && (
+          <link rel="preconnect" href={apiOrigin} crossOrigin="" />
+        )}
+        <link
+          rel="preconnect"
+          href="https://www.googletagmanager.com"
+          crossOrigin=""
         />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-YNH1SG5DHK"
