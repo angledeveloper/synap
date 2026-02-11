@@ -175,6 +175,9 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                       alt={report.title}
                       width={93}
                       height={93}
+                      loading="eager"
+                      decoding="async"
+                      fetchPriority="high"
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -444,7 +447,14 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                       rel="noopener noreferrer"
                       className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-white hover:bg-gray-800"
                     >
-                      <img src="/x.svg" alt="X" className="h-9 w-9" />
+                      <img
+                        src="/x.svg"
+                        alt="X"
+                        className="h-9 w-9"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
+                      />
                     </a>
                     <a
                       href={`https://www.facebook.com/sharer/sharer.php?u=https://synapseaglobal.com`}
@@ -456,6 +466,9 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                         src="/facebook.svg"
                         alt="Facebook"
                         className="h-9 w-9"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
                       />
                     </a>
                     <a
@@ -468,6 +481,9 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                         src="/instagram.svg"
                         alt="Instagram"
                         className="h-9 w-9"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
                       />
                     </a>
                     <a
@@ -480,6 +496,9 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                         src="/whatsapp.svg"
                         alt="WhatsApp"
                         className="h-9 w-9"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
                       />
                     </a>
                     <CopyLinkButton />
@@ -763,7 +782,14 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                         rel="noopener noreferrer"
                         className="flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors"
                       >
-                        <img src="/x.svg" alt="X" className="h-9 w-9" />
+                        <img
+                          src="/x.svg"
+                          alt="X"
+                          className="h-9 w-9"
+                          loading="lazy"
+                          decoding="async"
+                          fetchPriority="low"
+                        />
                       </a>
                       <a
                         href={`https://www.facebook.com/sharer/sharer.php?u=https://synapseaglobal.com`}
@@ -771,11 +797,14 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                         rel="noopener noreferrer"
                         className="flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors"
                       >
-                        <img
-                          src="/facebook.svg"
-                          alt="Facebook"
-                          className="h-9 w-9"
-                        />
+                          <img
+                            src="/facebook.svg"
+                            alt="Facebook"
+                            className="h-9 w-9"
+                            loading="lazy"
+                            decoding="async"
+                          fetchPriority="low"
+                          />
                       </a>
                       <a
                         href="https://www.instagram.com/"
@@ -783,11 +812,14 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                         rel="noopener noreferrer"
                         className="flex h-8 w-8 items-center justify-center rounded-full text-white transition-opacity hover:opacity-90"
                       >
-                        <img
-                          src="/instagram.svg"
-                          alt="Instagram"
-                          className="h-9 w-9"
-                        />
+                          <img
+                            src="/instagram.svg"
+                            alt="Instagram"
+                            className="h-9 w-9"
+                            loading="lazy"
+                            decoding="async"
+                          fetchPriority="low"
+                          />
                       </a>
                       <a
                         href={`https://wa.me/?text=${encodeURIComponent(`Check out this report: ${report.title} https://synapseaglobal.com`)}`}
@@ -795,11 +827,14 @@ export default function ReportView({ data, lang, id, refId }: ReportViewProps) {
                         rel="noopener noreferrer"
                         className="flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors"
                       >
-                        <img
-                          src="/whatsapp.svg"
-                          alt="WhatsApp"
-                          className="h-9 w-9"
-                        />
+                          <img
+                            src="/whatsapp.svg"
+                            alt="WhatsApp"
+                            className="h-9 w-9"
+                            loading="lazy"
+                            decoding="async"
+                          fetchPriority="low"
+                          />
                       </a>
                       <CopyLinkButton />
                     </div>

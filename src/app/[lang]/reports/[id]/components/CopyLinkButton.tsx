@@ -16,7 +16,14 @@ export default function CopyLinkButton() {
             onClick={handleCopy}
             aria-label="Copy link"
         >
-            <img src="/share.svg" alt="Copy Link" className="w-9 h-9" />
+            <img
+                src="/share.svg"
+                alt="Copy Link"
+                className="w-9 h-9"
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
+            />
         </button>
     );
 }
