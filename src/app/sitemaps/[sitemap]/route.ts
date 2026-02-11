@@ -50,16 +50,134 @@ function buildLoc(path: string, lang: string) {
 
 function wrapUrlset(nodes: string) {
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${nodes}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">${nodes}
 </urlset>`;
 }
 
-function buildUrlNode(loc: string, changefreq: string) {
+function xmlEscape(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function toW3CDateTime(value: string | undefined | null) {
+  if (!value) return null;
+  const trimmed = String(value).trim();
+  if (!trimmed) return null;
+
+  const humanMatch = trimmed.match(
+    /^(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(\d{4})$/,
+  );
+  if (humanMatch) {
+    const day = Number(humanMatch[1]);
+    const monthName = humanMatch[2].toLowerCase();
+    const year = Number(humanMatch[3]);
+    const monthIndex = [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+    ].indexOf(monthName);
+    if (monthIndex >= 0) {
+      const iso = new Date(Date.UTC(year, monthIndex, day))
+        .toISOString()
+        .replace(/Z$/, "+00:00");
+      return iso;
+    }
+  }
+
+  const humanAltMatch = trimmed.match(
+    /^([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?\,?\s+(\d{4})$/,
+  );
+  if (humanAltMatch) {
+    const monthName = humanAltMatch[1].toLowerCase();
+    const day = Number(humanAltMatch[2]);
+    const year = Number(humanAltMatch[3]);
+    const monthIndex = [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+    ].indexOf(monthName);
+    if (monthIndex >= 0) {
+      const iso = new Date(Date.UTC(year, monthIndex, day))
+        .toISOString()
+        .replace(/Z$/, "+00:00");
+      return iso;
+    }
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return `${trimmed}T00:00:00+00:00`;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.test(trimmed)) {
+    return `${trimmed.replace(" ", "T")}+00:00`;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(trimmed)) {
+    return trimmed.replace(/Z$/, "+00:00");
+  }
+
+  if (
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?[+-]\d{2}:\d{2}$/.test(
+      trimmed,
+    )
+  ) {
+    return trimmed;
+  }
+
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toISOString().replace(/Z$/, "+00:00");
+}
+
+function buildUrlNode({
+  loc,
+  changefreq,
+  priority,
+  lastmod,
+  imageLoc,
+}: {
+  loc: string;
+  changefreq: string;
+  priority: string;
+  lastmod?: string | null;
+  imageLoc?: string | null;
+}) {
+  const safeLoc = xmlEscape(loc);
+  const safeChangefreq = xmlEscape(changefreq);
+  const safePriority = xmlEscape(priority);
+  const safeLastmod = lastmod ? xmlEscape(lastmod) : null;
+  const safeImageLoc = imageLoc ? xmlEscape(imageLoc) : null;
+
   return `
   <url>
-    <loc>${loc}</loc>
-    <changefreq>${changefreq}</changefreq>
-  </url>`;
+    <loc>${safeLoc}</loc>
+${safeLastmod ? `    <lastmod>${safeLastmod}</lastmod>\n` : ""}    <changefreq>${safeChangefreq}</changefreq>
+    <priority>${safePriority}</priority>
+${safeImageLoc ? `    <image:image>\n      <image:loc>${safeImageLoc}</image:loc>\n    </image:image>\n` : ""}  </url>`;
 }
 
 function getStaticChangefreq(path: string) {
@@ -95,7 +213,12 @@ function buildStaticPagesXml(lang: string) {
     .map((path) => {
       const loc = buildLoc(path, lang);
       const changefreq = getStaticChangefreq(path);
-      return buildUrlNode(loc, changefreq);
+      const priority = path === "" ? "1.0" : "0.6";
+      return buildUrlNode({
+        loc,
+        changefreq,
+        priority,
+      });
     })
     .join("");
   return wrapUrlset(nodes);
@@ -118,7 +241,11 @@ async function buildCategoriesXml(lang: string) {
       const categoryId = category.category_id || category.category_reference_id;
       if (!categoryId) return "";
       const loc = buildLoc(`reports?category=${encodeURIComponent(String(categoryId))}`, lang);
-      return buildUrlNode(loc, "weekly");
+      return buildUrlNode({
+        loc,
+        changefreq: "monthly",
+        priority: "1.0",
+      });
     })
     .filter(Boolean)
     .join("");
@@ -252,7 +379,24 @@ async function buildReportsXml(lang: string) {
 
     const slug = `${resolvedSlug}-${refId}`;
     const loc = buildLoc(`reports/${slug}`, lang);
-    nodes.push(buildUrlNode(loc, "daily"));
+    const lastmod = toW3CDateTime(
+      report?.updated_at ||
+        report?.modify_at ||
+        report?.created_at ||
+        report?.last_updated ||
+        report?.report_date,
+    );
+    const imageLoc =
+      report?.image || report?.image_url || report?.image_link || null;
+    nodes.push(
+      buildUrlNode({
+        loc,
+        changefreq: "monthly",
+        priority: "0.9",
+        lastmod,
+        imageLoc,
+      }),
+    );
   }
 
   return wrapUrlset(nodes.join(""));
