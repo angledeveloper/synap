@@ -40,7 +40,11 @@ interface SampleReportFormProps {
   reportImage?: string;
 }
 
-export default function SampleReportForm({ isOpen, onClose }: SampleReportFormProps) {
+export default function SampleReportForm({
+  isOpen,
+  onClose,
+  reportTitle
+}: SampleReportFormProps) {
   const { language } = useLanguageStore();
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
@@ -121,6 +125,7 @@ export default function SampleReportForm({ isOpen, onClose }: SampleReportFormPr
           phone_no: `${formData.phoneCode} ${formData.phoneNumber}`,
           country: formData.country,
           comments: formData.comments,
+          report_title: reportTitle,
           // Removed job_title and industry_focus as requested
           'g-recaptcha-response': recaptchaToken
         }),
