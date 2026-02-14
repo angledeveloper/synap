@@ -380,6 +380,7 @@ export default function BillingForm({ selectedLicense, reportData, onContinue, o
         add_company_details: formData.addCompanyDetails ? "Yes" : "No",
         company_name: formData.companyName || "",
         GSTIN: formData.gstin || "",
+        report_title: reportData?.title || "",
         license_type: licenseTitle,
         discount: String(finalDiscountAmount),
         subtotal: String(subtotal),
