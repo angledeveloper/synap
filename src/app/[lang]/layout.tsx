@@ -61,6 +61,21 @@ const notoSansSC = Noto_Sans_SC({
   variable: "--font-noto-sc",
 });
 
+function getScriptFontVariable(langCode: string) {
+  switch (langCode) {
+    case "ar":
+      return notoSansArabic.variable;
+    case "ja":
+      return notoSansJP.variable;
+    case "ko":
+      return notoSansKR.variable;
+    case "zh":
+      return notoSansSC.variable;
+    default:
+      return "";
+  }
+}
+
 const apiOrigin = (() => {
   try {
     return process.env.NEXT_PUBLIC_DB_URL
@@ -113,6 +128,7 @@ export default async function RootLayout({
 }) {
   const { lang } = (await params) || ({} as any);
   const langCode = lang || "en";
+  const scriptFontVariable = getScriptFontVariable(langCode);
   const languageId =
     codeToId[langCode as keyof typeof codeToId] || codeToId["en"];
   // Fetch homepage server-side
@@ -163,7 +179,7 @@ export default async function RootLayout({
         </Script>
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable} ${notoSansArabic.variable} ${notoSansJP.variable} ${notoSansKR.variable} ${notoSansSC.variable} bg-black text-white antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${spaceGrotesk.variable} ${scriptFontVariable} bg-black text-white antialiased`}
       >
         <QueryProvider>
           {/* Hydrate Zustand store for HomePage on client */}
